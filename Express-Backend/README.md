@@ -10,7 +10,6 @@ Welcome to the GameVault backend! This repository contains the server-side code 
 - [Usage](#usage)
 - [API Endpoints](#api-endpoints)
 - [Environment Variables](#environment-variables)
-- [Contributing](#contributing)
 - [License](#license)
 
 ---
@@ -35,7 +34,7 @@ The IGDB API offers detailed game information including descriptions, genres, re
 
 ### 3. **GameVault & Kguysh-GameVault (Our Custom Backend)**
 
-Our own custom backend serves as a middleware to interact with both external APIs (Steam & IGDB), filter and process the game data, and serve it to the frontend. This backend helps in managing and storing data for searching, displaying, and sorting game information.
+Our own custom backend serves as a middleware to interact with both external APIs (Steam & IGDB), filter and process the game data, and serve it to the frontend. This backend helps in managing and storing data for searching, displaying, and sorting game information. It also performs user authentication, registration, and other user-specific functions.
 
 - **Base URL**: The backend runs on `localhost:5000` (or your preferred port for local development).
 
@@ -60,8 +59,8 @@ Follow these steps to get the backend up and running:
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/your-username/gamevault-backend.git
-   cd gamevault-backend
+   git clone https://github.com/mariathv/GameVault.git
+   cd Express-Backend
    ```
 
 2. **Install dependencies**:
@@ -80,13 +79,13 @@ Follow these steps to get the backend up and running:
 3. **Set up environment variables**:
    Create a `.env` file in the root directory and add the necessary environment variables:
    ```env
-   STEAM_API_KEY=your_steam_api_key
-   IGDB_CLIENT_ID=your_igdb_client_id
-   IGDB_CLIENT_SECRET=your_igdb_client_secret
-   PORT=5000
+   STEAM_API_KEY=steam_api_key
+   IGDB_CLIENT_ID=igdb_client_id
+   IGDB_CLIENT_SECRET=igdb_client_secret
+   PORT=3000
    ```
 
-   Make sure to replace `your_steam_api_key`, `your_igdb_client_id`, and `your_igdb_client_secret` with your actual credentials.
+   Make sure to replace `your_steam_api_key`, `your_igdb_client_id`, and `your_igdb_client_secret` with actual credentials.
 
 ---
 
@@ -96,10 +95,10 @@ Follow these steps to get the backend up and running:
    After installing the dependencies and setting up your environment variables, you can start the server using:
 
    ```bash
-   npm run dev
+   node app.js
    ```
 
-   This will start the server on `http://localhost:5000`.
+   This will start the server on `http://localhost:3000`.
 
 2. **API requests**:
    You can now send requests to the various API endpoints exposed by the backend. For example:
@@ -128,29 +127,17 @@ GET http://localhost:5000/games/search?search_query=gta
 
 ## Environment Variables
 
-- `STEAM_API_KEY`: Your Steam API key for accessing Steam data.
-- `IGDB_CLIENT_ID`: Your client ID for IGDB API access.
-- `IGDB_CLIENT_SECRET`: Your client secret for IGDB API access.
-- `PORT`: Port number for your backend server (default is 5000).
+- `STEAM_API_KEY`: Steam API key for accessing Steam data.
+- `IGDB_CLIENT_ID`: client ID for IGDB API access.
+- `IGDB_CLIENT_SECRET`: client secret for IGDB API access.
+- `PORT`: Port number for your backend server (default is 3000).
 
----
-
-## Contributing
-
-We welcome contributions to the GameVault backend! If you'd like to contribute, please follow these steps:
-
-1. Fork the repository.
-2. Create a new branch (`git checkout -b feature/your-feature`).
-3. Make your changes.
-4. Commit your changes (`git commit -am 'Add new feature'`).
-5. Push to the branch (`git push origin feature/your-feature`).
-6. Open a pull request.
 
 ---
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/mariathv/GameVault/blob/main/LICENSE) file for details.
 
 ---
 
