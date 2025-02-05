@@ -1,23 +1,8 @@
 import React from 'react';
 
-const games = [
-    {
-        id: 1,
-        title: 'Cyberpunk 2077',
-        description: 'An open-world, action-adventure story set in Night City.',
-        price: 49.99,
-        image: 'https://via.placeholder.com/150',
-    },
-    {
-        id: 2,
-        title: 'The Witcher 3: Wild Hunt',
-        description: 'A story-driven, open-world RPG.',
-        price: 39.99,
-        image: 'https://via.placeholder.com/150',
-    },
-];
 
-const ViewGames = () => {
+
+const ViewGames = ({ games }) => {
     return (
         <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
             <h2 className="text-2xl font-bold mb-4">View Games</h2>
