@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import ViewGames from './ViewGames';
+import ViewGames from '../GameList';
+import "./AddGame.css"
+
 
 const AddGame = () => {
 
@@ -16,10 +18,15 @@ const AddGame = () => {
             if (search) {
                 const response = await fetch(`http://localhost:3000/api/v1/games/search?search_query=${search}`);
                 const data = await response.json();
-                console.log("fetched game data ", data);
+                //console.log("fetched game data (response 1) ", data);
                 //ids only fetched
 
-                setGamesList(data);
+                const gameIds = data.queryResult.map(game => game.id).join(",");
+
+                const responsemulti = await fetch(`http://localhost:3000/api/v1/games/get/multi?ids=${gameIds}`);
+                const dataMulti = await responsemulti.json();
+                setGamesList(dataMulti);
+                console.log("fetched game data (response 2) ", dataMulti);
             }
 
         } catch (error) {
@@ -42,17 +49,21 @@ const AddGame = () => {
                     className="w-full p-2 bg-gray-700 text-white rounded"
                     onChange={(e) => setSearch(e.target.value)}
                 />
-                <button onClick={fetchGames} className="bg-blue-500 text-white px-4 py-2 rounded mb-4">
+                <button onClick={fetchGames}    >
                     Search
                 </button>
+                {gamesList.length != 0 &&
+                    <>
+                        <h2 className="text-xl font-bold mb-4">Search Result for "{search}"</h2>
+                        <ViewGames games={gamesList.queryResult} sliceCount={7} />
+
+                    </>
+                }
             </div>
-            {gamesList.length != 0 &&
-                <div>
-                    <ViewGames games={gamesList.queryResult} />
-                </div>
-            }
+
+
             <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-                <h2 className="text-2xl font-bold mb-4">Add a New Game</h2>
+                <h2 className="text-2xl font-bold mb-4">Add a New Game - Manually</h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <input
                         type="text"
@@ -79,7 +90,7 @@ const AddGame = () => {
                     />
                     <button
                         type="submit"
-                        className="w-full bg-white text-black py-2 rounded hover:bg-gray-300"
+                        className="w-full bg-white text-white py-2 rounded hover:bg-gray-300 "
                     >
                         Add Game
                     </button>

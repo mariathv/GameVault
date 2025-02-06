@@ -16,7 +16,7 @@ const purchases = [
         date: '2023-10-02',
     },
 ];
-
+//DUMMY DATAAA
 const ViewPurchases = () => {
     return (
         <div className="bg-gray-800 p-6 rounded-lg shadow-lg">

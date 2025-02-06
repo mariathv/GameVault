@@ -1,18 +1,21 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
-import AddGame from './components/AddGame';
-import ViewGames from './components/ViewGames';
+import AddGame from './components/AddGame/AddGame';
+import ViewGames from './components/GameList';
 import ViewPurchases from './components/ViewPurchases';
+import ViewStoreGames from "./components/ViewStoreGames/ViewStoreGames";
+
+import "./index.css"
 
 const App = () => {
   return (
     <Router>
-      <div className="min-h-screen bg-black text-white">
+      <div>
         <Navbar />
         <div className="container mx-auto p-4">
           <Routes>
             <Route path="/add-game" element={<AddGame />} />
-            <Route path="/view-games" element={<ViewGames />} />
+            <Route path="/view-games" element={<ViewStoreGames />} />
             <Route path="/view-purchases" element={<ViewPurchases />} />
             <Route path="/" element={<Dashboard />} />
           </Routes>
