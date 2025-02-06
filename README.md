@@ -86,6 +86,9 @@ The web application will be running at `http://localhost:3000`.
 - **Font Awesome** - Icon library used for design elements:  
 [Font Awesome](https://fontawesome.com/)
 
+- **Giant Bomb** - Database API for fetching Game Data:
+[Giant Bomb](https://www.giantbomb.com/api/)
+
 ## Collaborators
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
