@@ -1,6 +1,9 @@
 
 # GameVault: A Digital Marketplace and Top-Up Store
 
+![image](https://github.com/user-attachments/assets/717c878e-ec3b-4b10-bc01-94186035c0ff)
+
+
 ## Description
 **GameVault** is a web-based platform where users can purchase video games, top-up in-game currencies, and explore game details. The platform integrates external APIs (like Steam and RAWG) to fetch game data while utilizing a custom backend for user management, transactions, and digital purchases.
 
