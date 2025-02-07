@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 .game-card {
   background-color: #141B26;
   border-radius: 10px;
@@ -8,4 +10,17 @@
   text-align: center;
   padding-left: 5px;
   padding-right: 5px;
+}
+
+.platform-button {
+  font-size: 12px;
+  background-color: rgba(0, 255, 255, 0);
+  color: rgb(255, 255, 255);
+  border: 2px solid #3b344e;
+  border-radius: 10px;
+  padding-left: 2px;
+  padding-right: 2px;
+
+  transform: scale(1);
+  transition: transform 0.3s ease;
 }

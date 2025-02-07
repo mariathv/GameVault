@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ViewGames from '../GameList';
 import "./AddGame.css"
+import { fetchData } from '../../api/api-gamevault';
 
 
 const AddGame = () => {
@@ -16,12 +17,9 @@ const AddGame = () => {
     const fetchGames = async () => {
         try {
             if (search) {
-                const response = await fetch(`http://localhost:3000/api/v1/games/search?search_query=${search}`);
-                const data = await response.json();
-                //console.log("fetched game data (response 1) ", data);
-                //ids only fetched
+                const response = await fetchData(`games/search/name/?search_query=${search}`);
 
-                const gameIds = data.queryResult.map(game => game.id).join(",");
+                const gameIds = response.queryResult.map(game => game.id).join(",");
 
                 const responsemulti = await fetch(`http://localhost:3000/api/v1/games/get/multi?ids=${gameIds}`);
                 const dataMulti = await responsemulti.json();

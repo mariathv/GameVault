@@ -1,5 +1,6 @@
 import React from 'react';
 import { formatDescription } from '../utils/funcs';
+import { toSlug } from "../utils/slugconverter";
 import {
     Card,
     CardBody,
@@ -7,8 +8,9 @@ import {
     Heading,
     Image,
     AspectRatio,
-    Center,
+    Center
 } from "@chakra-ui/react";
+import { Link, useNavigate, useParams, useLocation } from "react-router-dom";
 import "../styles/GameStoreAdmin.css"
 
 
@@ -20,34 +22,40 @@ const ViewGames = ({ games, sliceCount }) => {
 
             <div className="grid grid-cols-5 md:grid-cols-2 lg:grid-cols-7 gap-4">
                 {games.slice(0, sliceCount).map((game) => (
-
-                    <Card
-                        className="game-card"
-                        maxW="sm"
-                        transition="transform 0.3s"
-                        _hover={{
-                            transform: "scale(1.05)",
-                        }}
-                    >
-                        <CardBody>
-                            <AspectRatio maxW="260px" ratio={4 / 5}>
-                                <Image
-                                    src={game.image?.original_url || 'fallback_image_url.jpg'}
-                                    borderTopRadius="10"
-                                    alt={game.name}
-                                />
-                            </AspectRatio>
-                            <Stack spacing="3">
-                                <Heading
-                                    className="chakra-heading-1"
-                                    textAlign="center"
-                                    verticalAlign="middle"
-                                >
-                                    {game.name}
-                                </Heading>
-                            </Stack>
-                        </CardBody>
-                    </Card>
+                    <Link to={{
+                        pathname: `/game/${game.id}/${toSlug(
+                            game.name
+                        )}`,
+                        state: { game },
+                    }}>
+                        <Card
+                            className="game-card"
+                            maxW="sm"
+                            transition="transform 0.3s"
+                            _hover={{
+                                transform: "scale(1.05)",
+                            }}
+                        >
+                            <CardBody>
+                                <AspectRatio maxW="260px" ratio={4 / 5}>
+                                    <Image
+                                        src={game.image?.original_url || 'fallback_image_url.jpg'}
+                                        borderTopRadius="10"
+                                        alt={game.name}
+                                    />
+                                </AspectRatio>
+                                <Stack spacing="3">
+                                    <Heading
+                                        className="chakra-heading-1"
+                                        textAlign="center"
+                                        verticalAlign="middle"
+                                    >
+                                        {game.name}
+                                    </Heading>
+                                </Stack>
+                            </CardBody>
+                        </Card>
+                    </Link>
                 ))}
             </div>
         </div>

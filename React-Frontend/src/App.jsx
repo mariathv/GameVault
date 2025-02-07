@@ -5,7 +5,9 @@ import ViewGames from './components/GameList';
 import ViewPurchases from './components/ViewPurchases';
 import ViewStoreGames from "./components/ViewStoreGames/ViewStoreGames";
 
+
 import "./index.css"
+import GameDetail from './components/GameDetail/GameDetail';
 
 const App = () => {
   return (
@@ -17,6 +19,7 @@ const App = () => {
             <Route path="/add-game" element={<AddGame />} />
             <Route path="/view-games" element={<ViewStoreGames />} />
             <Route path="/view-purchases" element={<ViewPurchases />} />
+            <Route path="/game/:id/:name" element={<GameDetail />} />
             <Route path="/" element={<Dashboard />} />
           </Routes>
         </div>
