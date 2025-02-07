@@ -7,4 +7,5 @@ router.get("/search/name/", gamesController.searchByName);
 router.get("/get/", gamesController.getGameInfoByID);
 router.get("/get/multi/", gamesController.getGamesInfoByIDs);
 
+
 module.exports = router;
