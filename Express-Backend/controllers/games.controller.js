@@ -1,6 +1,7 @@
 const chalk = require("chalk"); // Import chalk
 const { fetchData, fetchStoreData } = require("../api/api-steam");
 const { fetchGBData } = require("../api/api-gb");
+const { fetchIGDB } = require("../api/api-igdb");
 
 const GB_KEY = process.env.API_KEY_GB;
 
@@ -13,23 +14,31 @@ const gamesController = {
                 return res.status(400).json({ error: "Search query required!" });
             }
 
-            const searchData = await fetchGBData(`games/?api_key=${GB_KEY}&format=json&limit=15&filter=name:${search_query}&field_list=name,id`);
+            const body = `fields *; where name ~ "${search_query}";`;
+            const searchData = await fetchIGDB(`games`, body);
 
-            if (!searchData?.results) {
+            if (!searchData) {
                 console.log(chalk.yellow(`[${new Date().toISOString()}] No search data found`));
                 return res.status(200).json({ success: false, message: "No games found" });
             }
 
-            const result = searchData.results;
-            console.log(chalk.green(`[${new Date().toISOString()}] ✅ Found ${result.length} games for query: ${search_query}`));
+            const coverIds = searchData.map(game => game.cover).filter(Boolean); // Exclude undefined covers
+            const body_cover = `fields *; where id = (${coverIds.join(",")});`;
 
-            return res.status(200).json({ success: true, queryResult: result });
+            const coverData = await fetchIGDB('covers', body_cover);
+
+            const sortedCoverData = coverIds.map(coverId => coverData.find(cover => cover.id === coverId));
+
+            console.log(chalk.green(`[${new Date().toISOString()}] ✅ Found ${searchData.length} games for query: ${search_query}`));
+
+            return res.status(200).json({ success: true, queryResult: searchData, coverResult: sortedCoverData });
 
         } catch (error) {
             console.error(chalk.red(`[${new Date().toISOString()}] ❌ Error fetching search result:`), error);
             return res.status(500).json({ error: "Failed to fetch search result" });
         }
     },
+
     //fetches game data (single) 
     getGameInfoByID: async (req, res) => {
         const { id } = req.query;
@@ -38,18 +47,28 @@ const gamesController = {
                 return res.status(400).json({ error: "id required!" });
             }
 
-            const appIDSearch = await fetchGBData(`game/${id}/?api_key=${GB_KEY}&format=json`);
+            const body = `fields *; where id = ${id};`
 
-            if (!appIDSearch || !appIDSearch.results || appIDSearch.results.length == 0) {
+            const appIDSearch = await fetchIGDB("games", body);
+
+            if (!appIDSearch) {
                 console.log(chalk.yellow(`[${new Date().toISOString()}] ⚠️ No valid game data found`));
                 return res.status(200).json({ success: false, message: "No games found" });
             }
+
+            const coverIds = appIDSearch.map(game => game.cover).filter(Boolean); // Exclude undefined covers
+            const body_cover = `fields *; where id = (${coverIds.join(",")});`;
+
+            const coverData = await fetchIGDB('covers', body_cover);
+
+            const sortedCoverData = coverIds.map(coverId => coverData.find(cover => cover.id === coverId));
 
             console.log(chalk.green(`[${new Date().toISOString()}] ✅ Fetched game info for query: ${id}`));
 
             return res.status(200).json({
                 success: true,
-                queryResult: appIDSearch.results
+                queryResult: appIDSearch,
+                coverResult: sortedCoverData
             });
 
         } catch (error) {
@@ -68,21 +87,23 @@ const gamesController = {
         //in case of a single id is passed
         const gameIds = Array.isArray(ids) ? ids : ids.split(",");
 
+        const body = `fields *; where id = (${gameIds});`
+
         if (gameIds.length === 0) {
             return res.status(400).json({ error: "At least one ID is required!" });
         }
 
 
-        const gamesInfos = await fetchGBData(`games/?api_key=${GB_KEY}&format=json&limit=15&filter=id:${gameIds.join("|")}`);
+        const gamesInfos = await fetchIGDB("games", body);
 
-        if (!gamesInfos || !gamesInfos.results || gamesInfos.results.length == 0) {
+        if (!gamesInfos) {
             console.log(chalk.yellow(`[${new Date().toISOString()}] ⚠️ No valid game data found`));
             return res.status(400).json({ error: "games info not found" });
         }
 
         console.log(chalk.green(`[${new Date().toISOString()}] ✅ Fetched game info for queries: ${gameIds}`));
 
-        return res.status(200).json({ success: true, queryResult: gamesInfos.results });
+        return res.status(200).json({ success: true, queryResult: gamesInfos });
     },
 };
 
