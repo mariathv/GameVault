@@ -1,7 +1,8 @@
 
 # GameVault: A Digital Marketplace and Top-Up Store
 
-![image](https://github.com/user-attachments/assets/717c878e-ec3b-4b10-bc01-94186035c0ff)
+![image](https://github.com/user-attachments/assets/948fae05-58ab-44d3-adec-d6e85c90e4c1)
+
 
 
 ## Description
