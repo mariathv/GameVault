@@ -1,23 +1,20 @@
-const { MongoClient } = require('mongodb');
+const { MongoClient } = require('mongodb');  // Ensure this import is at the top of the file
 require('dotenv').config();
 
 const uri = process.env.MONGO_DB_CON;
 
 let client;
 
-async function connectToMongo() {
-    if (client) return client;
-    try {
-        // connection
+const connectToMongo = async () => {
+    if (!client) {
         client = new MongoClient(uri);
         await client.connect();
-        console.log('Connected to MongoDB!');
-        return client;
-    } catch (err) {
-        console.error('MongoDB connection error:', err);
-        throw err;
+        console.log("Connected to MongoDB!");
+    } else {
+        console.log("Reusing existing MongoDB client");
     }
-}
+    return client;
+};
 
 async function closeMongoConnection() {
     if (client) {

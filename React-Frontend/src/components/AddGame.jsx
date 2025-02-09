@@ -11,13 +11,34 @@ function AddGame() {
     const [loader, setLoader] = useState(false);
     const [selectedGame, setSelectedGame] = useState(null);
     const [cover, setCover] = useState(null);
+    const [isInStore, setinStore] = useState(null);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const openModal = (game, cover) => {
-        setIsModalOpen(true)
-        setSelectedGame(game)
+    const checkifAlready = async (id) => {
+        const gData = await fetchData(`store/games/get?id=${id}`);
+        if (gData.gameData) {
+            return true;
+        } else {
+            return false;
+        }
+
+
+    }
+
+    const openModal = async (game, cover) => {
+        const inStore = await checkifAlready(game.id);  // Await the checkifAlready function
+
+        if (inStore) {
+            setinStore(true);
+        } else {
+            setinStore(false);
+        }
+
+        setIsModalOpen(true);
+        setSelectedGame(game);
         setCover(cover);
+
     }
     const closeModal = () => {
         setIsModalOpen(false)
@@ -120,7 +141,7 @@ function AddGame() {
                                         <FaPlus className="inline-block mr-2" /> Add to Store
                                     </button>
 
-                                    <Modal isOpen={isModalOpen} onClose={closeModal} gameInfo={selectedGame} cover={cover}>
+                                    <Modal isOpen={isModalOpen} onClose={closeModal} gameInfo={selectedGame} cover={cover} inStore={isInStore} setInStore={setinStore}>
                                     </Modal>
                                 </div>
                             ))}

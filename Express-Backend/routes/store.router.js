@@ -8,5 +8,6 @@ router.post("/remove-game/", storeController.removeGame);
 router.post("/view-purchases/", storeController.viewPurchases);
 //testing routes only (below) will delete later
 router.post("/delete-all-games/", storeController.removeAllGames);
+router.get("/games/get/", storeController.getGame);
 
 module.exports = router;
