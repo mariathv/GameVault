@@ -13,13 +13,23 @@ const gamesController = {
             if (!search_query) {
                 return res.status(400).json({ error: "Search query required!" });
             }
+            //exact searched (lowercase == upper case)
+            // const body = `fields *; where name ~ "${search_query}";`;
 
-            const body = `fields *; where name ~ "${search_query}";`;
-            const searchData = await fetchIGDB(`games`, body);
+            const body = `fields *; search "${search_query}"; where (version_parent = null) & (name ~ *"${search_query}"*) & (rating != null);`;
+            let searchData = await fetchIGDB(`games`, body);
 
-            if (!searchData) {
-                console.log(chalk.yellow(`[${new Date().toISOString()}] No search data found`));
-                return res.status(200).json({ success: false, message: "No games found" });
+            if (!searchData || searchData.length == 0) {
+
+                const body_alt = `fields *; search "${search_query}";`;
+                const searchData_alt = await fetchIGDB(`games`, body_alt);
+
+                if (!searchData_alt || searchData_alt.length == 0) {
+                    console.log(chalk.yellow(`[${new Date().toISOString()}] No search data found`));
+                    return res.status(200).json({ success: false, message: "No games found" });
+                }
+
+                searchData = searchData_alt;
             }
 
             const coverIds = searchData.map(game => game.cover).filter(Boolean); // Exclude undefined covers
