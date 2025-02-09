@@ -97,6 +97,19 @@ The web application will be running at `http://localhost:5173`.
 
 ## Collaborators
 <!-- readme: contributors -start -->
+<table>
+	<tbody>
+		<tr>
+            <td align="center">
+                <a href="https://github.com/mariathv">
+                    <img src="https://avatars.githubusercontent.com/u/114730306?v=4" width="100;" alt="mariathv"/>
+                    <br />
+                    <sub><b>Maria Naeem Khokhar</b></sub>
+                </a>
+            </td>
+		</tr>
+	<tbody>
+</table>
 <!-- readme: contributors -end -->
 
 ## License
