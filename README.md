@@ -39,10 +39,10 @@ cd GameVault
 
 ### 2. Backend Setup
 
-- Go to the `backend` folder
+- Go to the `Express-Backend` folder
 
 ```bash
-cd backend
+cd Express-Backend
 ```
 
 - Install dependencies
@@ -51,7 +51,7 @@ cd backend
 npm install
 ```
 
-- Set up environment variables (e.g., API keys, MongoDB connection string)
+- Set up environment variables (e.g., API keys, MongoDB connection string, contact @mariathv in case of any issue)
 
 - Start the backend server
 
@@ -79,18 +79,21 @@ npm install
 npm run dev
 ```
 
-The web application will be running at `http://localhost:3000`.
+The web application will be running at `http://localhost:5173`.
 
 ## Documentation & Resources
 
 - **Chakra UI** - A simple, modular, and accessible component library for React:  
 [Chakra UI Docs](https://v2.chakra-ui.com/)
 
+- **Tailwind CSS* - A utility-first CSS framework for rapidly building modern websites
+[TailwindCSS](https://tailwindcss.com/)
+
 - **Font Awesome** - Icon library used for design elements:  
 [Font Awesome](https://fontawesome.com/)
 
-- **Giant Bomb** - Database API for fetching Game Data:
-[Giant Bomb](https://www.giantbomb.com/api/)
+- **IGDB** - Database API for fetching Game Data:
+[IGDB](https://www.igdb.com/api)
 
 ## Collaborators
 
