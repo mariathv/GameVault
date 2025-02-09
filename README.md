@@ -96,15 +96,8 @@ The web application will be running at `http://localhost:5173`.
 [IGDB](https://www.igdb.com/api)
 
 ## Collaborators
-
-<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
-<!-- prettier-ignore-start -->
-<!-- markdownlint-disable -->
-
-<!-- markdownlint-restore -->
-<!-- prettier-ignore-end -->
-
-<!-- ALL-CONTRIBUTORS-LIST:END -->
+<!-- readme: contributors -start -->
+<!-- readme: contributors -end -->
 
 ## License
 
