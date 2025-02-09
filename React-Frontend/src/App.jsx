@@ -27,9 +27,9 @@ function App() {
   }
 
   return (
-    <div className="flex h-screen bg-[#111111]">
+    <div className="flex h-screen bg-[#080C10]">
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-      <main className="flex-1 overflow-x-hidden overflow-y-auto bg-[#111111]">
+      <main className="flex-1 overflow-x-hidden overflow-y-auto bg-[#080C10]">
         <div className="container mx-auto px-6 py-8">
           <h3 className="text-[#EDEDED] text-3xl font-medium">
             {activeTab.replace("-", " ").charAt(0).toUpperCase() + activeTab.slice(1)}

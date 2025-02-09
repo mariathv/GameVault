@@ -1,19 +1,28 @@
-"use client"
-
-import { useState, useEffect } from "react"
-import { FaSearch, FaPlus } from "react-icons/fa"
+import { useState, useEffect } from "react";
+import { FaSearch, FaPlus } from "react-icons/fa";
 import { fetchData } from '../api/api-gamevault';
 import { AspectRatio, Image } from "@chakra-ui/react";
-
-import { Button, Modal, ModalBody, ModalContent, ModalOverlay, ModalHeader, ModalFooter, useDisclosure, ModalCloseButton } from "@chakra-ui/react";
+import Modal from "./Modal";
 
 function AddGame() {
     const [gamesList, setGamesList] = useState();
     const [covers, setGameCovers] = useState();
     const [search, setSearch] = useState('');
     const [loader, setLoader] = useState(false);
+    const [selectedGame, setSelectedGame] = useState(null);
+    const [cover, setCover] = useState(null);
 
-    const { isOpen, onOpen, onClose } = useDisclosure()
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const openModal = (game, cover) => {
+        setIsModalOpen(true)
+        setSelectedGame(game)
+        setCover(cover);
+    }
+    const closeModal = () => {
+        setIsModalOpen(false)
+        setSelectedGame(false);
+    }
 
     function convertImageUrl(url, newSize = "t_1080p") {
         return url.replace(/t_[^/]+/, newSize);
@@ -43,15 +52,10 @@ function AddGame() {
 
                 const gameResponse = await fetchData(`games/search/name/?search_query=${search}`);
 
-                //console.log(gameResponse);
-
-                if (gameResponse.success == true) {
+                if (gameResponse.success === true) {
                     const { sortedGames, sortedCovers } = sortGamesByRating(gameResponse.queryResult, gameResponse.coverResult);
                     setGamesList(sortedGames);
                     setGameCovers(sortedCovers);
-
-                    //console.log("sorted games: ", sortedGames);
-                    //console.log("sorted covers: ", sortedCovers);
                 }
 
                 setLoader(false);
@@ -60,18 +64,14 @@ function AddGame() {
         } catch (error) {
             console.log("Error fetching games", error);
         }
-
     };
-
-
 
     useEffect(() => {
         fetchGames();
-    }, [])
-
+    }, []);
 
     return (
-        <div className="mt-8">
+        <div className={`mt-8`}>
             <div className="mb-4">
                 <div className="relative">
                     <span className="absolute inset-y-0 left-0 flex items-center pl-3">
@@ -89,8 +89,6 @@ function AddGame() {
                             }
                         }}
                     />
-
-
                 </div>
             </div>
             {gamesList && !loader && (
@@ -107,7 +105,7 @@ function AddGame() {
                             gamesList && gamesList.map((game, index) => (
                                 <div key={game.id} className="bg-[#1D1D1D] p-4 rounded-lg shadow flex flex-col">
                                     <div className="mb-3">
-                                        <AspectRatio maxW="auto" ratio={4 / 5}>
+                                        <AspectRatio maxW="auto" ratio={3 / 4}>
                                             <Image
                                                 src={convertImageUrl(covers[index].url) || 'fallback_image_url.jpg'}
                                                 borderTopRadius="10"
@@ -116,35 +114,24 @@ function AddGame() {
                                         </AspectRatio>
                                     </div>
                                     <h3 className="text-x font-semibold mb-2 text-[#EDEDED]">{game.name}</h3>
-                                    {/* Content area */}
-                                    <div className="flex-grow" /> {/* This takes available space and pushes the button down */}
-                                    <button className="bn3">
+                                    <div className="flex-grow" />
+
+                                    <button className="bn3" onClick={() => openModal(game, covers[index].url)}>
                                         <FaPlus className="inline-block mr-2" /> Add to Store
                                     </button>
-                                    <button className="btn" onClick={() => document.getElementById('my_modal_4').showModal()}>open modal</button>
-                                    <dialog id="my_modal_4" className="modal">
-                                        <div className="modal-box w-11/12 max-w-5xl">
-                                            <h3 className="font-bold text-lg">Hello!</h3>
-                                            <p className="py-4">Click the button below to close</p>
-                                            <div className="modal-action">
-                                                <form method="dialog">
-                                                    {/* if there is a button, it will close the modal */}
-                                                    <button className="btn">Close</button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </dialog>
+
+                                    <Modal isOpen={isModalOpen} onClose={closeModal} gameInfo={selectedGame} cover={cover}>
+                                    </Modal>
                                 </div>
                             ))}
                     </>
                 )}
             </div>
-
         </div >
-    )
+    );
 }
 
-export default AddGame
+export default AddGame;
 {
     /*
     *** add a functionality -> (more) in search, which will fetch the next 20 games and so on
@@ -152,4 +139,3 @@ export default AddGame
     *** search result (on every key input) ? + bug fix
     */
 }
-

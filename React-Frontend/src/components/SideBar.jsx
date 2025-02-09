@@ -9,7 +9,7 @@ function Sidebar({ activeTab, setActiveTab }) {
     ]
 
     return (
-        <div className="flex flex-col w-64 bg-[#1D1D1D]">
+        <div className="flex flex-col w-64 bg-[#141B26]">
             <div className="flex items-center justify-center h-20 shadow-md">
                 <h1 className="text-3xl uppercase text-white">
                     <FaGamepad className="inline-block mr-2" />
