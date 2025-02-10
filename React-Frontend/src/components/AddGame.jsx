@@ -18,7 +18,7 @@ function AddGame() {
     const checkifAlready = async (id) => {
         const gData = await fetchData(`store/games/get?id=${id}`);
         if (gData.gameData) {
-            return true;
+            return gData;
         } else {
             return false;
         }
@@ -30,13 +30,15 @@ function AddGame() {
         const inStore = await checkifAlready(game.id);  // Await the checkifAlready function
 
         if (inStore) {
+            console.log("setting in game");
+            setSelectedGame(inStore.gameData);
             setinStore(true);
         } else {
+            setSelectedGame(game);
             setinStore(false);
         }
 
         setIsModalOpen(true);
-        setSelectedGame(game);
         setCover(cover);
 
     }

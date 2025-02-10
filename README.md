@@ -4,6 +4,24 @@
 ![image](https://github.com/user-attachments/assets/948fae05-58ab-44d3-adec-d6e85c90e4c1)
 
 
+## Documentation & Resources
+
+- **API** - API Documentation
+[PostMan API Documentation](https://documenter.getpostman.com/view/39145685/2sAYX9o1aE)
+
+- **Chakra UI** - A simple, modular, and accessible component library for React:  
+[Chakra UI Docs](https://v2.chakra-ui.com/)
+
+- **Tailwind CSS* - A utility-first CSS framework for rapidly building modern websites:
+[TailwindCSS](https://tailwindcss.com/)
+
+- **Font Awesome** - Icon library used for design elements:  
+[Font Awesome](https://fontawesome.com/)
+
+- **IGDB** - Database API for fetching Game Data:
+[IGDB](https://www.igdb.com/api)
+
+
 
 ## Description
 **GameVault** is a web-based platform where users can purchase video games, top-up in-game currencies, and explore game details. The platform integrates external APIs (like Steam and RAWG) to fetch game data while utilizing a custom backend for user management, transactions, and digital purchases.
@@ -82,19 +100,7 @@ npm run dev
 
 The web application will be running at `http://localhost:5173`.
 
-## Documentation & Resources
 
-- **Chakra UI** - A simple, modular, and accessible component library for React:  
-[Chakra UI Docs](https://v2.chakra-ui.com/)
-
-- **Tailwind CSS* - A utility-first CSS framework for rapidly building modern websites
-[TailwindCSS](https://tailwindcss.com/)
-
-- **Font Awesome** - Icon library used for design elements:  
-[Font Awesome](https://fontawesome.com/)
-
-- **IGDB** - Database API for fetching Game Data:
-[IGDB](https://www.igdb.com/api)
 
 ## Collaborators
 <!-- readme: contributors -start -->
