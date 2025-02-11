@@ -14,6 +14,7 @@ const Modal = ({ isOpen, onClose, gameInfo, setgameInfo, cover, inStore, setInSt
     const [isShowMore, setShowMore] = useState(false);
 
     const [gameId, setGameId] = useState(gameInfo?._id || null);
+    const [copies, setCopies] = useState(gameInfo?.gameKeys?.length || null);
 
     const [err, setErr] = useState(null);
 
@@ -63,6 +64,27 @@ const Modal = ({ isOpen, onClose, gameInfo, setgameInfo, cover, inStore, setInSt
 
     };
 
+    const downloadCSV = () => {
+        if (!gameInfo?.gameKeys || gameInfo?.gameKeys?.length === 0) {
+            console.log("No keys available to download.");
+            return;
+        }
+
+        const csvContent = "data:text/csv;charset=utf-8," + gameInfo.gameKeys.join("\n");
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "game_keys.csv");
+
+        document.body.appendChild(link);
+
+        console.log("downloading");
+        link.click();
+        document.body.removeChild(link);
+    };
+
+
 
 
 
@@ -95,6 +117,7 @@ const Modal = ({ isOpen, onClose, gameInfo, setgameInfo, cover, inStore, setInSt
             setInStore(true);
             setgameInfo(newGame);
             setGameId(reqapi.gameId);
+            setCopies(gameKeys.length);
         } catch (error) {
             console.log("Error:", error);
             return;
@@ -136,6 +159,8 @@ const Modal = ({ isOpen, onClose, gameInfo, setgameInfo, cover, inStore, setInSt
 
             console.log("sending update", newGame);
             const reqapi = await apiRequest("store/games/update/", { update: newGame });
+
+            setCopies(newGame.gameKeys.length);
 
             if (!reqapi.success) {
                 console.log("Error: Failed to update game!");
@@ -262,10 +287,10 @@ const Modal = ({ isOpen, onClose, gameInfo, setgameInfo, cover, inStore, setInSt
                                     </button>
                                 </div>
                             </>) : (<>
-                                <h1 className="text-[#7471A4] mt-5 border-solid border-b-2 rounded-md p-1 pl-3"> Already in Store </h1>
+                                <h1 className="text-[#7471A4] mt-5 border-solid border-b-2 rounded-md p-1 pl-3"> Available in Store </h1>
                                 <div className="flex flex-row gap-5">
                                     <div className="text-[#f1eded] mt-8  p-1 pl-3">
-                                        <h1> Copies : {constGameKeys?.length}</h1>
+                                        <h1> Copies : {copies}</h1>
                                         <h1> Price : ${gameInfo?.price || price}</h1>
                                     </div>
                                     <div className="text-[#f1eded] mt-5 p-1 pl-3">
@@ -291,12 +316,18 @@ const Modal = ({ isOpen, onClose, gameInfo, setgameInfo, cover, inStore, setInSt
                                     </div>
 
                                 </div>
-                                <div>
+                                <div className="flex flex-row gap-4">
                                     <button
                                         onClick={removeStoreGame}
-                                        className="px-2 py-1 mt-3 bg-[#0D151D] text-[#EDEDED] rounded hover:bg-[#030404] focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 flex items-center gap-2"
+                                        className="px-2 py-1 mt-3 bg-[#0D151D] text-[#EDEDED] rounded hover:bg-[#030404] focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 flex items-center gap-2 border-1 border-black "
                                     >
                                         <i className="fas fa-trash"></i> Remove Entry From Store
+                                    </button>
+                                    <button
+                                        onClick={downloadCSV}
+                                        className="px-2 py-1 mt-3 bg-[#1c2b3a] text-[#EDEDED] rounded hover:bg-[#030404] focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 flex items-center gap-2"
+                                    >
+                                        <i className="fas fa-download"></i> Download Keys (.csv)
                                     </button>
 
                                 </div>
