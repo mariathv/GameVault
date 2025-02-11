@@ -10,8 +10,6 @@ const connectToMongo = async () => {
         client = new MongoClient(uri);
         await client.connect();
         console.log("Connected to MongoDB!");
-    } else {
-        console.log("Reusing existing MongoDB client");
     }
     return client;
 };

@@ -51,6 +51,37 @@ const storeController = {
             return res.status(500).json({ success: false, message: "Failed to add game to store", error: error.message });
         }
     },
+    updateGame: async (req, res) => {
+        const { update } = req.body;
+
+
+
+        if (!update) {
+            console.log("error no update specified");
+            return res.status(400).json({ success: false, message: "No update specified" });
+        }
+
+        let id = update._id;
+        console.log(id);
+        try {
+            const client = await connectToMongo();
+            const database = client.db("game-vault");
+            const storeCollection = database.collection("StoreGames");
+
+            const result = await storeCollection.replaceOne({ _id: id }, update);
+
+            if (result.matchedCount === 0) {
+                return res.status(404).json({ success: false, message: "Game not found" });
+            }
+
+            return res.status(200).json({ success: true, message: "Game updated successfully" });
+
+        } catch (error) {
+            console.error("Error updating game:", error);
+            return res.status(500).json({ success: false, message: "Failed to update game in store", error: error.message });
+        }
+    },
+
     getGame: async (req, res) => {
         const { id } = req.query;
         if (!id) {
@@ -81,7 +112,32 @@ const storeController = {
 
     },
     removeGame: async (req, res) => {
-        //someone else???
+        const { gameId } = req.body;
+
+        if (!gameId) {
+            return res.status(400).json({ success: false, message: "Game ID is missing!" });
+        }
+
+        try {
+            const client = await connectToMongo();
+            const database = client.db("game-vault");
+            const storeCollection = database.collection("StoreGames");
+
+            console.log("delete", gameId);
+
+            const result = await storeCollection.deleteOne({ _id: gameId });
+
+            if (result.deletedCount === 0) {
+                return res.status(404).json({ success: false, message: "Game not found with the given ID." });
+            }
+
+            console.log(`Game with ID: ${gameId} removed successfully.`);
+            return res.status(200).json({ success: true, message: "Game successfully removed from store" });
+
+        } catch (error) {
+            console.error("Error removing game:", error);
+            return res.status(500).json({ success: false, message: "Failed to remove game from store", error: error.message });
+        }
     },
 
     viewPurchases: async (req, res) => {
@@ -105,6 +161,24 @@ const storeController = {
             return res.status(400).json({ success: false, message: "Failed to delete collection." });
         }
     },
+
+    getAllGames: async (req, res) => {
+        try {
+            const client = await connectToMongo();
+            const database = client.db("game-vault");
+            const storeCollection = database.collection("StoreGames");
+
+            const games = await storeCollection.find().toArray(); // Fetch all games from the collection
+            if (games.length === 0) {
+                return res.status(404).json({ success: false, message: "No games found in the collection." });
+            }
+            return res.status(200).json({ success: true, games });
+        } catch (error) {
+            console.error("Error fetching games:", error);
+            return res.status(500).json({ success: false, message: "Failed to fetch games." });
+        }
+    }
+
 
 };
 

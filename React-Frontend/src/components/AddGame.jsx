@@ -12,6 +12,7 @@ function AddGame() {
     const [selectedGame, setSelectedGame] = useState(null);
     const [cover, setCover] = useState(null);
     const [isInStore, setinStore] = useState(null);
+    const [lastSearchedQuery, setLastSearchedQuery] = useState("");
 
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -30,7 +31,6 @@ function AddGame() {
         const inStore = await checkifAlready(game.id);  // Await the checkifAlready function
 
         if (inStore) {
-            console.log("setting in game");
             setSelectedGame(inStore.gameData);
             setinStore(true);
         } else {
@@ -69,6 +69,7 @@ function AddGame() {
     }
 
     const fetchGames = async () => {
+        setGamesList(null);
         try {
             if (search) {
                 setLoader(true);
@@ -79,6 +80,8 @@ function AddGame() {
                     const { sortedGames, sortedCovers } = sortGamesByRating(gameResponse.queryResult, gameResponse.coverResult);
                     setGamesList(sortedGames);
                     setGameCovers(sortedCovers);
+
+                    setLastSearchedQuery(search);
                 }
 
                 setLoader(false);
@@ -114,9 +117,10 @@ function AddGame() {
                     />
                 </div>
             </div>
-            {gamesList && !loader && (
-                <h1 className="text-[#EDEDED] mb-3">Search result for "{search}"</h1>
+            {gamesList && !loader && lastSearchedQuery && (
+                <h1 className="text-[#EDEDED] mb-3">Search result for "{lastSearchedQuery}"</h1>
             )}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                 {loader ? (
                     <div className="loader-container">
@@ -143,7 +147,7 @@ function AddGame() {
                                         <FaPlus className="inline-block mr-2" /> Add to Store
                                     </button>
 
-                                    <Modal isOpen={isModalOpen} onClose={closeModal} gameInfo={selectedGame} cover={cover} inStore={isInStore} setInStore={setinStore}>
+                                    <Modal isOpen={isModalOpen} onClose={closeModal} gameInfo={selectedGame} setgameInfo={setSelectedGame} cover={cover} inStore={isInStore} setInStore={setinStore} fetchGamesFunc={null}>
                                     </Modal>
                                 </div>
                             ))}
