@@ -14,6 +14,7 @@ function AddGame() {
     const [isInStore, setinStore] = useState(null);
     const [lastSearchedQuery, setLastSearchedQuery] = useState("");
 
+
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const checkifAlready = async (id) => {

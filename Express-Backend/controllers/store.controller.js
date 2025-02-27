@@ -170,7 +170,7 @@ const storeController = {
 
             const games = await storeCollection.find().toArray(); // Fetch all games from the collection
             if (games.length === 0) {
-                return res.status(404).json({ success: false, message: "No games found in the collection." });
+                return res.status(200).json({ success: true, games: [], message: "No games found in the collection." });
             }
             return res.status(200).json({ success: true, games });
         } catch (error) {
@@ -178,6 +178,7 @@ const storeController = {
             return res.status(500).json({ success: false, message: "Failed to fetch games." });
         }
     }
+
 
 
 };

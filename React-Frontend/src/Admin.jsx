@@ -7,8 +7,9 @@ import ViewGames from "./components/ViewGames"
 import Purchases from "./components/Purchases"
 import Settings from "./components/Settings"
 import "./styles/GameStoreAdmin.css"
+import "./styles/Global.css"
 
-function App() {
+function AdminApp() {
   const [activeTab, setActiveTab] = useState("add-game")
 
   const renderContent = () => {
@@ -41,5 +42,5 @@ function App() {
   )
 }
 
-export default App
+export default AdminApp
 
