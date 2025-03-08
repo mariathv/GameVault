@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { FaSearch, FaPlus } from "react-icons/fa";
-import { fetchData } from '../api/api-gamevault';
+import { fetchData } from '../hooks/api/api-gamevault';
 import { AspectRatio, Image } from "@chakra-ui/react";
 import Modal from "./Modal";
 
@@ -20,8 +20,11 @@ function AddGame() {
     const checkifAlready = async (id) => {
         const gData = await fetchData(`store/games/get?id=${id}`);
         if (gData.gameData) {
+
+            console.log("Game in store", gData);
             return gData;
         } else {
+            console.log("Game not in store");
             return false;
         }
 
@@ -31,10 +34,13 @@ function AddGame() {
     const openModal = async (game, cover) => {
         const inStore = await checkifAlready(game.id);  // Await the checkifAlready function
 
+
         if (inStore) {
+            console.log("in store");
             setSelectedGame(inStore.gameData);
             setinStore(true);
         } else {
+            console.log("not in store");
             setSelectedGame(game);
             setinStore(false);
         }

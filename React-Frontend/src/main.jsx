@@ -18,17 +18,15 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
       {isAdmin ? (
-        <ChakraProvider>
-          <CartProvider>
-            <LoadingBarContainer>
-              <Routes>
-                <Route path="/" element={<HomeGameStore />} />
-                <Route path="/cart" element={<CartPage />} />
-                <Route path="/admin" element={<AdminApp />} />
-              </Routes>
-            </LoadingBarContainer>
-          </CartProvider>
-        </ChakraProvider>
+        <CartProvider>
+          <LoadingBarContainer>
+            <Routes>
+              <Route path="/" element={<AdminApp />} />
+              <Route path="/cart" element={<CartPage />} />
+              <Route path="/admin" element={<AdminApp />} />
+            </Routes>
+          </LoadingBarContainer>
+        </CartProvider>
       ) : (
         <CartProvider>
           <LoadingBarContainer>
@@ -43,3 +41,10 @@ createRoot(document.getElementById('root')).render(
     </BrowserRouter>
   </StrictMode>
 );
+
+/*
+ADMIN:
+-> display games before searching too
+-> settings : only display base games or dlcs?
+
+*/

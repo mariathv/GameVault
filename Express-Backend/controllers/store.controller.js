@@ -167,17 +167,29 @@ const storeController = {
             const client = await connectToMongo();
             const database = client.db("game-vault");
             const storeCollection = database.collection("StoreGames");
+            const sortBy = req.query.sortBy || "hypes";
+            const limit = parseInt(req.query.limit) || 10;
+            const page = parseInt(req.query.page) || 1;
+            const skip = (page - 1) * limit;
 
-            const games = await storeCollection.find().toArray(); // Fetch all games from the collection
+            const games = await storeCollection
+                .find()
+                .sort({ [sortBy]: -1 })
+                .skip(skip)
+                .limit(limit)
+                .toArray();
+
             if (games.length === 0) {
-                return res.status(200).json({ success: true, games: [], message: "No games found in the collection." });
+                return res.status(200).json({ success: true, games: [], message: "No games found." });
             }
+
             return res.status(200).json({ success: true, games });
         } catch (error) {
             console.error("Error fetching games:", error);
             return res.status(500).json({ success: false, message: "Failed to fetch games." });
         }
     }
+
 
 
 

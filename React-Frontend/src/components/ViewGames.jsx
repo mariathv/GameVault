@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { AspectRatio, Image } from "@chakra-ui/react";
 import Modal from "./Modal";
-import { fetchData } from "../api/api-gamevault";
+import { fetchData } from "../hooks/api/api-gamevault";
 import { FaSearch, FaPlus, FaEdit } from "react-icons/fa";
 
 function ViewGames() {

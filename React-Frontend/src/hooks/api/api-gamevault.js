@@ -2,7 +2,6 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 
 export const fetchData = async (endpoint) => {
-    console.log("base url ", API_BASE_URL);
     let success = false;
     while (!success) {
         try {

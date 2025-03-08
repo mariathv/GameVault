@@ -1,3 +1,5 @@
+import { fetchData } from "@/src/hooks/api/api-gamevault"
+
 // Mock data for genres and games
 export const genres = ["Action", "Adventure", "RPG", "Strategy", "Sports", "Racing", "Simulation", "Indie"]
 
@@ -436,7 +438,6 @@ export const CartState = {
     total: null
 }
 
-// Mock cart data
 export const initialCart = {
     items: [],
     subtotal: 0,
@@ -447,21 +448,21 @@ export const initialCart = {
 // Helper functions
 export const calculateCartTotals = (items) => {
     const subtotal = items.reduce((total, item) => {
-        const game = games.find((g) => g.id === item.gameId)
-        if (!game) return total
+        const game = item.game; // No need to look up game, it's already in the cart
+        if (!game) return total;
 
-        const price = game.onSale ? game.price * (1 - game.discount / 100) : game.price
+        const price = game.onSale ? game.price * (1 - game.discount / 100) : game.price;
+        return total + price * item.quantity;
+    }, 0);
 
-        return total + price * item.quantity
-    }, 0)
-
-    const tax = subtotal * 0.08 // 8% tax
-    const total = subtotal + tax
+    const tax = subtotal * 0.08; // 8% tax
+    const total = subtotal + tax;
 
     return {
         subtotal: Number.parseFloat(subtotal.toFixed(2)),
         tax: Number.parseFloat(tax.toFixed(2)),
         total: Number.parseFloat(total.toFixed(2)),
-    }
-}
+    };
+};
+
 

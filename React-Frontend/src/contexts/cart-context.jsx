@@ -8,9 +8,8 @@ const CartContext = createContext(undefined);
 export function CartProvider({ children }) {
     const [cart, setCart] = useState(initialCart);
 
-    // Load cart from localStorage on initial render
     useEffect(() => {
-        const savedCart = localStorage.getItem("cart");
+        const savedCart = localStorage.getItem("gameVaultCart");
         if (savedCart) {
             try {
                 const parsedCart = JSON.parse(savedCart);
@@ -21,48 +20,43 @@ export function CartProvider({ children }) {
         }
     }, []);
 
-    // Save cart to localStorage whenever it changes
     useEffect(() => {
-        localStorage.setItem("cart", JSON.stringify(cart));
+        localStorage.setItem("gameVaultCart", JSON.stringify(cart));
     }, [cart]);
 
-    const addToCart = (gameId) => {
+    const addToCart = (game) => {
+        console.log('adding to cart', game);
         setCart((prevCart) => {
-            const existingItem = prevCart.items.find((item) => item.gameId === gameId);
-
+            const existingItem = prevCart.items.find((item) => item.game.id === game.id);
             let updatedItems;
+
             if (existingItem) {
                 updatedItems = prevCart.items.map((item) =>
-                    item.gameId === gameId ? { ...item, quantity: item.quantity + 1 } : item
+                    item.game.id === game.id ? { ...item, quantity: item.quantity + 1 } : item
                 );
             } else {
-                updatedItems = [...prevCart.items, { gameId, quantity: 1 }];
+                updatedItems = [...prevCart.items, { game, quantity: 1 }];
             }
+
+            console.log(updatedItems);
 
             const { subtotal, tax, total } = calculateCartTotals(updatedItems);
 
-            return {
-                items: updatedItems,
-                subtotal,
-                tax,
-                total,
-            };
+            console.log(total, tax, subtotal);
+            return { items: updatedItems, subtotal, tax, total };
         });
     };
+
 
     const removeFromCart = (gameId) => {
         setCart((prevCart) => {
-            const updatedItems = prevCart.items.filter((item) => item.gameId !== gameId);
+            const updatedItems = prevCart.items.filter((item) => item.game.id !== gameId);
             const { subtotal, tax, total } = calculateCartTotals(updatedItems);
 
-            return {
-                items: updatedItems,
-                subtotal,
-                tax,
-                total,
-            };
+            return { items: updatedItems, subtotal, tax, total };
         });
     };
+
 
     const updateQuantity = (gameId, quantity) => {
         if (quantity < 1) {
@@ -72,19 +66,15 @@ export function CartProvider({ children }) {
 
         setCart((prevCart) => {
             const updatedItems = prevCart.items.map((item) =>
-                item.gameId === gameId ? { ...item, quantity } : item
+                item.game.id === gameId ? { ...item, quantity } : item
             );
 
             const { subtotal, tax, total } = calculateCartTotals(updatedItems);
 
-            return {
-                items: updatedItems,
-                subtotal,
-                tax,
-                total,
-            };
+            return { items: updatedItems, subtotal, tax, total };
         });
     };
+
 
     const clearCart = () => {
         setCart(initialCart);

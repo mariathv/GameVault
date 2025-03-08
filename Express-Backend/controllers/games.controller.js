@@ -115,6 +115,93 @@ const gamesController = {
 
         return res.status(200).json({ success: true, queryResult: gamesInfos });
     },
+
+    getGameArtworks: async (req, res) => {
+        const { ids } = req.query;
+
+        const artworkIds = Array.isArray(ids) ? ids : ids.split(",");
+
+        const body = `fields *; where id = (${artworkIds});`
+
+        if (artworkIds.length === 0) {
+            return res.status(400).json({ error: "At least one ID is required!" });
+        }
+
+        const artworksData = await fetchIGDB("artworks", body);
+
+        if (!artworksData) {
+            console.log(chalk.yellow(`[${new Date().toISOString()}] ⚠️ No valid art data found`));
+            return res.status(400).json({ error: "art info not found" });
+        }
+
+
+        return res.status(200).json({ success: true, queryResult: artworksData });
+
+    },
+
+    getGameScreenshots: async (req, res) => {
+        const { ids } = req.query;
+
+        const screenshotsIds = Array.isArray(ids) ? ids : ids.split(",");
+
+        const body = `fields *; where id = (${screenshotsIds});`
+
+        if (screenshotsIds.length === 0) {
+            return res.status(400).json({ error: "At least one ID is required!" });
+        }
+
+        const screenshotsData = await fetchIGDB("screenshots", body);
+
+        if (!screenshotsData) {
+            console.log(chalk.yellow(`[${new Date().toISOString()}] ⚠️ No valid ss data found`));
+            return res.status(400).json({ error: "ss info not found" });
+        }
+
+
+        return res.status(200).json({ success: true, queryResult: screenshotsData });
+    },
+    getGameGenres: async (req, res) => {
+        const { ids } = req.query;
+
+        const gameGenresIds = Array.isArray(ids) ? ids : ids.split(",");
+
+        const body = `fields *; where id = (${gameGenresIds});`
+
+        if (gameGenresIds.length === 0) {
+            return res.status(400).json({ error: "At least one ID is required!" });
+        }
+
+        const genres = await fetchIGDB("genres", body);
+
+        if (!genres) {
+            console.log(chalk.yellow(`[${new Date().toISOString()}] ⚠️ No valid genre data found`));
+            return res.status(400).json({ error: "genre info not found" });
+        }
+
+
+        return res.status(200).json({ success: true, queryResult: genres });
+    },
+    getGameVideos: async (req, res) => {
+        const { ids } = req.query;
+
+        const gameVideosIds = Array.isArray(ids) ? ids : ids.split(",");
+
+        const body = `fields *; where id = (${gameVideosIds});`
+
+        if (gameVideosIds.length === 0) {
+            return res.status(400).json({ error: "At least one ID is required!" });
+        }
+
+        const vids = await fetchIGDB("game_videos", body);
+
+        if (!vids) {
+            console.log(chalk.yellow(`[${new Date().toISOString()}] ⚠️ No valid vid data found`));
+            return res.status(400).json({ error: "vid info not found" });
+        }
+
+
+        return res.status(200).json({ success: true, queryResult: vids });
+    }
 };
 
 module.exports = gamesController;

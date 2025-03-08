@@ -2,7 +2,8 @@
 
 import { useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
-
+import { fetchData } from '@/src/hooks/api/api-gamevault';
+import YouTubeVideo from "@/src/components/VideoPlayer";
 import {
     Star,
     ShoppingCart,
@@ -21,6 +22,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Header from "@/src/components/Header"
 import { games } from "@/dummydata-lib/data"
 import { useCart } from "@/src/contexts/cart-context"
+import { useEffect } from "react"
 
 export default function GamePage() {
     const { id } = useParams();
@@ -28,7 +30,59 @@ export default function GamePage() {
     const [activeTab, setActiveTab] = useState("overview")
     const [activeScreenshot, setActiveScreenshot] = useState(0)
     const gameId = Number.parseInt(id)
-    const game = games.find((g) => g.id === gameId)
+    const [game, setGame] = useState(null);
+    const navigate = useNavigate();
+    const [artworks, setArtworks] = useState(null);
+    const [screenshots, setScreenshots] = useState(null);
+    const [genres, setGenres] = useState(null);
+    const [videos, setVideos] = useState(null);
+
+    const fetchGameData = async () => {
+        let fetch = await fetchData(`store/games/get?id=${gameId}`);
+        console.log("fetch", fetch.gameData);
+        setGame(fetch.gameData);
+        fetchGameArtworks(fetch.gameData.artworks);
+        fetchGameScreenshots(fetch.gameData.screenshots);
+        fetchGameGenres(fetch.gameData.genres);
+        fetchGameVideos(fetch.gameData.videos);
+    }
+
+    const fetchGameArtworks = async (artworks) => {
+
+        let fetch = await fetchData(`games/get/artworks?ids=${artworks}`)
+        setArtworks(fetch.queryResult);
+        console.log(fetch.queryResult);
+    }
+
+    const fetchGameScreenshots = async (screenshots) => {
+
+        let fetch = await fetchData(`games/get/screenshots?ids=${screenshots}`)
+        setScreenshots(fetch.queryResult);
+        console.log(fetch.queryResult);
+    }
+
+    const fetchGameGenres = async (genres) => {
+        let fetch = await fetchData(`games/get/genres?ids=${genres}`);
+        console.log("genres", fetch.queryResult);
+        setGenres(fetch.queryResult);
+    }
+
+    const fetchGameVideos = async (videos) => {
+        let fetch = await fetchData(`games/get/videos?ids=${videos}`);
+        console.log("vids", fetch.queryResult);
+        setVideos(fetch.queryResult);
+    }
+
+    useEffect(() => {
+        console.log("gonna fetch");
+        if (game == null || !game)
+            fetchGameData();
+    }, [])
+
+    function createImageUrl(id) {
+        return `https://images.igdb.com/igdb/image/upload/t_1080p/${id}.jpg`
+    }
+
 
     if (!game) {
         return (
@@ -53,9 +107,15 @@ export default function GamePage() {
                 <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
                     {/* Left Column - Game Images */}
                     <div className="lg:col-span-2">
-                        <div className="mb-4 overflow-hidden rounded-lg">
+                        <div className="aspect-video mb-4 overflow-hidden rounded-lg">
                             <img
-                                src={activeScreenshot === 0 ? game.image : game.screenshots[activeScreenshot - 1]}
+                                src={
+                                    activeScreenshot === 0 && artworks && artworks.length > 0
+                                        ? createImageUrl(artworks[0]?.image_id)
+                                        : screenshots && screenshots.length > 0
+                                            ? createImageUrl(screenshots[activeScreenshot - 1]?.image_id)
+                                            : "/placeholder.svg" // Fallback image if screenshots are null or empty
+                                }
                                 alt={game.title}
                                 className="w-full h-auto object-cover"
                             />
@@ -67,20 +127,20 @@ export default function GamePage() {
                                 className={`overflow-hidden rounded-md border-2 ${activeScreenshot === 0 ? "border-[#EDEDED]" : "border-transparent"}`}
                             >
                                 <img
-                                    src={game.image || "/placeholder.svg"}
+                                    src={artworks && createImageUrl(artworks[0]?.image_id) || "/placeholder.svg"}
                                     alt="Main"
                                     className="w-full h-auto object-cover aspect-video"
                                 />
                             </button>
 
-                            {game.screenshots.map((screenshot, index) => (
+                            {screenshots?.slice(0, 4).map((screenshot, index) => (
                                 <button
                                     key={index}
                                     onClick={() => setActiveScreenshot(index + 1)}
                                     className={`overflow-hidden rounded-md border-2 ${activeScreenshot === index + 1 ? "border-[#EDEDED]" : "border-transparent"}`}
                                 >
                                     <img
-                                        src={screenshot || "/placeholder.svg"}
+                                        src={createImageUrl(screenshot.image_id) || "/placeholder.svg"}
                                         alt={`Screenshot ${index + 1}`}
                                         className="w-full h-auto object-cover aspect-video"
                                     />
@@ -91,19 +151,31 @@ export default function GamePage() {
 
                     {/* Right Column - Game Info */}
                     <div>
-                        <h1 className="text-3xl font-bold text-[#EDEDED] mb-2">{game.title}</h1>
+                        <h1 className="text-3xl font-bold text-[#EDEDED] mb-2">{game.name}</h1>
 
-                        <div className="flex items-center gap-2 mb-4">
+                        <div className="flex items-center gap-2 mb-4 text-amber-50">
                             <Badge variant="outline" className="border-[#EDEDED]/20 bg-[#EDEDED]/5">
                                 <Star className="mr-1 h-3 w-3 fill-current text-yellow-500" />
-                                {game.rating}
+                                {game.rating ? game.rating.toFixed(1) : "-"}
                             </Badge>
-                            <Badge variant="outline" className="border-[#EDEDED]/20 bg-[#EDEDED]/5">
-                                {game.genre}
-                            </Badge>
+                            <div className="flex flex-wrap gap-2">
+                                {genres && genres.length > 0 ? (
+                                    genres.slice(0, 3).map((genre, index) => (
+                                        <Badge key={index} variant="outline" className="border-[#EDEDED]/20 bg-[#EDEDED]/5">
+                                            {genre.name}
+                                        </Badge>
+                                    ))
+                                ) : (
+                                    <Badge variant="outline" className="border-[#EDEDED]/20 bg-[#EDEDED]/5">
+                                        No Genre
+                                    </Badge>
+                                )}
+                            </div>
+
+
                         </div>
 
-                        <p className="text-[#EDEDED]/80 mb-6">{game.description}</p>
+                        <p className="text-[#EDEDED]/80 mb-6">{game.summary}</p>
 
                         <div className="mb-6">
                             {game.onSale ? (
@@ -120,7 +192,7 @@ export default function GamePage() {
                         <div className="flex flex-col gap-3 mb-6">
                             <Button
                                 className="w-full bg-[#EDEDED] text-[#030404] hover:bg-[#EDEDED]/90"
-                                onClick={() => addToCart(game.id)}
+                                onClick={() => addToCart(game)}
                             >
                                 <ShoppingCart className="mr-2 h-4 w-4" />
                                 Add to Cart
@@ -142,9 +214,12 @@ export default function GamePage() {
                 {/* Tabs Section */}
                 <div className="mt-12">
                     <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab}>
-                        <TabsList className="bg-[#EDEDED]/5 border-b border-[#EDEDED]/10">
+                        <TabsList className="bg-[#EDEDED]/5 border-b border-[#EDEDED]/10 text-[#EDEDED]">
                             <TabsTrigger value="overview" className="data-[state=active]:bg-[#EDEDED]/10">
                                 Overview
+                            </TabsTrigger>
+                            <TabsTrigger value="trailer" className="data-[state=active]:bg-[#EDEDED]/10">
+                                Trailer
                             </TabsTrigger>
                             <TabsTrigger value="features" className="data-[state=active]:bg-[#EDEDED]/10">
                                 Features
@@ -152,15 +227,25 @@ export default function GamePage() {
                             <TabsTrigger value="system" className="data-[state=active]:bg-[#EDEDED]/10">
                                 System Requirements
                             </TabsTrigger>
+
                         </TabsList>
 
                         <TabsContent value="overview" className="pt-6">
-                            <p className="text-[#EDEDED]/80 whitespace-pre-line">{game.longDescription}</p>
+                            <p className="text-[#EDEDED]/80 whitespace-pre-line">{game.storyline || game.summary}</p>
+
                         </TabsContent>
+
+                        <TabsContent value="trailer" className="pt-6">
+                            <div className="max-w-4xl mt-10">
+                                {videos && <YouTubeVideo videoId={videos[0].video_id} title={`${game.name} - Official Trailer`} />
+                                }
+                            </div>
+                        </TabsContent>
+
 
                         <TabsContent value="features" className="pt-6">
                             <div className="grid gap-4 md:grid-cols-2">
-                                {game.features.map((feature) => (
+                                {game.features?.map((feature) => (
                                     <div key={feature} className="flex items-start gap-2">
                                         <Check className="h-5 w-5 text-green-400 mt-0.5" />
                                         <span>{feature}</span>
@@ -170,8 +255,8 @@ export default function GamePage() {
                         </TabsContent>
 
                         <TabsContent value="system" className="pt-6">
-                            <p className="text-[#EDEDED]/80">Minimum: {game.systemRequirements.minimum.os}</p>
-                            <p className="text-[#EDEDED]/80">Recommended: {game.systemRequirements.recommended.os}</p>
+                            <p className="text-[#EDEDED]/80">Minimum: {game.systemRequirements?.minimum.os}</p>
+                            <p className="text-[#EDEDED]/80">Recommended: {game.systemRequirements?.recommended.os}</p>
                         </TabsContent>
                     </Tabs>
                 </div>

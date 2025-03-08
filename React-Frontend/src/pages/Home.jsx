@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -8,15 +8,29 @@ import { Link } from "react-router-dom"
 import { Badge } from "@/components/ui/badge"
 import Header from "../components/Header"
 import { games, genres } from "@/dummydata-lib/data"
-
+import { fetchData } from '../hooks/api/api-gamevault';
+import GamesGrid from "../components/GamesGrid"
 export default function HomePage() {
     const [selectedGenre, setSelectedGenre] = useState("All")
     const [searchQuery, setSearchQuery] = useState("")
+    const [popularGames, setPopularGames] = useState(null);
 
     const filteredGames = games.filter((game) => {
         const matchesGenre = selectedGenre === "All" || game.genre === selectedGenre
         return matchesGenre
     })
+    const fetchPopularGames = async () => {
+        let fetch = await fetchData("store/games/get-all/?sortBy=hypes&limit=5");
+        console.log("fetched pop", fetch);
+        setPopularGames(fetch.games);
+    }
+
+    useEffect(() => {
+        console.log("gonna fetch");
+        if (popularGames == null || !popularGames)
+            fetchPopularGames();
+    }, [])
+
 
     return (
         <div className="min-h-screen bg-[#14202C]">
@@ -48,51 +62,9 @@ export default function HomePage() {
 
             <main className="container mx-auto px-4 py-8">
                 <h1 className="text-[#EDEDED] text-4xl font-bold mb-6">Popular</h1>
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {filteredGames.slice(0, 6).map((game) => (
-                        <Card key={game.id} className="overflow-hidden border-[#EDEDED]/10 bg-[#EDEDED]/5 text-[#EDEDED]">
-                            <Link href={`/games/${game.id}`}>
-                                <div className="aspect-video w-full overflow-hidden">
-                                    <img
-                                        src={game.image || "/placeholder.svg"}
-                                        alt={game.title}
-                                        className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
-                                    />
-                                </div>
-                            </Link>
-                            <CardHeader>
-                                <div className="flex items-start justify-between">
-                                    <div>
-                                        <Link href={`/games/${game.id}`}>
-                                            <CardTitle className="text-xl hover:text-[#EDEDED]/80 transition-colors">{game.title}</CardTitle>
-                                        </Link>
-                                        <CardDescription className="text-[#EDEDED]/60">{game.genre}</CardDescription>
-                                    </div>
-                                    <Badge variant="outline" className="border-[#EDEDED]/20 bg-[#EDEDED]/5">
-                                        <Star className="mr-1 h-3 w-3 fill-current text-yellow-500" />
-                                        {game.rating}
-                                    </Badge>
-                                </div>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-sm text-[#EDEDED]/80">{game.description}</p>
-                            </CardContent>
-                            <CardFooter className="flex items-center justify-between">
-                                <span className="text-lg font-bold">${game.price}</span>
-                                <Button
-                                    className="bg-[#EDEDED] text-[#030404] hover:bg-[#EDEDED]/90"
-                                    onClick={(e) => {
-                                        e.preventDefault()
-                                        window.location.href = `/cart?add=${game.id}`
-                                    }}
-                                >
-                                    Add to Cart
-                                </Button>
-                            </CardFooter>
-                        </Card>
-                    ))}
-                </div>
-
+                {popularGames &&
+                    <GamesGrid filteredGames={popularGames} />
+                }
                 <h1 className="text-[#EDEDED] text-4xl font-bold mb-6 mt-12">Recently Added</h1>
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     {filteredGames.slice(3, 9).map((game) => (

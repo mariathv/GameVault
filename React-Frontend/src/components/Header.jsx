@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../contexts/cart-context";
+import { Badge } from "@/components/ui/badge";
 
 export default function Header({ searchQuery = "", setSearchQuery }) {
     const { cart } = useCart()

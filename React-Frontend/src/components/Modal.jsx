@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { AspectRatio, Image } from "@chakra-ui/react";
-import { apiRequest, fetchData } from "../api/api-gamevault";
+import { apiRequest, fetchData } from "../hooks/api/api-gamevault";
 import { truncateTextWords } from "../utils/truncateText";
 
 
