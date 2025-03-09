@@ -38,35 +38,48 @@ const storeController = {
             const storeCollection = database.collection("StoreGames");
 
             const customGameId = await getNextGameId(database);
-
             newGame._id = customGameId;
+
+            newGame.createdAt = new Date();
 
             const result = await storeCollection.insertOne(newGame);
             console.log(`New game added with custom ID: ${customGameId}`);
 
-            return res.status(200).json({ success: true, message: "Game successfully added to store", gameId: customGameId });
+            return res.status(200).json({
+                success: true,
+                message: "Game successfully added to store",
+                gameId: customGameId
+            });
 
         } catch (error) {
             console.error("Error adding game:", error);
-            return res.status(500).json({ success: false, message: "Failed to add game to store", error: error.message });
+            return res.status(500).json({
+                success: false,
+                message: "Failed to add game to store",
+                error: error.message
+            });
         }
     },
+
     updateGame: async (req, res) => {
         const { update } = req.body;
 
-
-
         if (!update) {
-            console.log("error no update specified");
+            console.log("Error: No update specified");
             return res.status(400).json({ success: false, message: "No update specified" });
         }
 
         let id = update._id;
-        console.log(id);
+        if (!id) {
+            return res.status(400).json({ success: false, message: "Missing game ID in update object" });
+        }
+
         try {
             const client = await connectToMongo();
             const database = client.db("game-vault");
             const storeCollection = database.collection("StoreGames");
+
+            update.updatedAt = new Date();
 
             const result = await storeCollection.replaceOne({ _id: id }, update);
 
@@ -74,13 +87,21 @@ const storeController = {
                 return res.status(404).json({ success: false, message: "Game not found" });
             }
 
-            return res.status(200).json({ success: true, message: "Game updated successfully" });
+            return res.status(200).json({
+                success: true,
+                message: "Game updated successfully"
+            });
 
         } catch (error) {
             console.error("Error updating game:", error);
-            return res.status(500).json({ success: false, message: "Failed to update game in store", error: error.message });
+            return res.status(500).json({
+                success: false,
+                message: "Failed to update game in store",
+                error: error.message
+            });
         }
     },
+
 
     getGame: async (req, res) => {
         const { id } = req.query;
@@ -167,14 +188,16 @@ const storeController = {
             const client = await connectToMongo();
             const database = client.db("game-vault");
             const storeCollection = database.collection("StoreGames");
-            const sortBy = req.query.sortBy || "hypes";
+            const sortBy = req.query.sortBy;
+            const sortField = sortBy ? { [sortBy]: -1 } : { createdAt: -1 };
+
             const limit = parseInt(req.query.limit) || 10;
             const page = parseInt(req.query.page) || 1;
             const skip = (page - 1) * limit;
 
             const games = await storeCollection
                 .find()
-                .sort({ [sortBy]: -1 })
+                .sort(sortField)
                 .skip(skip)
                 .limit(limit)
                 .toArray();

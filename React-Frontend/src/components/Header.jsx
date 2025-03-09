@@ -22,12 +22,17 @@ export default function Header({ searchQuery = "", setSearchQuery }) {
 
     const cartItemCount = cart.items.reduce((total, item) => total + item.quantity, 0)
 
+    const isLogin = false;
+
     return (
         <header className="sticky top-0 z-50 bg-[#14202C]/95 backdrop-blur-sm border-b border-[#EDEDED]/10">
             <div className="container mx-auto px-4 py-4">
                 <div className="flex items-center justify-between">
-                    <Link href="/" className="text-2xl font-bold !text-[#EDEDED]">
-                        Game Vault
+                    <Link to="/" className="text-2xl font-bold !text-[#EDEDED]">
+                        <div className="flex">
+                            <img src="/src/assets/imgs/logo/1.png" className="w-10"></img>
+                            GameVault
+                        </div>
                     </Link>
 
                     <form onSubmit={handleSearch} className="hidden md:flex flex-1 mx-8">
@@ -60,12 +65,18 @@ export default function Header({ searchQuery = "", setSearchQuery }) {
                                 )}
                             </Button>
                         </Link>
-
-                        <Link href="/profile">
+                        {isLogin ? (
+                            <Link to="/profile">
+                                <Button variant="ghost" size="icon" className="text-[#EDEDED]">
+                                    <User className="h-5 w-5" />
+                                </Button>
+                            </Link>
+                        ) : (<Link to="/login">
                             <Button variant="ghost" size="icon" className="text-[#EDEDED]">
                                 <User className="h-5 w-5" />
                             </Button>
-                        </Link>
+                        </Link>)
+                        }
                     </div>
                 </div>
             </div>

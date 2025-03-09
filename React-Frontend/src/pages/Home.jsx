@@ -14,21 +14,32 @@ export default function HomePage() {
     const [selectedGenre, setSelectedGenre] = useState("All")
     const [searchQuery, setSearchQuery] = useState("")
     const [popularGames, setPopularGames] = useState(null);
+    const [recentlyAdded, setRecentlyAdded] = useState(null);
 
     const filteredGames = games.filter((game) => {
         const matchesGenre = selectedGenre === "All" || game.genre === selectedGenre
         return matchesGenre
     })
     const fetchPopularGames = async () => {
+
         let fetch = await fetchData("store/games/get-all/?sortBy=hypes&limit=5");
         console.log("fetched pop", fetch);
         setPopularGames(fetch.games);
     }
 
+    const fetchRecentlyAdded = async () => {
+        let fetch = await fetchData("store/games/get-all/?sortBy=createdAt&limit=5");
+
+        setRecentlyAdded(fetch.games);
+    }
+
+
     useEffect(() => {
         console.log("gonna fetch");
         if (popularGames == null || !popularGames)
             fetchPopularGames();
+        if (recentlyAdded == null || !recentlyAdded)
+            fetchRecentlyAdded()
     }, [])
 
 
@@ -53,7 +64,7 @@ export default function HomePage() {
                             Experience the future in this groundbreaking open-world adventure. Customize your character, explore vast
                             cityscapes, and shape your own destiny.
                         </p>
-                        <Link to="/games/1">
+                        <Link to="/games/1877">
                             <Button className="w-fit bg-[#EDEDED] text-[#030404] hover:bg-[#EDEDED]/90">Learn More</Button>
                         </Link>
                     </div>
@@ -63,56 +74,14 @@ export default function HomePage() {
             <main className="container mx-auto px-4 py-8">
                 <h1 className="text-[#EDEDED] text-4xl font-bold mb-6">Popular</h1>
                 {popularGames &&
-                    <GamesGrid filteredGames={popularGames} />
+                    <GamesGrid filteredGames={popularGames} gridCol={5} />
                 }
                 <h1 className="text-[#EDEDED] text-4xl font-bold mb-6 mt-12">Recently Added</h1>
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {filteredGames.slice(3, 9).map((game) => (
-                        <Card
-                            key={`recent-${game.id}`}
-                            className="overflow-hidden border-[#EDEDED]/10 bg-[#EDEDED]/5 text-[#EDEDED]"
-                        >
-                            <Link href={`/games/${game.id}`}>
-                                <div className="aspect-video w-full overflow-hidden">
-                                    <img
-                                        src={game.image || "/placeholder.svg"}
-                                        alt={game.title}
-                                        className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
-                                    />
-                                </div>
-                            </Link>
-                            <CardHeader>
-                                <div className="flex items-start justify-between">
-                                    <div>
-                                        <Link href={`/games/${game.id}`}>
-                                            <CardTitle className="text-xl hover:text-[#EDEDED]/80 transition-colors">{game.title}</CardTitle>
-                                        </Link>
-                                        <CardDescription className="text-[#EDEDED]/60">{game.genre}</CardDescription>
-                                    </div>
-                                    <Badge variant="outline" className="border-[#EDEDED]/20 bg-[#EDEDED]/5">
-                                        <Star className="mr-1 h-3 w-3 fill-current text-yellow-500" />
-                                        {game.rating}
-                                    </Badge>
-                                </div>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-sm text-[#EDEDED]/80">{game.description}</p>
-                            </CardContent>
-                            <CardFooter className="flex items-center justify-between">
-                                <span className="text-lg font-bold">${game.price}</span>
-                                <Button
-                                    className="bg-[#EDEDED] text-[#030404] hover:bg-[#EDEDED]/90"
-                                    onClick={(e) => {
-                                        e.preventDefault()
-                                        window.location.href = `/cart?add=${game.id}`
-                                    }}
-                                >
-                                    Add to Cart
-                                </Button>
-                            </CardFooter>
-                        </Card>
-                    ))}
-                </div>
+                {recentlyAdded &&
+                    <GamesGrid filteredGames={recentlyAdded} gridCol={4} />
+                }
+
+
 
                 <div className="mb-8 mt-12">
                     <h3 className="mb-4 text-lg font-semibold text-[#EDEDED]">Browse by Genre</h3>
