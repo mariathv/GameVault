@@ -13,6 +13,7 @@ import GamePage from './pages/games/[id]/games-page';
 import LoginPage from './pages/auth/login';
 import RegisterPage from './pages/auth/register';
 import { NotFound } from './pages/not-found';
+import { ThemeProvider } from './contexts/theme-context';
 
 
 const isAdmin = false;
@@ -34,14 +35,16 @@ createRoot(document.getElementById('root')).render(
       ) : (
         <CartProvider>
           <LoadingBarContainer>
-            <Routes>
-              <Route path="/" element={<HomeGameStore />} />
-              <Route path="/cart" element={<CartPage />} />
-              <Route path="/games/:id" element={<GamePage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <ThemeProvider>
+              <Routes>
+                <Route path="/" element={<HomeGameStore />} />
+                <Route path="/cart" element={<CartPage />} />
+                <Route path="/games/:id" element={<GamePage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </ThemeProvider>
           </LoadingBarContainer>
         </CartProvider>
       )}

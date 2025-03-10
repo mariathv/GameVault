@@ -25,24 +25,24 @@ export default function CartPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#14202C]">
+        <div className="min-h-screen bg-(--color-background)">
             <Header />
             <main className="container mx-auto px-4 py-8">
-                <h1 className="text-3xl font-bold text-[#EDEDED] mb-8">Your Shopping Cart</h1>
+                <h1 className="text-3xl font-bold text-(--color-light-ed) mb-8">Your Shopping Cart</h1>
                 {cart.items.length === 0 ? (
                     <div className="text-center py-12">
-                        <div className="mx-auto w-24 h-24 rounded-full bg-[#EDEDED]/5 flex items-center justify-center mb-6">
-                            <ShoppingCart className="h-12 w-12 text-[#EDEDED]/40" />
+                        <div className="mx-auto w-24 h-24 rounded-full bg-(--color-light-ed)/5 flex items-center justify-center mb-6">
+                            <ShoppingCart className="h-12 w-12 text-(--color-light-ed)/40" />
                         </div>
-                        <h2 className="text-xl font-semibold text-[#EDEDED] mb-2">Your cart is empty</h2>
-                        <p className="text-[#EDEDED]/60 mb-6">Looks like you haven't added any games to your cart yet.</p>
+                        <h2 className="text-xl font-semibold text-(--color-light-ed) mb-2">Your cart is empty</h2>
+                        <p className="text-(--color-light-ed)/60 mb-6">Looks like you haven't added any games to your cart yet.</p>
                         <Button className="bg-[#EDEDED] text-[#030404] hover:bg-[#EDEDED]/90" onClick={() => navigate("/")}>Browse Games</Button>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
                         <div className="lg:col-span-2 space-y-4">
                             {cart.items.map(({ game, quantity }) => (
-                                <Card key={game.id} className="p-0 overflow-hidden border-[#EDEDED]/10 bg-[#EDEDED]/5 text-[#EDEDED]">
+                                <Card key={game.id} className="p-0 overflow-hidden border-(--color-light-ed)/10 bg-(--color-light-ed)/5 text-(--color-light-ed)">
 
                                     <div className="flex flex-col sm:flex-row">
                                         <div className="sm:w-1/4 cursor-pointer" onClick={() => navigate(`/games/${game.id}`)}>
@@ -53,7 +53,7 @@ export default function CartPage() {
                                         <div className="flex-1 p-4">
                                             <div className="flex flex-col sm:flex-row sm:justify-between">
                                                 <div>
-                                                    <h3 className="text-xl font-semibold mb-1 cursor-pointer" onClick={() => navigate(`/games/${game.id}`)}>{game.title}</h3>
+                                                    <h3 className="text-xl font-semibold mb-1 cursor-pointer" onClick={() => navigate(`/games/${game.id}`)}>{game.name}</h3>
                                                     <p className="text-sm text-[#EDEDED]/60 mb-2">{game.genre}</p>
                                                 </div>
                                                 <div className="mt-2 sm:mt-0 text-right">
@@ -75,7 +75,7 @@ export default function CartPage() {
                                                         min="1"
                                                         value={quantity}
                                                         onChange={(e) => handleQuantityChange(game.id, e.target.value)}
-                                                        className="w-16 bg-[#EDEDED]/5 border-[#EDEDED]/10 text-[#EDEDED]"
+                                                        className="w-16 bg-(--color-light-ed)/5 border-(--color-light-ed)/10 text-(--color-light-ed)"
                                                     />
                                                 </div>
                                                 <Button
@@ -92,25 +92,25 @@ export default function CartPage() {
                                 </Card>
                             ))}
                             <div className="mt-4 flex justify-between">
-                                <Button variant="outline" onClick={clearCart} className="border-[#EDEDED]/10 text-[#EDEDED] hover:bg-[#EDEDED]/10">Clear Cart</Button>
-                                <Button variant="outline" onClick={() => navigate("/")} className="border-[#EDEDED]/10 text-[#EDEDED] hover:bg-[#EDEDED]/10">Continue Shopping</Button>
+                                <Button variant="outline" onClick={clearCart} className="border-(--color-light-ed)/10 text-(--color-light-ed) hover:bg-(--color-light-ed)/10">Clear Cart</Button>
+                                <Button variant="outline" onClick={() => navigate("/")} className="border-(--color-light-ed)/10 text-(--color-light-ed) hover:bg-(--color-light-ed)/10">Continue Shopping</Button>
                             </div>
                         </div>
                         <div>
-                            <Card className="border-[#EDEDED]/10 bg-[#EDEDED]/5 text-[#EDEDED] sticky top-24">
+                            <Card className="border-(--color-light-ed)/10 bg-(--color-light-ed)/5 text-(--color-light-ed) sticky top-24">
                                 <CardHeader><CardTitle>Order Summary</CardTitle></CardHeader>
                                 <CardContent className="space-y-4">
-                                    <div className="flex justify-between"><span className="text-[#EDEDED]/80">Subtotal</span><span>${cart.subtotal.toFixed(2)}</span></div>
-                                    <div className="flex justify-between"><span className="text-[#EDEDED]/80">Tax</span><span>${cart.tax.toFixed(2)}</span></div>
+                                    <div className="flex justify-between"><span className="text-(--color-light-ed)/80">Subtotal</span><span>${cart.subtotal.toFixed(2)}</span></div>
+                                    <div className="flex justify-between"><span className="text-(--color-light-ed)/80">Tax</span><span>${cart.tax.toFixed(2)}</span></div>
                                     <div className="flex gap-2">
-                                        <Input placeholder="Promo code" value={promoCode} onChange={(e) => setPromoCode(e.target.value)} className="bg-[#EDEDED]/5 border-[#EDEDED]/10 text-[#EDEDED]" />
-                                        <Button variant="outline" className="border-[#EDEDED]/10 text-[#EDEDED] hover:bg-[#EDEDED]/10">Apply</Button>
+                                        <Input placeholder="Promo code" value={promoCode} onChange={(e) => setPromoCode(e.target.value)} className="bg-(--color-light-ed)/5 border-(--color-light-ed)]/10 text-(--color-light-ed)" />
+                                        <Button variant="outline" className="border-(--color-light-ed)/10 text-(--color-light-ed) hover:bg-(--color-light-ed)/10">Apply</Button>
                                     </div>
-                                    <Separator className="bg-[#EDEDED]/10" />
+                                    <Separator className="bg-(--color-light-ed)/10" />
                                     <div className="flex justify-between text-lg font-bold"><span>Total</span><span>${cart.total.toFixed(2)}</span></div>
                                 </CardContent>
                                 <CardFooter>
-                                    <Button className="w-full bg-[#EDEDED] text-[#030404] hover:bg-[#EDEDED]/90" onClick={handleCheckout}>Checkout <ArrowRight className="ml-2 h-4 w-4" /></Button>
+                                    <Button className="w-full bg-(--color-light-ed) text-(--color-alt-foreground) hover:bg-(--color-light-ed)/90" onClick={handleCheckout}>Checkout <ArrowRight className="ml-2 h-4 w-4" /></Button>
                                 </CardFooter>
                             </Card>
                         </div>

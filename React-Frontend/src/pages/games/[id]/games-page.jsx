@@ -100,7 +100,7 @@ export default function GamePage() {
     const discountedPrice = game.onSale ? game.price * (1 - game.discount / 100) : game.price
 
     return (
-        <div className="min-h-screen bg-[#14202C]">
+        <div className="min-h-screen bg-(--color-background)">
             <Header />
 
             <main className="container mx-auto px-4 py-8">
@@ -124,7 +124,7 @@ export default function GamePage() {
                         <div className="grid grid-cols-5 gap-2">
                             <button
                                 onClick={() => setActiveScreenshot(0)}
-                                className={`overflow-hidden rounded-md border-2 ${activeScreenshot === 0 ? "border-[#EDEDED]" : "border-transparent"}`}
+                                className={`overflow-hidden rounded-md border-2 ${activeScreenshot === 0 ? "border-(--color-foreground)" : "border-transparent"}`}
                             >
                                 <img
                                     src={artworks && createImageUrl(artworks[0]?.image_id) || "/placeholder.svg"}
@@ -137,7 +137,7 @@ export default function GamePage() {
                                 <button
                                     key={index}
                                     onClick={() => setActiveScreenshot(index + 1)}
-                                    className={`overflow-hidden rounded-md border-2 ${activeScreenshot === index + 1 ? "border-[#EDEDED]" : "border-transparent"}`}
+                                    className={`overflow-hidden rounded-md border-2 ${activeScreenshot === index + 1 ? "border-(--color-foreground)" : "border-transparent"}`}
                                 >
                                     <img
                                         src={createImageUrl(screenshot.image_id) || "/placeholder.svg"}
@@ -151,22 +151,22 @@ export default function GamePage() {
 
                     {/* Right Column - Game Info */}
                     <div>
-                        <h1 className="text-3xl font-bold text-[#EDEDED] mb-2">{game.name}</h1>
+                        <h1 className="text-3xl font-bold text-(--color-foreground) mb-2">{game.name}</h1>
 
-                        <div className="flex items-center gap-2 mb-4 text-amber-50">
-                            <Badge variant="outline" className="border-[#EDEDED]/20 bg-[#EDEDED]/5">
+                        <div className="flex items-center gap-2 mb-4 text-(--color-foreground)">
+                            <Badge variant="outline" className="border-(--color-light-ed)/20 bg-[#EDEDED]/5">
                                 <Star className="mr-1 h-3 w-3 fill-current text-yellow-500" />
                                 {game.rating ? game.rating.toFixed(1) : "-"}
                             </Badge>
                             <div className="flex flex-wrap gap-2">
                                 {genres && genres.length > 0 ? (
                                     genres.slice(0, 3).map((genre, index) => (
-                                        <Badge key={index} variant="outline" className="border-[#EDEDED]/20 bg-[#EDEDED]/5">
+                                        <Badge key={index} variant="outline" className="border-(--color-light-ed)/20 bg-[#EDEDED]/5">
                                             {genre.name}
                                         </Badge>
                                     ))
                                 ) : (
-                                    <Badge variant="outline" className="border-[#EDEDED]/20 bg-[#EDEDED]/5">
+                                    <Badge variant="outline" className="border-(--color-light-ed)/20 bg-[#EDEDED]/5">
                                         No Genre
                                     </Badge>
                                 )}
@@ -175,7 +175,7 @@ export default function GamePage() {
 
                         </div>
 
-                        <p className="text-[#EDEDED]/80 mb-6">{game.summary}</p>
+                        <p className="text-(--color-light-ed)/80 mb-6">{game.summary}</p>
 
                         <div className="mb-6">
                             {game.onSale ? (
@@ -185,25 +185,25 @@ export default function GamePage() {
                                     <Badge className="ml-2 bg-green-500">{game.discount}% OFF</Badge>
                                 </div>
                             ) : (
-                                <span className="text-2xl font-bold text-[#EDEDED] mb-2">${game.price.toFixed(2)}</span>
+                                <span className="text-2xl font-bold text-(--color-light-ed) mb-2">${game.price.toFixed(2)}</span>
                             )}
                         </div>
 
                         <div className="flex flex-col gap-3 mb-6">
                             <Button
-                                className="w-full bg-[#EDEDED] text-[#030404] hover:bg-[#EDEDED]/90"
+                                className="w-full bg-(--color-light-ed) text-(--color-alt-foreground) hover:bg-[#EDEDED]/90"
                                 onClick={() => addToCart(game)}
                             >
                                 <ShoppingCart className="mr-2 h-4 w-4" />
                                 Add to Cart
                             </Button>
 
-                            <Button variant="outline" className="w-full border-[#EDEDED]/10 text-[#EDEDED] hover:bg-[#EDEDED]/10">
+                            <Button variant="outline" className="w-full border-(--color-light-ed)/10 text-(--color-light-ed) hover:bg-[#EDEDED]/10">
                                 <Heart className="mr-2 h-4 w-4" />
                                 Add to Wishlist
                             </Button>
 
-                            <Button variant="outline" className="w-full border-[#EDEDED]/10 text-[#EDEDED] hover:bg-[#EDEDED]/10">
+                            <Button variant="outline" className="w-full border-(--color-light-ed)/10 text-(--color-light-ed) hover:bg-(--color-light-ed)/10">
                                 <Share2 className="mr-2 h-4 w-4" />
                                 Share
                             </Button>
@@ -214,24 +214,24 @@ export default function GamePage() {
                 {/* Tabs Section */}
                 <div className="mt-12">
                     <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab}>
-                        <TabsList className="bg-[#EDEDED]/5 border-b border-[#EDEDED]/10 text-[#EDEDED]">
-                            <TabsTrigger value="overview" className="data-[state=active]:bg-[#EDEDED]/10">
+                        <TabsList className="bg-(--color-light-ed)/5 border-b border-(--color-light-ed)/10 text-(--color-light-ed)">
+                            <TabsTrigger value="overview" className="data-[state=active]:bg-(--color-light-ed)/10">
                                 Overview
                             </TabsTrigger>
-                            <TabsTrigger value="trailer" className="data-[state=active]:bg-[#EDEDED]/10">
+                            <TabsTrigger value="trailer" className="data-[state=active]:bg-(--color-light-ed)/10">
                                 Trailer
                             </TabsTrigger>
-                            <TabsTrigger value="features" className="data-[state=active]:bg-[#EDEDED]/10">
+                            <TabsTrigger value="features" className="data-[state=active]:bg-(--color-light-ed)/10">
                                 Features
                             </TabsTrigger>
-                            <TabsTrigger value="system" className="data-[state=active]:bg-[#EDEDED]/10">
+                            <TabsTrigger value="system" className="data-[state=active]:bg-(--color-light-ed)/10">
                                 System Requirements
                             </TabsTrigger>
 
                         </TabsList>
 
                         <TabsContent value="overview" className="pt-6">
-                            <p className="text-[#EDEDED]/80 whitespace-pre-line">{game.storyline || game.summary}</p>
+                            <p className="text-(--color-light-ed)/80 whitespace-pre-line">{game.storyline || game.summary}</p>
 
                         </TabsContent>
 
@@ -255,8 +255,8 @@ export default function GamePage() {
                         </TabsContent>
 
                         <TabsContent value="system" className="pt-6">
-                            <p className="text-[#EDEDED]/80">Minimum: {game.systemRequirements?.minimum.os}</p>
-                            <p className="text-[#EDEDED]/80">Recommended: {game.systemRequirements?.recommended.os}</p>
+                            <p className="text-(--color-light-ed)/80">Minimum: {game.systemRequirements?.minimum.os}</p>
+                            <p className="text-(--color-light-ed)/80">Recommended: {game.systemRequirements?.recommended.os}</p>
                         </TabsContent>
                     </Tabs>
                 </div>

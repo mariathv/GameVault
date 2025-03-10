@@ -8,7 +8,8 @@ import { Badge } from "@/components/ui/badge"
 import { truncateTextWords } from '../utils/truncateText'
 import { useCart } from "@/src/contexts/cart-context"
 
-const GamesGrid = ({ filteredGames, gridCol = 4, variant = "default", start = 0, end }) => {
+
+const GamesGrid = ({ filteredGames, gridCol = 4, variant = "default", start = 0, end, limit }) => {
     const navigate = useNavigate()
     const { addToCart } = useCart()
 
@@ -33,10 +34,10 @@ const GamesGrid = ({ filteredGames, gridCol = 4, variant = "default", start = 0,
 
     return (
         <div className={getGridClass()}>
-            {filteredGames.map((game, index) => (
+            {filteredGames.slice(0, limit).map((game, index) => (
                 <Card
                     key={game.id || `game-${index}`}
-                    className="pt-0 overflow-hidden border-[#EDEDED]/10 bg-[#EDEDED]/5 text-[#EDEDED]"
+                    className="flex flex-col pt-0 overflow-hidden border-(--color-light-ed)/10 bg-(--color-light-ed)/5 text-(--color-foreground)"
                 >
                     <Link to={`/games/${game.id}`}>
                         <div className={getCardImageClass()}>
@@ -52,29 +53,32 @@ const GamesGrid = ({ filteredGames, gridCol = 4, variant = "default", start = 0,
                         <div className="flex items-start justify-between">
                             <div>
                                 <Link to={`/games/${game.id}`}>
-                                    <CardTitle className={`hover:text-[#EDEDED]/80 transition-colors ${variant === "wide" ? "text-xl" : "text-1xl pr-10"}`}>
+                                    <CardTitle className={`hover:text-[#EDEDED]/80 transition-colors ${variant === "wide" ? "text-xl" : "text-1xl pr-2"}`}>
                                         {game.name || game.title}
                                     </CardTitle>
                                 </Link>
-                                <CardDescription className="text-[#EDEDED]/60">{game.genre}</CardDescription>
+                                <CardDescription className="text-(--color-light-ed)/60">{game.genre} </CardDescription>
                             </div>
-                            <Badge variant="outline" className="border-[#EDEDED]/20 bg-[#EDEDED]/5">
+                            <Badge variant="outline" className="border-(--color-light-ed)/20 bg-(--color-foreground)/5">
                                 <Star className="mr-1 h-3 w-3 fill-current text-yellow-500" />
                                 {(game.rating && game.rating.toFixed) ? game.rating.toFixed(1) : game.rating || "-"}
                             </Badge>
                         </div>
                     </CardHeader>
 
-                    <CardContent>
-                        <p className="text-sm text-[#EDEDED]/80">
-                            {truncateTextWords(game.summary || game.description || "", 15)}
+                    {variant == "wide" && <CardContent className="flex-grow">
+                        <p className="text-sm text-(--color-foreground)/80">
+                            {truncateTextWords(game.summary || game.description || "", 20)}
                         </p>
-                    </CardContent>
+                    </CardContent>}
+
+                    <div className="flex-grow" />
+
 
                     <CardFooter className="flex items-center justify-between">
                         <span className="text-lg font-bold">${game.price}</span>
                         <Button
-                            className="bg-[#EDEDED] text-[#030404] hover:bg-[#EDEDED]/90"
+                            className="bg-(--color-light-ed) text-(--color-alt-foreground) hover:bg-[#EDEDED]/90"
                             onClick={(e) => {
                                 e.preventDefault()
                                 addToCart(game)

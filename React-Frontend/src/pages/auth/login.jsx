@@ -42,14 +42,14 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="min-h-screen bg-[#14202C]">
+        <div className="min-h-screen bg-(--color-background)">
             <Header searchQuery="" setSearchQuery={() => { }} />
 
             <div className="container mx-auto px-4 py-16 flex justify-center">
-                <Card className="gradient-border w-full max-w-md border-[#EDEDED]/10 bg-[#EDEDED]/5 text-[#EDEDED]">
+                <Card className="gradient-border w-full max-w-md border-(--color-light-ed)/10 bg-(--color-light-ed)/5 text-(--color-light-ed)">
                     <CardHeader className="space-y-1">
                         <CardTitle className="text-2xl font-bold">Login</CardTitle>
-                        <CardDescription className="text-[#EDEDED]/60">
+                        <CardDescription className="text-(--color-light-ed)/60">
                             Enter your credentials to access your account
                         </CardDescription>
                     </CardHeader>
@@ -64,7 +64,7 @@ export default function LoginPage() {
                                     required
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className="bg-[#EDEDED]/5 border-[#EDEDED]/10 text-[#EDEDED]"
+                                    className="bg-(--color-light-ed)/5 border-(--color-light-ed)/10 text-(--color-light-ed)"
                                 />
                             </div>
                             <div className="space-y-2">
@@ -72,7 +72,7 @@ export default function LoginPage() {
                                     <Label htmlFor="password">Password</Label>
                                     <Link
                                         to="/forgot-password"
-                                        className="text-sm text-[#EDEDED]/60 hover:text-[#EDEDED] transition-colors"
+                                        className="text-sm text-(--color-light-ed)/60 hover:text-(--color-light-ed) transition-colors"
                                     >
                                         Forgot password?
                                     </Link>
@@ -83,7 +83,7 @@ export default function LoginPage() {
                                     required
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="bg-[#EDEDED]/5 border-[#EDEDED]/10 text-[#EDEDED]"
+                                    className="bg-(--color-light-ed)/5 border-(--color-light-ed)/10 text-(--color-light-ed)"
                                 />
                             </div>
                             <div className="flex items-center space-x-2">
@@ -94,7 +94,7 @@ export default function LoginPage() {
                             </div>
                             <Button
                                 type="submit"
-                                className="w-full bg-[#EDEDED] text-[#030404] hover:bg-[#EDEDED]/90"
+                                className="w-full bg-(--color-light-ed) text-(--color-alt-foreground) hover:bg-(--color-light-ed)/90"
                                 disabled={isLoading}
                             >
                                 {isLoading ? "Logging in..." : "Login"}
@@ -104,23 +104,23 @@ export default function LoginPage() {
                     <CardFooter className="flex flex-col space-y-4">
                         <div className="relative w-full">
                             <div className="absolute inset-0 flex items-center">
-                                <span className="w-full border-t border-[#EDEDED]/10" />
+                                <span className="w-full border-t border-(--color-light-ed)/10" />
                             </div>
                             <div className="relative flex justify-center text-xs">
-                                <span className="bg-[#EDEDED]/5 px-2 text-[#EDEDED]/60">or continue with</span>
+                                <span className="bg-(--color-light-ed)/5 px-2 text-(--color-light-ed)/60">or continue with</span>
                             </div>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
-                            <Button variant="outline" className="border-[#EDEDED]/10 text-[#EDEDED] hover:bg-[#EDEDED]/10">
+                            <Button variant="outline" className="border-(--color-light-ed)/10 text-(--color-light-ed) hover:bg-(--color-light-ed)/10">
                                 Google
                             </Button>
-                            <Button variant="outline" className="border-[#EDEDED]/10 text-[#EDEDED] hover:bg-[#EDEDED]/10">
+                            <Button variant="outline" className="border-(--color-light-ed)/10 text-(--color-light-ed) hover:bg-(--color-light-ed)/10">
                                 Discord
                             </Button>
                         </div>
-                        <div className="text-center text-sm text-[#EDEDED]/60">
+                        <div className="text-center text-sm text-(--color-light-ed)/60">
                             Don't have an account?{" "}
-                            <Link to="/register" className="text-[#EDEDED] hover:underline">
+                            <Link to="/register" className="text-(--color-light-ed) hover:underline">
                                 Register
                             </Link>
                         </div>
