@@ -3,6 +3,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const app = express();
 const PORT = process.env.PORT || 3000;
+const { default: mongoose } = require("mongoose")
 
 require("dotenv").config();
 
@@ -12,6 +13,15 @@ app.use(express.json());
 app.use(bodyParser.json());
 
 app.use(cors());
+
+const DB = process.env.MONGOOSE_CON.replace(
+    "<PASSWORD>",
+    process.env.DATABASE_PASSWORD
+)
+mongoose.connect(DB, {
+}).then(() => {
+    console.log("GV MongoDB (Mongoose) connection successful !")
+})
 
 const authRouter = require("./routes/auth.router");
 const usersRouter = require("./routes/users.router");

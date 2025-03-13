@@ -9,10 +9,10 @@
 - **API** - API Documentation
 [PostMan API Documentation](https://documenter.getpostman.com/view/39145685/2sAYX9o1aE)
 
-- **Chakra UI** - A simple, modular, and accessible component library for React:  
-[Chakra UI Docs](https://v2.chakra-ui.com/)
+- **ShadeCN** - A set of beautifully-designed, accessible components and a code distribution platform.:  
+[Shadecn](https://ui.shadcn.com/)
 
-- **Tailwind CSS* - A utility-first CSS framework for rapidly building modern websites:
+- **Tailwind CSS** - A utility-first CSS framework for rapidly building modern websites:
 [TailwindCSS](https://tailwindcss.com/)
 
 - **Font Awesome** - Icon library used for design elements:  

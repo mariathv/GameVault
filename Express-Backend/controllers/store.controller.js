@@ -33,9 +33,21 @@ const storeController = {
         }
 
         try {
+
+
             const client = await connectToMongo();
             const database = client.db("game-vault");
             const storeCollection = database.collection("StoreGames");
+
+            const existingGame = await storeCollection.findOne({ id: newGame.id });
+
+            if (existingGame) {
+                return res.status(409).json({
+                    success: false,
+                    message: `A game with id ${customGameId} already exists.`,
+                });
+            }
+
 
             const customGameId = await getNextGameId(database);
             newGame._id = customGameId;
@@ -211,7 +223,52 @@ const storeController = {
             console.error("Error fetching games:", error);
             return res.status(500).json({ success: false, message: "Failed to fetch games." });
         }
-    }
+    },
+
+    searchGame: async (req, res) => {
+        try {
+            const client = await connectToMongo();
+            const database = client.db("game-vault");
+            const storeCollection = database.collection("StoreGames");
+
+            const searchQuery = req.query.q || ""; // search term
+            const sortBy = req.query.sortBy;
+            const sortField = sortBy ? { [sortBy]: -1 } : { createdAt: -1 };
+
+            const limit = parseInt(req.query.limit) || 10;
+            const page = parseInt(req.query.page) || 1;
+            const skip = (page - 1) * limit;
+
+            // 🔍 Case-insensitive search on "name" field using regex
+            const filter = {
+                name: { $regex: searchQuery, $options: "i" },
+            };
+
+            const games = await storeCollection
+                .find(filter)
+                .sort(sortField)
+                .skip(skip)
+                .limit(limit)
+                .toArray();
+
+            if (games.length === 0) {
+                return res.status(200).json({
+                    success: true,
+                    games: [],
+                    message: "No matching games found.",
+                });
+            }
+
+            return res.status(200).json({ success: true, games });
+        } catch (error) {
+            console.error("Error searching games:", error);
+            return res.status(500).json({
+                success: false,
+                message: "Failed to search games.",
+            });
+        }
+    },
+
 
 
 

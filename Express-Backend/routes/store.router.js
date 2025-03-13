@@ -11,6 +11,7 @@ router.post("/delete-all-games/", storeController.removeAllGames);
 router.get("/games/get/", storeController.getGame);
 router.post("/games/update/", storeController.updateGame);
 router.get("/games/get-all/", storeController.getAllGames);
+router.get("/games/search/", storeController.searchGame);
 router.delete("/game/delete/", storeController.removeGame);
 
 module.exports = router;
