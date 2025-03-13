@@ -8,30 +8,52 @@ function ViewGames() {
     const [viewMode, setViewMode] = useState("compact");
     const [inStoreGames, setInStoreGames] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedGame, setSelectedGame] = useState(null); // Store selected game here
-    const [search, setSearch] = useState(null);
+    const [selectedGame, setSelectedGame] = useState(null);
+    const [search, setSearch] = useState("");
+    const [isSearching, setIsSearching] = useState(false);
 
     const fetchGames = async () => {
-        const instoreGames = await fetchData("store/games/get-all/");
+        setIsSearching(true);
+        try {
+            const instoreGames = await fetchData("store/games/get-all/");
 
-        if (instoreGames.success === "true") {
-            console.log("no data fetched");
-        } else {
-            setInStoreGames(instoreGames.games);
-            console.log(instoreGames);
+            if (instoreGames.success === "true") {
+                console.log("no data fetched");
+            } else {
+                setInStoreGames(instoreGames.games);
+                console.log("Fetched all games:", instoreGames);
+            }
+        } catch (error) {
+            console.error("Error fetching games:", error);
+        } finally {
+            setIsSearching(false);
         }
     };
 
     const searchGames = async () => {
-        const instoreGames = await fetchData(`store/games?search=${search}`);
-        //write the function
-        if (instoreGames.success === "true") {
-            console.log("no data fetched");
-        } else {
-            setInStoreGames(instoreGames.games);
-            console.log(instoreGames);
+        if (!search || search.trim() === "") {
+            fetchGames();
+            return;
         }
-    }
+
+        setIsSearching(true);
+        try {
+            const searchQuery = encodeURIComponent(search.trim());
+            const instoreGames = await fetchData(`store/games/search?q=${searchQuery}`);
+
+            if (instoreGames.success === "true") {
+                console.log("no search results found");
+                setInStoreGames([]);
+            } else {
+                setInStoreGames(instoreGames.games);
+                console.log("Search results:", instoreGames);
+            }
+        } catch (error) {
+            console.error("Error searching games:", error);
+        } finally {
+            setIsSearching(false);
+        }
+    };
 
     useEffect(() => {
         fetchGames();
@@ -42,8 +64,8 @@ function ViewGames() {
     };
 
     const openModal = (game) => {
-        setSelectedGame(game); // Set the selected game
-        setIsModalOpen(true); // Open the modal
+        setSelectedGame(game);
+        setIsModalOpen(true);
     };
 
     const closeModal = (isChange) => {
@@ -52,13 +74,27 @@ function ViewGames() {
             fetchGames();
         }
         setIsModalOpen(false);
-        setSelectedGame(null); // Reset selected game when modal is closed
+        setSelectedGame(null);
+    };
+
+    const handleSearchInputChange = (e) => {
+        setSearch(e.target.value);
+    };
+
+    const handleSearchKeyDown = (e) => {
+        if (e.key === "Enter") {
+            searchGames();
+        }
+    };
+
+    const handleSearchClick = () => {
+        searchGames();
     };
 
     return (
         <div className="mt-8">
             <div className="flex justify-end mb-4 space-x-4">
-                <div className="relative">
+                <div className="relative flex-1">
                     <span className="absolute inset-y-0 left-0 flex items-center pl-3">
                         <FaSearch className="text-gray-500" />
                     </span>
@@ -67,13 +103,16 @@ function ViewGames() {
                         className="w-full pl-10 pr-4 py-2 border rounded-lg text-[#DDD9FE] focus:outline-none focus:border-white"
                         placeholder="Search store games ..."
                         value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                                fetchGames();
-                            }
-                        }}
+                        onChange={handleSearchInputChange}
+                        onKeyDown={handleSearchKeyDown}
                     />
+                    <button
+                        onClick={handleSearchClick}
+                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-white"
+                        disabled={isSearching}
+                    >
+                        {isSearching ? "..." : "Search"}
+                    </button>
                 </div>
 
                 <div className="pl-2 pr-2 border-2 rounded-2xl border-[#5A5D5F]">
@@ -94,12 +133,16 @@ function ViewGames() {
             </div>
 
             <div className="list-view">
-                {viewMode === "list" ? (
-                    inStoreGames && inStoreGames.map((item) => (
+                {inStoreGames === null ? (
+                    <div className="text-center py-10 text-[#EDEDED]">Loading games...</div>
+                ) : inStoreGames.length === 0 ? (
+                    <div className="text-center py-10 text-[#EDEDED]">No games found</div>
+                ) : viewMode === "list" ? (
+                    inStoreGames.map((item) => (
                         <div
                             key={item.id}
                             className={`list-item ${viewMode === "compact" ? "compact" : "detailed"} bg-[#1D1D1D] p-4 rounded-lg shadow mb-3`}
-                            style={{ listStyleType: 'none' }}  // Remove bullet points here
+                            style={{ listStyleType: 'none' }}
                         >
                             <div className="flex flex-row gap-10 ">
                                 <div>
@@ -119,47 +162,43 @@ function ViewGames() {
                                 </div>
                                 <div className="m-4">
                                     <div className="flex justify-between items-center">
-                                        <h3 className="text-[#EDEDED] text-1        xl"> Copies : {item.gameKeys.length}</h3>
+                                        <h3 className="text-[#EDEDED] text-1xl"> Copies : {item.gameKeys?.length || 0}</h3>
                                     </div>
                                     <div className="flex justify-between items-center">
-                                        <h3 className="text-[#EDEDED] text-1        xl"> Price : ${item.price}</h3>
+                                        <h3 className="text-[#EDEDED] text-1xl"> Price : ${item.price}</h3>
                                     </div>
                                     <div className="flex justify-between items-center">
-                                        <h3 className="text-[#EDEDED] text-1        xl"> Discount : none</h3>
+                                        <h3 className="text-[#EDEDED] text-1xl"> Discount : none</h3>
                                     </div>
-
                                 </div>
                             </div>
                         </div>
                     ))
-                )
-
-                    : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-                            {inStoreGames && inStoreGames.map((game) => (
-                                <div key={game.id + game.name} className="bg-[#1D1D1D] p-4 rounded-lg shadow flex flex-col">
-                                    <div className="mb-3">
-                                        <AspectRatio maxW="auto" ratio={3 / 4}>
-                                            <Image
-                                                src={game.cover_url || 'fallback_image_url.jpg'}
-                                                borderTopRadius="10"
-                                                alt={game.name}
-                                            />
-                                        </AspectRatio>
-                                    </div>
-                                    <h3 className="text-x font-semibold mb-2 text-[#EDEDED]">{game.name}</h3>
-                                    <div className="flex-grow" />
-
-                                    <button className="bn3" onClick={() => openModal(game)}>
-                                        <FaEdit className="text-[15px] inline-block mr-2" /> Edit Details
-                                    </button>
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                        {inStoreGames.map((game) => (
+                            <div key={game.id + game.name} className="bg-[#1D1D1D] p-4 rounded-lg shadow flex flex-col">
+                                <div className="mb-3">
+                                    <AspectRatio maxW="auto" ratio={3 / 4}>
+                                        <Image
+                                            src={game.cover_url || 'fallback_image_url.jpg'}
+                                            borderTopRadius="10"
+                                            alt={game.name}
+                                        />
+                                    </AspectRatio>
                                 </div>
-                            ))}
-                        </div>
-                    )}
+                                <h3 className="text-x font-semibold mb-2 text-[#EDEDED]">{game.name}</h3>
+                                <div className="flex-grow" />
+
+                                <button className="bn3" onClick={() => openModal(game)}>
+                                    <FaEdit className="text-[15px] inline-block mr-2" /> Edit Details
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
 
-            {/* Modal, only render when a game is selected and modal is open */}
             {selectedGame && isModalOpen && (
                 <Modal
                     isOpen={isModalOpen}

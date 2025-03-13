@@ -1,4 +1,5 @@
-"use client"
+// @ts-nocheck
+
 
 import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
@@ -27,8 +28,22 @@ export default function LoginPage() {
         setError("")
 
         try {
-            await login(email, password)
-            navigate("/") // Redirect to home page after successful login
+            const resp = await login(email, password)
+            console.log("resp", resp);
+            if (resp) {
+                toast({
+                    title: "Login Successful",
+                    description: "Account login successfully!",
+                })
+                navigate("/")
+            } else {
+                setError("Login failed. Please try again.")
+                toast({
+                    variant: "destructive",
+                    title: "Login Failed",
+                    description: "Something went wrong. Please try again.",
+                })
+            }
         } catch (err) {
             setError("Invalid email or password. Please try again.")
             toast({

@@ -1,6 +1,7 @@
-"use client"
+
 
 import { createContext, useContext, useState, useEffect } from "react"
+import { apiRequest } from "../hooks/api/api-gamevault"
 
 const AuthContext = createContext({
     user: null,
@@ -13,7 +14,6 @@ const AuthContext = createContext({
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null)
     const [isAuthenticated, setIsAuthenticated] = useState(false)
-
     // Check if user is already logged in on mount
     useEffect(() => {
         const storedUser = localStorage.getItem("gamevault_user")
@@ -23,33 +23,51 @@ export function AuthProvider({ children }) {
         }
     }, [])
 
-    const login = (email, password) => {
-        // mock implementation
-        const mockUser = {
-            id: "user123",
-            name: "Game Player",
-            email,
-            avatar: "/src/assets/imgs/avatar.png",
-        }
+    const login = async (email, password) => {
 
-        setUser(mockUser)
-        setIsAuthenticated(true)
-        localStorage.setItem("gamevault_user", JSON.stringify(mockUser))
-        return Promise.resolve(mockUser)
+
+        const user = {
+            email,
+            password
+        }
+        console.log("login start");
+        const response = await apiRequest("auth/login", user);
+        console.log(response);
+        if (response.status === "success" && response.data?.user) {
+            console.log('success context');
+            setUser(response.data?.user)
+            setIsAuthenticated(true)
+            localStorage.setItem("gamevault_user", JSON.stringify(response.data?.user))
+            return Promise.resolve(response.data?.user)
+        } else {
+            console.log('unsuccess context');
+            return Promise.resolve(null);
+        }
     }
 
-    const register = (name, email, password) => {
-        const mockUser = {
+    const register = async (username, email, password, passwordConfirm) => {
+
+        const user = {
             id: "user123",
-            name,
+            username: username,
             email,
-            avatar: "/src/assets/imgs/avatar.png",
+            password,
+            passwordConfirm
+        }
+        const response = await apiRequest("auth/register", user);
+
+        if (response.status === "success" && response.data?.user) {
+
+            setUser(response.data?.user)
+            setIsAuthenticated(true)
+            localStorage.setItem("gamevault_user", JSON.stringify(response.data?.user))
+            return Promise.resolve(response.data?.user)
+        } else {
+            return Promise.resolve(null);
+
         }
 
-        setUser(mockUser)
-        setIsAuthenticated(true)
-        localStorage.setItem("gamevault_user", JSON.stringify(mockUser))
-        return Promise.resolve(mockUser)
+
     }
 
     const logout = () => {

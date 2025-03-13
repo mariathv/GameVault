@@ -1,4 +1,5 @@
-"use client"
+// @ts-nocheck
+
 
 import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
@@ -38,8 +39,25 @@ export default function RegisterPage() {
         }
 
         try {
-            await register(name, email, password)
-            navigate("/") // Redirect to home page after successful registration
+            console.log("main, registering");
+            const result = await register(name, email, password, confirmPassword)
+
+            if (result) {
+                toast({
+                    title: "Registration Successful",
+                    description: "Account created successfully!",
+                })
+                navigate("/")
+            } else {
+                setError("Registration failed. Please try again.")
+                toast({
+                    variant: "destructive",
+                    title: "Registration Failed",
+                    description: "Something went wrong. Please try again.",
+                })
+            }
+
+
         } catch (err) {
             setError("Registration failed. Please try again.")
             toast({
@@ -67,11 +85,11 @@ export default function RegisterPage() {
                     <CardContent>
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="space-y-2">
-                                <Label htmlFor="name">Full Name</Label>
+                                <Label htmlFor="name">Username</Label>
                                 <Input
                                     id="name"
                                     type="text"
-                                    placeholder="John Doe"
+                                    placeholder="Username"
                                     required
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
