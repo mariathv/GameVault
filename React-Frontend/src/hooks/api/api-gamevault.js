@@ -1,5 +1,5 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
+import api from '../../api/index'
 
 export const fetchData = async (endpoint) => {
     try {
@@ -15,27 +15,28 @@ export const fetchData = async (endpoint) => {
 
 };
 
-export const apiRequest = async (endpoint, bodyData, method = "POST") => {
-    console.log("Base URL:", API_BASE_URL);
-
-
+export const apiRequest = async (endpoint, bodyData = {}, method = 'POST', customHeaders = {}) => {
     try {
-        console.log(bodyData);
-        console.log(`${API_BASE_URL}/${endpoint}`);
-        const response = await fetch(`${API_BASE_URL}/${endpoint}`, {
+        const config = {
             method,
-            headers: { "Content-Type": "application/json" },
-            body: bodyData ? JSON.stringify(bodyData) : null,
-            timeout: 20000,
-        });
+            url: endpoint,
+            headers: {
+                'Content-Type': 'application/json',
+                ...customHeaders,
+            },
+        };
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
+        if (method.toUpperCase() === 'GET') {
+            config.params = bodyData; // For GET, use query params
+        } else {
+            config.data = bodyData; // For POST, PUT, etc, use body
         }
 
-        const json = await response.json();
-        return json;
+        const response = await api(config);
+        return response.data;
     } catch (error) {
-        console.error("Fetch error:", error);
+        console.error('API Request Error:', error?.response?.data || error.message);
+        throw error; // Let caller handle errors
     }
 };
+

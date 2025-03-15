@@ -1,43 +1,50 @@
+// app.js
 const express = require("express");
-const bodyParser = require("body-parser");
+const morgan = require("morgan");
 const cors = require("cors");
-const app = express();
-const PORT = process.env.PORT || 3000;
-const { default: mongoose } = require("mongoose")
-
-require("dotenv").config();
-
-//--- parsing middlewares ---
-app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
-app.use(bodyParser.json());
-
-app.use(cors());
-
-const DB = process.env.MONGOOSE_CON.replace(
-    "<PASSWORD>",
-    process.env.DATABASE_PASSWORD
-)
-mongoose.connect(DB, {
-}).then(() => {
-    console.log("GV MongoDB (Mongoose) connection successful !")
-})
+const AppError = require("./utils/appError");
+const globalErrorController = require("./controllers/error.controller");
 
 const authRouter = require("./routes/auth.router");
 const usersRouter = require("./routes/users.router");
 const gamesRouter = require("./routes/games.router");
 const storeRouter = require("./routes/store.router");
 
-//--- defining endpoints ---
+const app = express();
+
+//------------------- middleware -----------------------
+if (process.env.NODE_ENV === "development") {
+    app.use(morgan("dev"));
+}
+
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
+app.use(cors());
+
+
+//------------------- custom middleware -----------------------
+app.use((req, res, next) => {
+    console.log("App Running in -->", process.env.NODE_ENV);
+    req.requestTime = new Date().toISOString();
+    next();
+});
+
+//------------------- routes -----------------------
 app.use("/api/v1/auth", authRouter);
-//app.use("/api/v1/users", usersRouter);
+// app.use("/api/v1/users", usersRouter);
 app.use("/api/v1/games", gamesRouter);
 app.use("/api/v1/store", storeRouter);
 
-app.get('/', (req, res) => {
-    res.send('Server Running')
-})
+app.get("/", (req, res) => {
+    res.send("Server Running");
+});
 
-app.listen(PORT, () => {
-    console.log(`listening on port ${PORT}`)
-})
+//------------------- unhandled routes  -----------------------
+app.all("*", (req, res, next) => {
+    next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));
+});
+
+//------------------- error handling middleware  -----------------------
+app.use(globalErrorController);
+
+module.exports = app;

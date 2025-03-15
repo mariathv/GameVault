@@ -34,7 +34,7 @@ const storeController = {
 
         try {
 
-
+            console.log("add game ");
             const client = await connectToMongo();
             const database = client.db("game-vault");
             const storeCollection = database.collection("StoreGames");

@@ -24,26 +24,31 @@ export function AuthProvider({ children }) {
     }, [])
 
     const login = async (email, password) => {
-
-
         const user = {
             email,
             password
-        }
+        };
         console.log("login start");
+
         const response = await apiRequest("auth/login", user);
         console.log(response);
+
         if (response.status === "success" && response.data?.user) {
             console.log('success context');
-            setUser(response.data?.user)
-            setIsAuthenticated(true)
-            localStorage.setItem("gamevault_user", JSON.stringify(response.data?.user))
-            return Promise.resolve(response.data?.user)
+
+            localStorage.setItem("gamevault_user", JSON.stringify(response.data.user));
+            localStorage.setItem("gamevault_token", response.token);
+
+            setUser(response.data.user);
+            setIsAuthenticated(true);
+
+            return Promise.resolve(response.data.user);
         } else {
             console.log('unsuccess context');
             return Promise.resolve(null);
         }
-    }
+    };
+
 
     const register = async (username, email, password, passwordConfirm) => {
 

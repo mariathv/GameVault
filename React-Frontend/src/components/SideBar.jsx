@@ -10,12 +10,19 @@ function Sidebar({ activeTab, setActiveTab }) {
 
     return (
         <div className="flex flex-col w-64 bg-[#141B26]">
-            <div className="flex items-center justify-center h-20 shadow-md">
-                <h1 className="text-3xl uppercase text-white">
-                    <FaGamepad className="inline-block mr-2" />
-                    GameVault
-                </h1>
+            <div className="flex items-center justify-center h-20 shadow-md flex-row">
+                <img src="/src/assets/imgs/logo/1.png" className="w-10"></img>
+                <div>
+                    <h1 className="text-2xl uppercase text-white">
+                        GameVault
+                    </h1>
+                    <label className="text-gray-500 text-sm">
+                        Admin Dashboard
+                    </label>
+                </div>
+
             </div>
+
             <ul className="flex flex-col py-4">
                 {navItems.map((item) => (
                     <li key={item.id}>
@@ -38,4 +45,3 @@ function Sidebar({ activeTab, setActiveTab }) {
 }
 
 export default Sidebar
-

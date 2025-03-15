@@ -29,13 +29,17 @@ export default function LoginPage() {
 
         try {
             const resp = await login(email, password)
-            console.log("resp", resp);
+
             if (resp) {
                 toast({
                     title: "Login Successful",
                     description: "Account login successfully!",
                 })
-                navigate("/")
+                if (resp.role === "admin") {
+                    navigate("/admin")
+                } else {
+                    navigate("/")
+                }
             } else {
                 setError("Login failed. Please try again.")
                 toast({
@@ -55,6 +59,7 @@ export default function LoginPage() {
             setIsLoading(false)
         }
     }
+
 
     return (
         <div className="min-h-screen bg-(--color-background)">
