@@ -128,13 +128,13 @@ function AddGame() {
                 <h1 className="text-[#EDEDED] mb-3">Search result for "{lastSearchedQuery}"</h1>
             )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-                {loader ? (
-                    <div className="loader-container">
-                        {loader && <div className="loader"></div>}
-                    </div>
-                ) : (
-                    <>
+            {loader ? (
+                <div className="flex justify-center items-center min-h-[200px] w-full">
+                    <div className="loader"></div>
+                </div>
+            ) : (
+                <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                         {
                             gamesList && gamesList.map((game, index) => (
                                 <div key={game.id} className="bg-[#1D1D1D] p-4 rounded-lg shadow flex flex-col">
@@ -158,9 +158,9 @@ function AddGame() {
                                     </Modal>
                                 </div>
                             ))}
-                    </>
-                )}
-            </div>
+                    </div>
+                </>
+            )}
         </div >
     );
 }

@@ -1,3 +1,9 @@
 * {
-  font-family: 'Lexend Deca', sans-serif;
+  font-family: 'Inter', sans-serif;
 }
+
+@custom-variant dark (&:is(.dark *));
+
+/* {
+  font-family: 'Lexend Deca', sans-serif;
+} */

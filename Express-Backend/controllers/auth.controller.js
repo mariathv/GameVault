@@ -132,7 +132,19 @@ const authController = {
             }
             next();
         };
-    }
+    },
+    getMe: catchAsync(async (req, res, next) => {
+        const userData = req.user.toObject();
+        delete userData.password;
+
+        res.status(200).json({
+            status: "success",
+            data: {
+                user: userData,
+            },
+        });
+    }),
+
 
 };
 

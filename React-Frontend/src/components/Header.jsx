@@ -1,13 +1,14 @@
 "use client"
 
 import { useState } from "react"
-import { Search, ShoppingCart, User } from "lucide-react"
+import { LogOut, Search, ShoppingCart, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Link, useNavigate } from "react-router-dom"
 import { useCart } from "../contexts/cart-context"
 import { Badge } from "@/components/ui/badge"
 import { ThemeToggle } from "./theme-toggle"
+import { useAuth } from "../contexts/auth-context"
 
 export default function Header({ searchQuery = "", setSearchQuery }) {
     const { cart } = useCart()
@@ -21,9 +22,11 @@ export default function Header({ searchQuery = "", setSearchQuery }) {
         }
     }
 
+    const { user, isAuthenticated, logout } = useAuth();
+
     const cartItemCount = cart.items.reduce((total, item) => total + item.quantity, 0)
 
-    const isLogin = false
+
 
     return (
         <header className="sticky top-0 z-50 bg-(--color-background)/50 backdrop-blur-sm   border-b border-border">
@@ -42,7 +45,7 @@ export default function Header({ searchQuery = "", setSearchQuery }) {
                             <Input
                                 type="search"
                                 placeholder="Search games..."
-                                className="!pl-10 w-full bg-foreground/5 border-border pl-10 text-(--color-foreground)"
+                                className="!pl-10 w-full bg-foreground/5 border-(--color-foreground)/40 pl-10 text-(--color-foreground)"
                                 value={query}
                                 onChange={(e) => setQuery(e.target.value)}
                             />
@@ -68,12 +71,22 @@ export default function Header({ searchQuery = "", setSearchQuery }) {
                                 )}
                             </Button>
                         </Link>
-                        {isLogin ? (
-                            <Link to="/profile">
-                                <Button variant="ghost" size="icon" className="text-(--color-foreground)">
-                                    <User className="h-5 w-5" />
+                        {isAuthenticated ? (
+                            <>
+                                <Link to="/profile" className="flex items-center gap-1 text-sm text-(--color-foreground)">
+
+                                    <span className="truncate max-w-[100px] text-(--color-foreground)/80 border border-(--color-foreground)/50 pl-2 pr-2 rounded-full">{user?.username}</span>
+                                </Link>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="text-(--color-foreground)"
+                                    onClick={logout}
+                                >
+                                    <LogOut className="h-5 w-5" />
                                 </Button>
-                            </Link>
+
+                            </>
                         ) : (
                             <Link to="/login">
                                 <Button variant="ghost" size="icon" className="text-(--color-foreground)">
@@ -81,6 +94,7 @@ export default function Header({ searchQuery = "", setSearchQuery }) {
                                 </Button>
                             </Link>
                         )}
+
                     </div>
                 </div>
             </div>

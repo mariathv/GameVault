@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect } from "react"
 import { apiRequest } from "../hooks/api/api-gamevault"
-
+import { useNavigate } from "react-router-dom"
 const AuthContext = createContext({
     user: null,
     isAuthenticated: false,
@@ -14,14 +14,45 @@ const AuthContext = createContext({
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null)
     const [isAuthenticated, setIsAuthenticated] = useState(false)
-    // Check if user is already logged in on mount
+
+    const navigate = useNavigate();
     useEffect(() => {
-        const storedUser = localStorage.getItem("gamevault_user")
-        if (storedUser) {
-            setUser(JSON.parse(storedUser))
-            setIsAuthenticated(true)
-        }
-    }, [])
+        const initializeAuth = async () => {
+
+            const token = localStorage.getItem("gamevault_token");
+            if (!token) return;
+
+            try {
+                const response = await apiRequest("auth/token-verify", {});
+
+
+                if (response.status === "success" && response.data?.user) {
+                    setUser(response.data.user);
+                    setIsAuthenticated(true);
+                    localStorage.setItem("gamevault_user", JSON.stringify(response.data.user));
+                    if (response.data.user.role === "admin") {
+                        navigate("/admin")
+                    } else {
+                        navigate("/")
+                    }
+                } else {
+                    setUser(null);
+                    setIsAuthenticated(false);
+                    localStorage.removeItem("gamevault_user");
+                    localStorage.removeItem("gamevault_token");
+                }
+            } catch (err) {
+                console.error("Auto-login failed:", err);
+                setUser(null);
+                setIsAuthenticated(false);
+                localStorage.removeItem("gamevault_user");
+                localStorage.removeItem("gamevault_token");
+            }
+        };
+
+        initializeAuth();
+    }, []);
+
 
     const login = async (email, password) => {
         const user = {
@@ -76,10 +107,13 @@ export function AuthProvider({ children }) {
     }
 
     const logout = () => {
-        setUser(null)
-        setIsAuthenticated(false)
-        localStorage.removeItem("gamevault_user")
+        setUser(null);
+        setIsAuthenticated(false);
+        localStorage.removeItem("gamevault_user");
+        localStorage.removeItem("gamevault_token");
+        window.location.href = "/";
     }
+
 
     return (
         <AuthContext.Provider value={{ user, isAuthenticated, login, register, logout }}>{children}</AuthContext.Provider>

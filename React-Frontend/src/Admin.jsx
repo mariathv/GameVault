@@ -1,41 +1,17 @@
 "use client"
 
-import { useState } from "react"
 import Sidebar from "./components/Sidebar"
-import AddGame from "./components/AddGame"
-import ViewGames from "./components/ViewGames"
-import Purchases from "./components/Purchases"
-import Settings from "./components/Settings"
+import { Outlet } from "react-router-dom"
 import "./styles/GameStoreAdmin.css"
 import "./styles/Global.css"
 
 function AdminApp() {
-  const [activeTab, setActiveTab] = useState("add-game")
-
-  const renderContent = () => {
-    switch (activeTab) {
-      case "add-game":
-        return <AddGame />
-      case "view-games":
-        return <ViewGames />
-      case "purchases":
-        return <Purchases />
-      case "settings":
-        return <Settings />
-      default:
-        return <AddGame />
-    }
-  }
-
   return (
     <div className="flex h-screen bg-[#080C10]">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <Sidebar />
       <main className="flex-1 overflow-x-hidden overflow-y-auto bg-[#080C10]">
         <div className="container mx-auto px-6 py-8">
-          <h3 className="text-[#EDEDED] text-3xl font-medium">
-            {activeTab.replace("-", " ").charAt(0).toUpperCase() + activeTab.slice(1)}
-          </h3>
-          {renderContent()}
+          <Outlet /> {/* ← This will render the nested route */}
         </div>
       </main>
     </div>
@@ -43,4 +19,3 @@ function AdminApp() {
 }
 
 export default AdminApp
-

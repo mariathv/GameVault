@@ -134,14 +134,16 @@ function ViewGames() {
 
             <div className="list-view">
                 {inStoreGames === null ? (
-                    <div className="text-center py-10 text-[#EDEDED]">Loading games...</div>
+                    <div className="flex justify-center items-center min-h-[200px] w-full">
+                        <div className="loader"></div>
+                    </div>
                 ) : inStoreGames.length === 0 ? (
                     <div className="text-center py-10 text-[#EDEDED]">No games found</div>
                 ) : viewMode === "list" ? (
                     inStoreGames.map((item) => (
                         <div
                             key={item.id}
-                            className={`list-item ${viewMode === "compact" ? "compact" : "detailed"} bg-[#1D1D1D] p-4 rounded-lg shadow mb-3`}
+                            className={`list-item ${viewMode === "compact" ? "compact" : "detailed"} bg-(--color-background) p-4 rounded-lg shadow mb-3`}
                             style={{ listStyleType: 'none' }}
                         >
                             <div className="flex flex-row gap-10 ">
@@ -177,7 +179,7 @@ function ViewGames() {
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                         {inStoreGames.map((game) => (
-                            <div key={game.id + game.name} className="bg-[#1D1D1D] p-4 rounded-lg shadow flex flex-col">
+                            <div key={game.id + game.name} className="bg-(--color-background) p-4 rounded-lg shadow flex flex-col">
                                 <div className="mb-3">
                                     <AspectRatio maxW="auto" ratio={3 / 4}>
                                         <Image

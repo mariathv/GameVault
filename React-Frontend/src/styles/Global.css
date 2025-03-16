@@ -26,10 +26,14 @@
         --color-ring: hsl(240 5.9% 10%);
         --radius-base: 0.5rem;
         --color-light-ed: hsl(210, 22%, 19%);
+        --card: 240 10% 3.9%;
+        --card-foreground: 0 0% 98%;
+        --popover: 240 10% 3.9%;
+        --popover-foreground: 0 0% 98%;
     }
 
     .dark {
-        --color-background: hsl(210 33% 13%);
+        --color-background: hsl(210 38% 8%);
         --color-foreground: hsl(0 0% 93%);
         --color-alt-foreground: hsl(240 10% 3.9%);
         --color-card: hsl(210 33% 9%);
@@ -51,5 +55,9 @@
         --color-input: hsl(240 3.7% 15.9%);
         --color-ring: hsl(240 4.9% 83.9%);
         --color-light-ed: hsl(0, 0%, 93%);
+        --card: 240 10% 3.9%;
+        --card-foreground: 0 0% 98%;
+        --popover: 240 10% 3.9%;
+        --popover-foreground: 0 0% 98%;
     }
 }
