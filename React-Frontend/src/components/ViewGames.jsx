@@ -1,8 +1,15 @@
 import { useState, useEffect } from "react";
-import { AspectRatio, Image } from "@chakra-ui/react";
+import { Image } from "@chakra-ui/react";
 import Modal from "./Modal";
 import { fetchData } from "../hooks/api/api-gamevault";
 import { FaSearch, FaPlus, FaEdit } from "react-icons/fa";
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Card, CardContent } from "@/components/ui/card"
+import { AspectRatio } from "@/components/ui/aspect-ratio"
+import { Navigate, useNavigate } from "react-router-dom";
+import { Edit, LayoutGrid, List, Search } from "lucide-react"
+import { GameModal } from "./EditGameModal";
 
 function ViewGames() {
     const [viewMode, setViewMode] = useState("compact");
@@ -11,6 +18,8 @@ function ViewGames() {
     const [selectedGame, setSelectedGame] = useState(null);
     const [search, setSearch] = useState("");
     const [isSearching, setIsSearching] = useState(false);
+
+    const navigate = useNavigate();
 
     const fetchGames = async () => {
         setIsSearching(true);
@@ -158,7 +167,7 @@ function ViewGames() {
                                     <div className="flex justify-between items-center mb-4 font-bold text-[20px]">
                                         <h3 className="text-[#EDEDED] text-1xl">{item.name}</h3>
                                     </div>
-                                    <button className="bn3" onClick={() => openModal(item)}>
+                                    <button className="bn3 bg-(--color-background)" onClick={() => openModal(item)}>
                                         <FaEdit className="inline-block mr-2" /> Edit Details
                                     </button>
                                 </div>
@@ -177,40 +186,69 @@ function ViewGames() {
                         </div>
                     ))
                 ) : (
+                    // <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                    //     {inStoreGames.map((game) => (
+                    //         <div key={game.id + game.name} className="bg-(--color-background) p-4 rounded-lg shadow flex flex-col">
+                    //             <div className="mb-3">
+                    //                 <AspectRatio maxW="auto" ratio={3 / 4}>
+                    //                     <Image
+                    //                         src={game.cover_url || 'fallback_image_url.jpg'}
+                    //                         borderTopRadius="10"
+                    //                         alt={game.name}
+                    //                     />
+                    //                 </AspectRatio>
+                    //             </div>
+                    //             <h3 className="text-x font-semibold mb-2 text-[#EDEDED]">{game.name}</h3>
+                    //             <div className="flex-grow" />
+
+                    //             <button className="bn3" onClick={() => openModal(game)}>
+                    //                 <FaEdit className="text-[15px] inline-block mr-2" /> Edit Details
+                    //             </button>
+                    //         </div>
+                    //     ))}
+                    // </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                         {inStoreGames.map((game) => (
-                            <div key={game.id + game.name} className="bg-(--color-background) p-4 rounded-lg shadow flex flex-col">
-                                <div className="mb-3">
-                                    <AspectRatio maxW="auto" ratio={3 / 4}>
-                                        <Image
-                                            src={game.cover_url || 'fallback_image_url.jpg'}
-                                            borderTopRadius="10"
+                            <Card key={game.id} className="bg-[#1D2127] border-[#2D3237] text-white overflow-hidden">
+                                <div className="p-2">
+                                    <AspectRatio ratio={3 / 4} className="overflow-hidden rounded-md">
+                                        <img
+                                            src={game.cover_url || "/placeholder.svg"}
                                             alt={game.name}
+                                            className="object-cover w-full h-full"
                                         />
                                     </AspectRatio>
                                 </div>
-                                <h3 className="text-x font-semibold mb-2 text-[#EDEDED]">{game.name}</h3>
-                                <div className="flex-grow" />
-
-                                <button className="bn3" onClick={() => openModal(game)}>
-                                    <FaEdit className="text-[15px] inline-block mr-2" /> Edit Details
-                                </button>
-                            </div>
+                                <CardContent className="p-4">
+                                    <h3 className="font-semibold mb-2 line-clamp-1">{game.name}</h3>
+                                    <div className="text-sm text-gray-400 mb-4">Price: ${game.price}</div>
+                                    <Button className="w-full bg-(--color-accent)/100 hover:bg-(--color-accent)/50 " onClick={() => openModal(game)}>
+                                        <Edit className="mr-2 h-4 w-4" /> Edit Details
+                                    </Button>
+                                </CardContent>
+                            </Card>
                         ))}
                     </div>
+
                 )}
             </div>
 
             {selectedGame && isModalOpen && (
-                <Modal
+                // <Modal
+                //     isOpen={isModalOpen}
+                //     onClose={closeModal}
+                //     gameInfo={selectedGame}
+                //     setgameInfo={setSelectedGame}
+                //     cover={selectedGame.cover_url}
+                //     inStore={true}
+                //     setInStore={null}
+                //     fetchGamesFunc={fetchGames}
+                // />
+                <GameModal
                     isOpen={isModalOpen}
                     onClose={closeModal}
-                    gameInfo={selectedGame}
-                    setgameInfo={setSelectedGame}
-                    cover={selectedGame.cover_url}
+                    game={selectedGame}
                     inStore={true}
-                    setInStore={null}
-                    fetchGamesFunc={fetchGames}
                 />
             )}
         </div>
