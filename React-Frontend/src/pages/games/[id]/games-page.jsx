@@ -36,6 +36,8 @@ export default function GamePage() {
     const [screenshots, setScreenshots] = useState(null);
     const [genres, setGenres] = useState(null);
     const [videos, setVideos] = useState(null);
+    const [gameFeatures, setFeatures] = useState(null);
+    const [companies, setCompanies] = useState(null);
 
     const fetchGameData = async () => {
         let fetch = await fetchData(`store/games/get?id=${gameId}`);
@@ -45,6 +47,9 @@ export default function GamePage() {
         fetchGameScreenshots(fetch.gameData.screenshots);
         fetchGameGenres(fetch.gameData.genres);
         fetchGameVideos(fetch.gameData.videos);
+        fetchGameCompanies(fetch.gameData.involved_companies);
+        setFeatures(extractFeaturesFromGame(fetch.gameData))
+
     }
 
     const fetchGameArtworks = async (artworks) => {
@@ -58,19 +63,22 @@ export default function GamePage() {
 
         let fetch = await fetchData(`games/get/screenshots?ids=${screenshots}`)
         setScreenshots(fetch.queryResult);
-        console.log(fetch.queryResult);
     }
 
     const fetchGameGenres = async (genres) => {
         let fetch = await fetchData(`games/get/genres?ids=${genres}`);
-        console.log("genres", fetch.queryResult);
         setGenres(fetch.queryResult);
     }
 
     const fetchGameVideos = async (videos) => {
         let fetch = await fetchData(`games/get/videos?ids=${videos}`);
-        console.log("vids", fetch.queryResult);
         setVideos(fetch.queryResult);
+    }
+
+    const fetchGameCompanies = async (cmps) => {
+        let fetch = await fetchData(`games/get/devpubs?ids=${cmps}`);
+        console.log("compsss", fetch)
+        setCompanies(fetch.queryResult);
     }
 
     useEffect(() => {
@@ -82,6 +90,26 @@ export default function GamePage() {
     function createImageUrl(id) {
         return `https://images.igdb.com/igdb/image/upload/t_1080p/${id}.jpg`
     }
+
+    const extractFeaturesFromGame = (game) => {
+        const features = [];
+
+        if (game.game_modes?.includes(1)) features.push("Single-player");
+        if (game.game_modes?.includes(2) || game.multiplayer_modes?.length > 0) features.push("Multiplayer");
+
+        if (game.storyline) features.push("Story-rich");
+        if (game.themes?.length > 0) features.push("Thematic");
+        if (game.rating && game.rating > 85) features.push("High Rating");
+
+        if (game.category === 0 || game.genres?.includes(31)) features.push("Open World");
+
+        if (game.hasSteamAchievements) features.push("Steam Achievements");
+        if (game.hasSteamWorkshop) features.push("Steam Workshop");
+        if (game.controllerSupport) features.push("Controller Support");
+
+        return features;
+    };
+
 
 
     if (!game) {
@@ -208,6 +236,32 @@ export default function GamePage() {
                                 Share
                             </Button>
                         </div>
+                        <div className="space-y-4 text-sm text-[#EDEDED]/80">
+                            <div className="flex justify-between">
+                                <span>Developer:</span>
+                                <span className="text-[#EDEDED]">
+                                    {
+                                        companies?.filter(c => c.role === "Developer").map(c => c.companyName).join(", ") || "Unknown"
+                                    }
+                                </span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span>Publisher:</span>
+                                <span className="text-[#EDEDED]">
+                                    {
+                                        companies?.filter(c => c.role === "Publisher").map(c => c.companyName).join(", ") || "Unknown"
+                                    }
+                                </span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span>Release Date:</span>
+                                <span className="text-[#EDEDED]">{game.release_dates}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span>Platforms:</span>
+                                <span className="text-[#EDEDED]">{game.platforms.join(", ")}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -218,14 +272,15 @@ export default function GamePage() {
                             <TabsTrigger value="overview" className="data-[state=active]:bg-(--color-light-ed)/10">
                                 Overview
                             </TabsTrigger>
-                            <TabsTrigger value="trailer" className="data-[state=active]:bg-(--color-light-ed)/10">
-                                Trailer
-                            </TabsTrigger>
+
                             <TabsTrigger value="features" className="data-[state=active]:bg-(--color-light-ed)/10">
                                 Features
                             </TabsTrigger>
                             <TabsTrigger value="system" className="data-[state=active]:bg-(--color-light-ed)/10">
                                 System Requirements
+                            </TabsTrigger>
+                            <TabsTrigger value="trailer" className="data-[state=active]:bg-(--color-light-ed)/10">
+                                Trailer
                             </TabsTrigger>
 
                         </TabsList>
@@ -244,14 +299,21 @@ export default function GamePage() {
 
 
                         <TabsContent value="features" className="pt-6">
-                            <div className="grid gap-4 md:grid-cols-2">
-                                {game.features?.map((feature) => (
-                                    <div key={feature} className="flex items-start gap-2">
-                                        <Check className="h-5 w-5 text-green-400 mt-0.5" />
-                                        <span>{feature}</span>
-                                    </div>
-                                ))}
-                            </div>
+                            <TabsContent value="features" className="pt-6">
+                                <div className="grid gap-3 md:grid-cols-2">
+                                    {gameFeatures.length > 0 ? (
+                                        gameFeatures.map((feature) => (
+                                            <div key={feature} className="flex items-start gap-2">
+                                                <Check className="h-5 w-5 text-green-400 mt-0.5" />
+                                                <span className="text-(--color-light-ed)/80">{feature}</span>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p className="text-sm text-muted">No specific features listed for this game.</p>
+                                    )}
+                                </div>
+                            </TabsContent>
+
                         </TabsContent>
 
                         <TabsContent value="system" className="pt-6">
@@ -264,3 +326,12 @@ export default function GamePage() {
         </div>
     )
 }
+
+/*
+    show platforms -> using icons
+    display release date 
+    display themes -> like genres (maybe in the overview tab)
+
+
+
+*/

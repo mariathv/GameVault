@@ -7,23 +7,37 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Link } from "react-router-dom"
 import { Badge } from "@/components/ui/badge"
 import Header from "../components/Header"
-import { games, genres } from "@/dummydata-lib/data"
 import { fetchData } from '../hooks/api/api-gamevault';
 import GamesGrid from "../components/GamesGrid"
+import { getGamesByGenre } from "../api/store"
 
 
 
 export default function HomePage() {
-    const [selectedGenre, setSelectedGenre] = useState("Action")
+    const [selectedGenre, setSelectedGenre] = useState("Shooter")
     const [searchQuery, setSearchQuery] = useState("")
     const [popularGames, setPopularGames] = useState(null);
     const [recentlyAdded, setRecentlyAdded] = useState(null);
+    const [genreGames, setGenreGames] = useState(null);
+    const [isGenreLoading, setIsGenreLoading] = useState(false);
 
 
-    const filteredGames = games.filter((game) => {
-        const matchesGenre = selectedGenre === "All" || game.genre === selectedGenre
-        return matchesGenre
-    })
+    const genres = ["Shooter", "Adventure", "RPG", "Strategy", "Sports", "Racing", "Simulation", "Indie"]
+
+    const reverseGenreMapping = {
+        Shooter: 5,
+        Adventure: 31,
+        RPG: 12,
+        Strategy: 15,
+        Sports: 14,
+        Racing: 10,
+        Simulation: 13,
+        Indie: 32
+    };
+
+
+
+
     const fetchPopularGames = async () => {
 
         let fetch = await fetchData("store/games/get-all/?sortBy=hypes&limit=5");
@@ -37,6 +51,26 @@ export default function HomePage() {
         setRecentlyAdded(fetch.games);
     }
 
+    const fetchGenreGames = async () => {
+        const genreId = reverseGenreMapping[selectedGenre];
+        if (!genreId) return;
+
+        setIsGenreLoading(true);
+
+        try {
+            const fetch = await getGamesByGenre(genreId, 5);
+            setTimeout(() => {
+                setGenreGames(fetch.games);
+                setIsGenreLoading(false);
+            }, 500);
+        } catch (error) {
+            setIsGenreLoading(false);
+            console.error("Genre fetch failed:", error);
+        }
+    };
+
+
+
 
 
 
@@ -47,6 +81,11 @@ export default function HomePage() {
         if (recentlyAdded == null || !recentlyAdded)
             fetchRecentlyAdded()
     }, [])
+
+    useEffect(() => {
+        fetchGenreGames();
+    }, [selectedGenre]);
+
 
 
     return (
@@ -109,6 +148,20 @@ export default function HomePage() {
                         ))}
                     </div>
                 </div>
+
+                {isGenreLoading ? (
+                    <div className="flex justify-center items-center w-full py-8">
+                        <div className="loader-dots"></div>
+                    </div>
+                ) : genreGames && genreGames.length > 0 ? (
+                    <GamesGrid filteredGames={genreGames} gridCol={5} limit={5} />
+                ) : (
+                    <div className="text-center text-(--color-light-ed) text-sm italic py-6">
+                        No games found in this genre.
+                    </div>
+                )}
+
+
             </main>
         </div>
     )
