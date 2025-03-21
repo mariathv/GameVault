@@ -25,7 +25,6 @@ const gamesController = {
                 const searchData_alt = await fetchIGDB(`games`, body_alt);
 
                 if (!searchData_alt || searchData_alt.length == 0) {
-                    console.log(chalk.yellow(`[${new Date().toISOString()}] No search data found`));
                     return res.status(200).json({ success: false, message: "No games found" });
                 }
 
@@ -39,12 +38,10 @@ const gamesController = {
 
             const sortedCoverData = coverIds.map(coverId => coverData.find(cover => cover.id === coverId));
 
-            console.log(chalk.green(`[${new Date().toISOString()}] ✅ Found ${searchData.length} games for query: ${search_query}`));
 
             return res.status(200).json({ success: true, queryResult: searchData, coverResult: sortedCoverData });
 
         } catch (error) {
-            console.error(chalk.red(`[${new Date().toISOString()}] ❌ Error fetching search result:`), error);
             return res.status(500).json({ error: "Failed to fetch search result" });
         }
     },
@@ -62,7 +59,6 @@ const gamesController = {
             const appIDSearch = await fetchIGDB("games", body);
 
             if (!appIDSearch) {
-                console.log(chalk.yellow(`[${new Date().toISOString()}] ⚠️ No valid game data found`));
                 return res.status(200).json({ success: false, message: "No games found" });
             }
 
@@ -73,7 +69,6 @@ const gamesController = {
 
             const sortedCoverData = coverIds.map(coverId => coverData.find(cover => cover.id === coverId));
 
-            console.log(chalk.green(`[${new Date().toISOString()}] ✅ Fetched game info for query: ${id}`));
 
             return res.status(200).json({
                 success: true,
@@ -82,7 +77,6 @@ const gamesController = {
             });
 
         } catch (error) {
-            console.error(chalk.red(`[${new Date().toISOString()}] ❌ Error fetching game info:`), error);
             return res.status(500).json({ error: "Failed to fetch game info" });
         }
     },
@@ -107,7 +101,6 @@ const gamesController = {
         const gamesInfos = await fetchIGDB("games", body);
 
         if (!gamesInfos) {
-            console.log(chalk.yellow(`[${new Date().toISOString()}] ⚠️ No valid game data found`));
             return res.status(400).json({ error: "games info not found" });
         }
 
@@ -130,7 +123,6 @@ const gamesController = {
         const artworksData = await fetchIGDB("artworks", body);
 
         if (!artworksData) {
-            console.log(chalk.yellow(`[${new Date().toISOString()}] ⚠️ No valid art data found`));
             return res.status(400).json({ error: "art info not found" });
         }
 
@@ -153,7 +145,6 @@ const gamesController = {
         const screenshotsData = await fetchIGDB("screenshots", body);
 
         if (!screenshotsData) {
-            console.log(chalk.yellow(`[${new Date().toISOString()}] ⚠️ No valid ss data found`));
             return res.status(400).json({ error: "ss info not found" });
         }
 
@@ -201,7 +192,101 @@ const gamesController = {
 
 
         return res.status(200).json({ success: true, queryResult: vids });
+    },
+
+    getInvolvedCompanies: async (req, res) => {
+        const { ids } = req.query;
+
+        const companiesIds = Array.isArray(ids) ? ids : ids.split(",");
+
+        const body = `fields *; where id = (${companiesIds});`
+
+        if (companiesIds.length === 0) {
+            return res.status(400).json({ error: "At least one ID is required!" });
+        }
+
+        const companies = await fetchIGDB("involved_companies", body);
+
+        if (!companies) {
+            console.log(chalk.yellow(`[${new Date().toISOString()}] ⚠️ No valid company data found`));
+            return res.status(400).json({ error: "company info not found" });
+        }
+
+
+        return res.status(200).json({ success: true, queryResult: companies });
+    },
+    getCompanies: async (req, res) => {
+        const { ids } = req.query;
+
+        const companiesIds = Array.isArray(ids) ? ids : ids.split(",");
+
+        const body = `fields *; where id = (${companiesIds});`
+
+        if (companiesIds.length === 0) {
+            return res.status(400).json({ error: "At least one ID is required!" });
+        }
+
+        const companies = await fetchIGDB("companies", body);
+
+        if (!companies) {
+            console.log(chalk.yellow(`[${new Date().toISOString()}] ⚠️ No valid company data found`));
+            return res.status(400).json({ error: "company info not found" });
+        }
+
+
+        return res.status(200).json({ success: true, queryResult: companies });
+    },
+    getDeveloperAndPublisher: async (req, res) => {
+        try {
+            const { ids } = req.query;
+            const involvedCompanyIds = Array.isArray(ids) ? ids : ids.split(",");
+
+            if (!involvedCompanyIds || involvedCompanyIds.length === 0) {
+                return res.status(400).json({ error: "No involved company IDs provided." });
+            }
+
+            // Step 1: Fetch involved_companies info
+            const involvedCompaniesBody = `fields *; where id = (${involvedCompanyIds.join(",")});`;
+            const involvedCompanies = await fetchIGDB("involved_companies", involvedCompaniesBody);
+
+            if (!involvedCompanies || involvedCompanies.length === 0) {
+                return res.status(404).json({ error: "No involved company records found." });
+            }
+
+            // Step 2: Filter by developer OR publisher
+            const filteredCompanies = involvedCompanies.filter(
+                (comp) => comp.developer === true || comp.publisher === true
+            );
+
+            if (filteredCompanies.length === 0) {
+                return res.status(200).json({ success: true, queryResult: [] });
+            }
+
+            // Step 3: Extract company IDs
+            const companyIds = filteredCompanies.map((comp) => comp.company).filter(Boolean);
+
+            // Step 4: Fetch actual company names/details
+            const companiesBody = `fields *; where id = (${companyIds.join(",")});`;
+            const companyDetails = await fetchIGDB("companies", companiesBody);
+
+            // Step 5: Combine involved_companies info with company names
+            const finalResult = filteredCompanies.map((comp) => {
+                const companyInfo = companyDetails.find((c) => c.id === comp.company);
+                return {
+                    role: comp.developer ? "Developer" : "Publisher",
+                    companyId: comp.company,
+                    companyName: companyInfo?.name || "Unknown"
+                };
+            });
+
+            return res.status(200).json({ success: true, queryResult: finalResult });
+
+        } catch (error) {
+            console.error("Error in getDeveloperAndPublisher:", error);
+            return res.status(500).json({ error: "Failed to fetch developer/publisher data" });
+        }
     }
+
 };
 
 module.exports = gamesController;

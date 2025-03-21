@@ -10,6 +10,8 @@ router.get("/get/artworks/", gamesController.getGameArtworks)
 router.get("/get/screenshots/", gamesController.getGameScreenshots)
 router.get("/get/genres/", gamesController.getGameGenres)
 router.get("/get/videos/", gamesController.getGameVideos)
+router.get("/get/companies/", gamesController.getInvolvedCompanies)
+router.get("/get/devpubs/", gamesController.getDeveloperAndPublisher)
 
 
 module.exports = router;
