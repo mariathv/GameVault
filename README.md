@@ -115,6 +115,13 @@ The web application will be running at `http://localhost:5173`.
                     <sub><b>Maria Naeem Khokhar</b></sub>
                 </a>
             </td>
+            <td align="center">
+                <a href="https://github.com/amanasif01">
+                    <img src="https://avatars.githubusercontent.com/u/114746458?v=4" width="100;" alt="amanasif01"/>
+                    <br />
+                    <sub><b>amanasif01</b></sub>
+                </a>
+            </td>
 		</tr>
 	<tbody>
 </table>

@@ -1,7 +1,5 @@
-"use client"
-
-import { useState } from "react"
-import { useNavigate, useParams } from "react-router-dom"
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { fetchData } from '@/src/hooks/api/api-gamevault';
 import YouTubeVideo from "@/src/components/VideoPlayer";
 import {
@@ -15,21 +13,20 @@ import {
     MemoryStickIcon as Memory,
     HardDrive,
     Monitor,
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import Header from "@/src/components/Header"
-import { games } from "@/dummydata-lib/data"
-import { useCart } from "@/src/contexts/cart-context"
-import { useEffect } from "react"
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Header from "@/src/components/Header";
+import { games } from "@/dummydata-lib/data";
+import { useCart } from "@/src/contexts/cart-context";
 
 export default function GamePage() {
     const { id } = useParams();
-    const { addToCart } = useCart()
-    const [activeTab, setActiveTab] = useState("overview")
-    const [activeScreenshot, setActiveScreenshot] = useState(0)
-    const gameId = Number.parseInt(id)
+    const { addToCart } = useCart();
+    const [activeTab, setActiveTab] = useState("overview");
+    const [activeScreenshot, setActiveScreenshot] = useState(0);
+    const gameId = Number.parseInt(id);
     const [game, setGame] = useState(null);
     const navigate = useNavigate();
     const [artworks, setArtworks] = useState(null);
@@ -38,8 +35,10 @@ export default function GamePage() {
     const [videos, setVideos] = useState(null);
     const [gameFeatures, setFeatures] = useState(null);
     const [companies, setCompanies] = useState(null);
+    const [loading, setLoading] = useState(true); // Add loading state
 
     const fetchGameData = async () => {
+        setLoading(true); // Start loading
         let fetch = await fetchData(`store/games/get?id=${gameId}`);
         console.log("fetch", fetch.gameData);
         setGame(fetch.gameData);
@@ -50,30 +49,28 @@ export default function GamePage() {
         fetchGameCompanies(fetch.gameData.involved_companies);
         setFeatures(extractFeaturesFromGame(fetch.gameData))
 
-    }
+        setLoading(false); // End loading
+    };
 
     const fetchGameArtworks = async (artworks) => {
-
-        let fetch = await fetchData(`games/get/artworks?ids=${artworks}`)
+        let fetch = await fetchData(`games/get/artworks?ids=${artworks}`);
         setArtworks(fetch.queryResult);
         console.log(fetch.queryResult);
-    }
+    };
 
     const fetchGameScreenshots = async (screenshots) => {
-
-        let fetch = await fetchData(`games/get/screenshots?ids=${screenshots}`)
+        let fetch = await fetchData(`games/get/screenshots?ids=${screenshots}`);
         setScreenshots(fetch.queryResult);
-    }
-
+    };
     const fetchGameGenres = async (genres) => {
         let fetch = await fetchData(`games/get/genres?ids=${genres}`);
         setGenres(fetch.queryResult);
-    }
+    };
 
     const fetchGameVideos = async (videos) => {
         let fetch = await fetchData(`games/get/videos?ids=${videos}`);
         setVideos(fetch.queryResult);
-    }
+    };
 
     const fetchGameCompanies = async (cmps) => {
         let fetch = await fetchData(`games/get/devpubs?ids=${cmps}`);
@@ -83,12 +80,11 @@ export default function GamePage() {
 
     useEffect(() => {
         console.log("gonna fetch");
-        if (game == null || !game)
-            fetchGameData();
-    }, [])
+        if (game == null || !game) fetchGameData();
+    }, []);
 
     function createImageUrl(id) {
-        return `https://images.igdb.com/igdb/image/upload/t_1080p/${id}.jpg`
+        return `https://images.igdb.com/igdb/image/upload/t_1080p/${id}.jpg`;
     }
 
     const extractFeaturesFromGame = (game) => {
@@ -111,6 +107,14 @@ export default function GamePage() {
     };
 
 
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-[#14202C] flex flex-col items-center justify-center text-[#EDEDED]">
+                <div className="loader"></div> {/* Loader */}
+                <h1 className="text-3xl font-bold mb-4">Loading...</h1>
+            </div>
+        );
+    }
 
     if (!game) {
         return (
@@ -120,12 +124,11 @@ export default function GamePage() {
                 <Button onClick={() => navigate("/")} className="bg-[#EDEDED] text-[#030404] hover:bg-[#EDEDED]/90">
                     Return to Home
                 </Button>
-
             </div>
-        )
+        );
     }
 
-    const discountedPrice = game.onSale ? game.price * (1 - game.discount / 100) : game.price
+    const discountedPrice = game.onSale ? game.price * (1 - game.discount / 100) : game.price;
 
     return (
         <div className="min-h-screen bg-(--color-background)">
@@ -199,8 +202,6 @@ export default function GamePage() {
                                     </Badge>
                                 )}
                             </div>
-
-
                         </div>
 
                         <p className="text-(--color-light-ed)/80 mb-6">{game.summary}</p>
@@ -279,6 +280,7 @@ export default function GamePage() {
                             <TabsTrigger value="system" className="data-[state=active]:bg-(--color-light-ed)/10">
                                 System Requirements
                             </TabsTrigger>
+
                             <TabsTrigger value="trailer" className="data-[state=active]:bg-(--color-light-ed)/10">
                                 Trailer
                             </TabsTrigger>
@@ -287,16 +289,13 @@ export default function GamePage() {
 
                         <TabsContent value="overview" className="pt-6">
                             <p className="text-(--color-light-ed)/80 whitespace-pre-line">{game.storyline || game.summary}</p>
-
                         </TabsContent>
 
                         <TabsContent value="trailer" className="pt-6">
                             <div className="max-w-4xl mt-10">
-                                {videos && <YouTubeVideo videoId={videos[0].video_id} title={`${game.name} - Official Trailer`} />
-                                }
+                                {videos && <YouTubeVideo videoId={videos[0].video_id} title={`${game.name} - Official Trailer`} />}
                             </div>
                         </TabsContent>
-
 
                         <TabsContent value="features" className="pt-6">
                             <TabsContent value="features" className="pt-6">
@@ -324,7 +323,7 @@ export default function GamePage() {
                 </div>
             </main>
         </div>
-    )
+    );
 }
 
 /*
