@@ -287,7 +287,6 @@ const Sidebar = () => {
                                 <button
                                     onClick={() => {
                                         logout();
-                                        window.location.href = "/login"; // optional redirect + refresh
                                     }}
                                     className="flex items-center gap-3 w-full rounded-lg px-3 py-2 text-sm transition-colors hover:bg-(--color-accent)/50 text-(--color-foreground)"
                                 >

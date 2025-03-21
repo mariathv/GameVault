@@ -137,7 +137,7 @@ function AddGame() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                         {
                             gamesList && gamesList.map((game, index) => (
-                                <div key={game.id} className="bg-[#1D1D1D] p-4 rounded-lg shadow flex flex-col">
+                                <div key={game.id} className="bg-[#1D2127] border-[#2D3237] p-4 rounded-lg shadow flex flex-col">
                                     <div className="mb-3">
                                         <AspectRatio maxW="auto" ratio={3 / 4}>
                                             <Image
