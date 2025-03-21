@@ -38,19 +38,32 @@ export default function GamePage() {
     const [loading, setLoading] = useState(true); // Add loading state
 
     const fetchGameData = async () => {
-        setLoading(true); // Start loading
-        let fetch = await fetchData(`store/games/get?id=${gameId}`);
-        console.log("fetch", fetch.gameData);
-        setGame(fetch.gameData);
-        fetchGameArtworks(fetch.gameData.artworks);
-        fetchGameScreenshots(fetch.gameData.screenshots);
-        fetchGameGenres(fetch.gameData.genres);
-        fetchGameVideos(fetch.gameData.videos);
-        fetchGameCompanies(fetch.gameData.involved_companies);
-        setFeatures(extractFeaturesFromGame(fetch.gameData))
+        try {
+            setLoading(true); // Start loading
 
-        setLoading(false); // End loading
+            const fetch = await fetchData(`store/games/get?id=${gameId}`);
+            const gameData = fetch.gameData;
+            setGame(gameData);
+
+            const promises = [
+                fetchGameArtworks(gameData.artworks),
+                fetchGameScreenshots(gameData.screenshots),
+                fetchGameGenres(gameData.genres),
+                fetchGameVideos(gameData.videos),
+                fetchGameCompanies(gameData.involved_companies)
+            ];
+
+            setFeatures(extractFeaturesFromGame(gameData));
+
+            await Promise.all(promises);
+
+            setLoading(false);
+        } catch (err) {
+            console.error("Game fetch error:", err);
+            setLoading(false);
+        }
     };
+
 
     const fetchGameArtworks = async (artworks) => {
         let fetch = await fetchData(`games/get/artworks?ids=${artworks}`);
@@ -111,7 +124,6 @@ export default function GamePage() {
         return (
             <div className="min-h-screen bg-[#14202C] flex flex-col items-center justify-center text-[#EDEDED]">
                 <div className="loader"></div> {/* Loader */}
-                <h1 className="text-3xl font-bold mb-4">Loading...</h1>
             </div>
         );
     }
