@@ -28,6 +28,7 @@ import RequireClient from './components/requireClient';
 
 import RequireAdmin from './components/RequireAdmin';
 import Users from './pages/admin/Users';
+import Profile from './pages/profile/profile';
 
 console.log("-------> in main");
 
@@ -47,6 +48,7 @@ createRoot(document.getElementById('root')).render(
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/register" element={<RegisterPage />} />
                   <Route path="/wishlist" element={<WishlistPage />} />
+                  <Route path="/profile" element={<Profile />} />
 
 
                   {/* Admin Routes protected by RequireAdmin */}
@@ -62,6 +64,7 @@ createRoot(document.getElementById('root')).render(
                   {/* Fallback */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
+                <Footer />
 
                 {/* Optional: Hide footer on admin routes */}
                 {/* {!isAdminRoute && <Footer />} */}
