@@ -21,6 +21,7 @@ import Header from "@/src/components/Header";
 import { games } from "@/dummydata-lib/data";
 import { useCart } from "@/src/contexts/cart-context";
 
+
 export default function GamePage() {
     const { id } = useParams();
     const { addToCart } = useCart();
@@ -239,7 +240,22 @@ export default function GamePage() {
                                 Add to Cart
                             </Button>
 
-                            <Button variant="outline" className="w-full border-(--color-light-ed)/10 text-(--color-light-ed) hover:bg-[#EDEDED]/10">
+                            <Button 
+                                variant="outline" 
+                                className="w-full border-(--color-light-ed)/10 text-(--color-light-ed) hover:bg-[#EDEDED]/10"
+                                onClick={() => {
+                                    // Here you would add the game to wishlist in localStorage or context
+                                    // For example:
+                                    const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+                                    if (!wishlist.includes(game.id)) {
+                                    wishlist.push(game.id);
+                                    localStorage.setItem('wishlist', JSON.stringify(wishlist));
+                                    }
+                                    
+                                    // Then navigate to wishlist page
+                                    navigate('/wishlist');
+                                }}
+                                >
                                 <Heart className="mr-2 h-4 w-4" />
                                 Add to Wishlist
                             </Button>

@@ -12,6 +12,8 @@ import GamePage from './pages/games/[id]/games-page';
 import LoginPage from './pages/auth/login';
 import RegisterPage from './pages/auth/register';
 import { NotFound } from './pages/not-found';
+import WishlistPage from './pages/wishlist/wishlist-page';
+
 
 import { CartProvider } from './contexts/cart-context';
 import { ThemeProvider } from './contexts/theme-context';
@@ -44,6 +46,8 @@ createRoot(document.getElementById('root')).render(
                   <Route path="/games/:id" element={<GamePage />} />
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/register" element={<RegisterPage />} />
+                  <Route path="/wishlist" element={<WishlistPage />} />
+
 
                   {/* Admin Routes protected by RequireAdmin */}
                   <Route path="/admin" element={<RequireAdmin><AdminApp /></RequireAdmin>}>
