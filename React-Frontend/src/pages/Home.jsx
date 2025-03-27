@@ -119,12 +119,16 @@ export default function HomePage() {
 
             <main className="container mx-auto px-4 py-8">
                 <h1 className="text-(--color-foreground) text-4xl font-bold mb-6">Popular</h1>
-                {popularGames &&
-                    <GamesGrid filteredGames={popularGames} gridCol={5} limit={5} />
+                {popularGames ? (
+                    <GamesGrid filteredGames={popularGames} gridCol={5} limit={5} />) : (<div className="flex justify-center items-center w-full py-8">
+                        <div className="loader-dots"></div>
+                    </div>)
                 }
                 <h1 className="text-(--color-foreground) text-4xl font-bold mb-6 mt-12">Recently Added</h1>
-                {recentlyAdded &&
-                    <GamesGrid filteredGames={recentlyAdded} gridCol={4} limit={3} variant={"wide"} />
+                {recentlyAdded ? (
+                    <GamesGrid filteredGames={recentlyAdded} gridCol={4} limit={3} variant={"wide"} />) : (<div className="flex justify-center items-center w-full py-8">
+                        <div className="loader-dots"></div>
+                    </div>)
                 }
 
 
