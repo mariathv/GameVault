@@ -218,7 +218,7 @@ const Sidebar = () => {
                                     </Link>
                                 </TooltipTrigger>
                                 {collapsed && (
-                                    <TooltipContent side="right" className="font-medium">
+                                    <TooltipContent side="right" className="font-medium text-(--color-foreground)">
                                         {item.title}
                                     </TooltipContent>
                                 )}

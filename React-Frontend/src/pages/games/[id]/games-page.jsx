@@ -123,15 +123,15 @@ export default function GamePage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-[#14202C] flex flex-col items-center justify-center text-[#EDEDED]">
-                <div className="loader"></div> {/* Loader */}
+            <div className="min-h-screen bg-(--color-background) flex flex-col items-center justify-center text-(--color-foreground)">
+                <div className="loader border-t-4 border-(--color-foreground)"></div> {/* Loader */}
             </div>
         );
     }
 
     if (!game) {
         return (
-            <div className="min-h-screen bg-[#14202C] flex flex-col items-center justify-center text-[#EDEDED]">
+            <div className="min-h-screen bg-(--color-background) flex flex-col items-center justify-center text-(--color-foreground)">
                 <h1 className="text-3xl font-bold mb-4">Game Not Found</h1>
                 <p className="mb-6">The game you're looking for doesn't exist.</p>
                 <Button onClick={() => navigate("/")} className="bg-[#EDEDED] text-[#030404] hover:bg-[#EDEDED]/90">
@@ -240,22 +240,22 @@ export default function GamePage() {
                                 Add to Cart
                             </Button>
 
-                            <Button 
-                                variant="outline" 
+                            <Button
+                                variant="outline"
                                 className="w-full border-(--color-light-ed)/10 text-(--color-light-ed) hover:bg-[#EDEDED]/10"
                                 onClick={() => {
                                     // Here you would add the game to wishlist in localStorage or context
                                     // For example:
                                     const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
                                     if (!wishlist.includes(game.id)) {
-                                    wishlist.push(game.id);
-                                    localStorage.setItem('wishlist', JSON.stringify(wishlist));
+                                        wishlist.push(game.id);
+                                        localStorage.setItem('wishlist', JSON.stringify(wishlist));
                                     }
-                                    
+
                                     // Then navigate to wishlist page
                                     navigate('/wishlist');
                                 }}
-                                >
+                            >
                                 <Heart className="mr-2 h-4 w-4" />
                                 Add to Wishlist
                             </Button>

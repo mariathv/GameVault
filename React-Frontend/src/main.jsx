@@ -29,6 +29,7 @@ import RequireClient from './components/requireClient';
 import RequireAdmin from './components/RequireAdmin';
 import Users from './pages/admin/Users';
 import Profile from './pages/profile/profile';
+import ExplorePage from './pages/explore/explore';
 
 console.log("-------> in main");
 
@@ -48,6 +49,7 @@ createRoot(document.getElementById('root')).render(
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/register" element={<RegisterPage />} />
                   <Route path="/wishlist" element={<WishlistPage />} />
+                  <Route path="/explore" element={<ExplorePage />} />
                   <Route path="/profile" element={<Profile />} />
 
 

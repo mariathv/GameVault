@@ -54,6 +54,7 @@ const StoreSchema = new mongoose.Schema({
     gameKeys: [String],
     price: Number,
     copies: Number,
+    isFeatured: Boolean,
 
     // Timestamps
     createdAt: {

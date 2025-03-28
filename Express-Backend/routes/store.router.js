@@ -14,12 +14,14 @@ router.post("/remove-game/", protect, restrictTo("admin"), storeController.remov
 router.post("/view-purchases/", protect, restrictTo("admin"), storeController.viewPurchases);
 router.delete("/game/delete/", protect, restrictTo("admin"), storeController.removeGame);
 router.post("/games/update/", protect, restrictTo("admin"), storeController.updateGame);
+router.post("/set-featured/", protect, restrictTo("admin"), storeController.setFeaturedGame)
+
 
 
 router.get("/games/search/", storeController.searchGame);
 router.get("/games/get-all/", storeController.getAllGames);
 router.get("/games/get/", storeController.getGame);
-
+router.get("/get-featured/", storeController.getFeaturedGame);
 
 
 module.exports = router;

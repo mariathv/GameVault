@@ -121,13 +121,13 @@ export default function HomePage() {
                 <h1 className="text-(--color-foreground) text-4xl font-bold mb-6">Popular</h1>
                 {popularGames ? (
                     <GamesGrid filteredGames={popularGames} gridCol={5} limit={5} />) : (<div className="flex justify-center items-center w-full py-8">
-                        <div className="loader-dots"></div>
+                        <div className="loader-dots text-(--color-foreground)"></div>
                     </div>)
                 }
                 <h1 className="text-(--color-foreground) text-4xl font-bold mb-6 mt-12">Recently Added</h1>
                 {recentlyAdded ? (
                     <GamesGrid filteredGames={recentlyAdded} gridCol={4} limit={3} variant={"wide"} />) : (<div className="flex justify-center items-center w-full py-8">
-                        <div className="loader-dots"></div>
+                        <div className="loader-dots text-(--color-foreground)"></div>
                     </div>)
                 }
 
@@ -155,7 +155,7 @@ export default function HomePage() {
 
                 {isGenreLoading ? (
                     <div className="flex justify-center items-center w-full py-8">
-                        <div className="loader-dots"></div>
+                        <div className="loader-dots text-(--color-foreground)"></div>
                     </div>
                 ) : genreGames && genreGames.length > 0 ? (
                     <GamesGrid filteredGames={genreGames} gridCol={5} limit={5} />

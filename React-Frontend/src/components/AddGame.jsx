@@ -130,7 +130,7 @@ function AddGame() {
 
             {loader ? (
                 <div className="flex justify-center items-center min-h-[200px] w-full">
-                    <div className="loader"></div>
+                    <div className="loader border-t-4 border-white"></div>
                 </div>
             ) : (
                 <>

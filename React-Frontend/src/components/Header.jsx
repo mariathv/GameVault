@@ -57,6 +57,8 @@ export default function Header({ searchQuery = "", setSearchQuery }) {
     // Get either 5 results or all results based on showAllResults state
     const displayedGames = showAllResults ? filteredGames : filteredGames.slice(0, 5)
 
+    const isActive = (path) => location.pathname === path ? "text-(--color-accent-primary)" : "hover:text-(--color-foreground)"
+
     return (
         <header className="sticky top-0 z-50 bg-(--color-background)/50 backdrop-blur-sm border-b border-border">
             <div className="container mx-auto px-4 py-4">
@@ -69,9 +71,8 @@ export default function Header({ searchQuery = "", setSearchQuery }) {
                     </Link>
 
                     <nav className="hidden md:flex items-center gap-8 text-(--color-foreground)">
-                        <Link to="/" className="hover:text-(--color-foreground)">Home</Link>
-                        <Link to="/games" className="hover:text-(--color-foreground)">Search</Link>
-                        <Link to="/services" className="hover:text-(--color-foreground)">Explore</Link>
+                        <Link to="/" className={isActive("/")}>Home</Link>
+                        <Link to="/explore" className={isActive("/explore")}>Explore</Link>
                     </nav>
 
                     <form onSubmit={handleSearch} className="hidden md:flex flex-1 mx-8">
