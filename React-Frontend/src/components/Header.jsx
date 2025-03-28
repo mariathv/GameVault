@@ -71,7 +71,7 @@ export default function Header({ searchQuery = "", setSearchQuery }) {
                     <nav className="hidden md:flex items-center gap-8 text-(--color-foreground)">
                         <Link to="/" className="hover:text-(--color-foreground)">Home</Link>
                         <Link to="/games" className="hover:text-(--color-foreground)">Search</Link>
-                        <Link to="/services" className="hover:text-(--color-foreground)">Explore</Link>
+                        <Link to="/explore" className="hover:text-(--color-foreground)">Explore</Link>
                     </nav>
 
                     <form onSubmit={handleSearch} className="hidden md:flex flex-1 mx-8">
