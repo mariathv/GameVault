@@ -90,7 +90,7 @@ const storeController = {
         }
 
         try {
-            const result = await Store.findOneAndDelete({ id: gameId });
+            const result = await Store.findOneAndDelete({ _id: gameId });
             if (!result) {
                 return res.status(404).json({ success: false, message: "Game not found with the given ID." });
             }
@@ -99,6 +99,40 @@ const storeController = {
         } catch (error) {
             console.error("Error removing game:", error);
             return res.status(500).json({ success: false, message: "Failed to remove game from store", error: error.message });
+        }
+    },
+    setFeaturedGame: async (req, res) => {
+        const { gameId } = req.body;
+        if (!gameId) {
+            return res.status(400).json({ success: false, message: "Game ID is missing!" });
+        }
+
+        try {
+            await Store.updateMany({}, { isFeatured: false });
+            const updatedGame = await Store.findOneAndUpdate({ _id: gameId }, { isFeatured: true }, { new: true });
+
+            if (!updatedGame) {
+                return res.status(404).json({ success: false, message: "Game not found" });
+            }
+            console.log("set featured", gameId);
+            return res.status(200).json({ success: true, message: "Game set as featured", game: updatedGame });
+        } catch (error) {
+            console.error("Error setting featured game:", error);
+            return res.status(500).json({ success: false, message: "Failed to set featured game", error: error.message });
+        }
+    },
+    getFeaturedGame: async (req, res) => {
+        try {
+            const featuredGame = await Store.findOne({ isFeatured: true });
+
+            if (!featuredGame) {
+                return res.status(404).json({ success: false, message: "No featured game found" });
+            }
+
+            return res.status(200).json({ success: true, message: "Featured game retrieved", game: featuredGame });
+        } catch (error) {
+            console.error("Error retrieving featured game:", error);
+            return res.status(500).json({ success: false, message: "Failed to retrieve featured game", error: error.message });
         }
     },
 
@@ -181,6 +215,7 @@ const storeController = {
         // Placeholder
         return res.status(200).json({ success: true, message: "No purchase data available." });
     },
+
 };
 
 module.exports = storeController;

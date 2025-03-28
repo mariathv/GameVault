@@ -20,6 +20,21 @@ export function GameModal({ isOpen, onClose, game, inStore }) {
     })
     const [gameKeys, setGameKeys] = useState(null);
     const [constGameKeys, setConstGameKeys] = useState(null);
+    const [isFeatured, setIsFeatured] = useState(game.isFeatured || false);
+
+    const handleSetFeatured = async () => {
+        try {
+            const response = await apiRequest("store/set-featured", { gameId: gameInfo._id });
+            if (response.success) {
+                setIsFeatured(true);
+                console.log("Game set as featured");
+            } else {
+                console.log("Failed to set game as featured");
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
 
     const handleInputChange = (e) => {
@@ -38,9 +53,9 @@ export function GameModal({ isOpen, onClose, game, inStore }) {
     }
 
     const closeModal = useCallback(() => {
-        setIsModalOpen(false);
         onClose(isRemoveFromStore);
     }, [onClose]);
+
 
     const handleSave = async () => {
         console.log("Saving game:", gameInfo)
@@ -193,6 +208,13 @@ export function GameModal({ isOpen, onClose, game, inStore }) {
                                     className="px-2 py-1 mt-3 bg-[#0D151D] text-[#EDEDED] rounded hover:bg-[#030404] focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 flex items-center gap-2 border-1 border-black text-sm "
                                 >
                                     <i className="fas fa-trash"></i> Remove From Store
+                                </button>
+                                <button
+                                    onClick={handleSetFeatured}
+                                    disabled={isFeatured}
+                                    className="px-2 py-1 mt-3 bg-(--color-accent-primary) text-[#EDEDED] rounded hover:bg-[#030404] focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 flex items-center gap-2 border-1 border-black text-sm "
+                                >
+                                    {isFeatured ? "Already Featured" : "Set Featured"}
                                 </button>
 
                                 {/* <div className="space-y-2">

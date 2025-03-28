@@ -1,183 +1,249 @@
 import React, { useState, useEffect } from 'react';
-import { Search, SlidersHorizontal, Flame, Tag, Clock, Star } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import Header from '@/src/components/Header';
-import GamesGrid from '@/src/components/GamesGrid';
 import { fetchData } from '@/src/hooks/api/api-gamevault';
-import { getGamesByGenre } from '@/src/api/store';
+import { getFeatured, getGamesByGenre, getMostPopular } from '@/src/api/store';
+import Header from '@/src/components/Header';
+import { Link } from 'react-router-dom';
+import { getGameArtworks } from '@/src/api/game';
 
 export default function ExplorePage() {
     const [searchQuery, setSearchQuery] = useState("");
-    const [activeFilter, setActiveFilter] = useState("all");
+    const [selectedCategory, setSelectedCategory] = useState("All");
+    const [priceRange, setPriceRange] = useState(200);
     const [games, setGames] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [selectedGenre, setSelectedGenre] = useState("All");
-    const [selectedSort, setSelectedSort] = useState("popularity");
+    const [featured, setFeatured] = useState(null);
+    const [featuredArtwork, setFeaturedArtwork] = useState(null);
 
-    const genres = ["All", "Shooter", "Adventure", "RPG", "Strategy", "Sports", "Racing", "Simulation", "Indie"];
 
-    const sortOptions = [
-        { id: "popularity", label: "Most Popular", icon: Flame },
-        { id: "price-low", label: "Price: Low to High", icon: Tag },
-        { id: "price-high", label: "Price: High to Low", icon: Tag },
-        { id: "rating", label: "Highest Rated", icon: Star },
-        { id: "newest", label: "Recently Added", icon: Clock },
+    const categories = [
+        { id: "all", label: "All" }, // adventure
+        { id: "31", label: "Adventure/Quest" }, // adventure
+        { id: "12", label: "RPG" }, // RPG
+        { id: "15", label: "Strategy" }, // strategy
+        { id: "14", label: "Sport" }, // sport
+        { id: "10", label: "Racing" }, // racing
+        { id: "13", label: "Simulator" }, // simulator
+        { id: "32", label: "Indie" }, // indie
     ];
 
-    const filters = [
-        { id: "all", label: "All Games" },
-        { id: "on-sale", label: "On Sale" },
-        { id: "under-20", label: "Under $20" },
-        { id: "new-releases", label: "New Releases" },
-        { id: "top-rated", label: "Top Rated" },
-    ];
 
-    const reverseGenreMapping = {
-        Shooter: 5,
-        Adventure: 31,
-        RPG: 12,
-        Strategy: 15,
-        Sports: 14,
-        Racing: 10,
-        Simulation: 13,
-        Indie: 32
-    };
+    function createImageUrl(id) {
+        return `https://images.igdb.com/igdb/image/upload/t_1080p/${id}.jpg`;
+    }
 
     const fetchGames = async () => {
         setIsLoading(true);
+
+        const genreId = categories.find(cat => cat.label === selectedCategory)?.id;
+
+        const genreParam = genreId ? `?genre=${genreId}` : "";
+
+        console.log(genreParam, "gn", selectedCategory);
         let fetch;
+        if (!searchQuery && genreParam != "?genre=all")
+            fetch = await fetchData(`store/games/get-all${genreParam}`);
+        else
+            fetch = await fetchData(`store/games/get-all`);
 
-        if (selectedGenre === "All") {
-            //will change this if data seems to be TO MUCH
-            fetch = await fetchData("store/games/get-all/");
-        } else {
-            const genreId = reverseGenreMapping[selectedGenre];
-            fetch = await getGamesByGenre(genreId, 20);
+
+        let filteredGames = fetch.games.filter(game =>
+            game.price <= priceRange
+        );
+
+        if (searchQuery) {
+            filteredGames = filteredGames.filter(game =>
+                game.name.toLowerCase().includes(searchQuery.toLowerCase())
+            );
         }
 
-        // Apply filters and sorting
-        let filteredGames = fetch.games;
-
-        // Apply active filter
-        switch (activeFilter) {
-            case "on-sale":
-                filteredGames = filteredGames.filter(game => game.discount > 0);
-                break;
-            case "under-20":
-                filteredGames = filteredGames.filter(game => game.price < 20);
-                break;
-            case "top-rated":
-                filteredGames = filteredGames.filter(game => game.rating >= 4);
-                break;
-            case "new-releases":
-                filteredGames = filteredGames.sort((a, b) => new Date(b.releaseDate) - new Date(a.releaseDate));
-                break;
-        }
-
-        // Apply sorting
-        switch (selectedSort) {
-            case "price-low":
-                filteredGames.sort((a, b) => a.price - b.price);
-                break;
-            case "price-high":
-                filteredGames.sort((a, b) => b.price - a.price);
-                break;
-            case "rating":
-                filteredGames.sort((a, b) => b.rating - a.rating);
-                break;
-            case "newest":
-                filteredGames.sort((a, b) => new Date(b.releaseDate) - new Date(a.releaseDate));
-                break;
-        }
-
-        setTimeout(() => {
-            setGames(filteredGames);
-            setIsLoading(false);
-        }, 500);
+        setGames(filteredGames);
+        setIsLoading(false);
     };
+
+
+    const fetchMostPopular = async () => {
+        const fetch = await getFeatured();
+        setFeatured(fetch.game);
+        fetchArtworks(fetch.game.artworks);
+    }
+
+    const fetchArtworks = async (artworkss) => {
+        const fetch = await getGameArtworks(artworkss);
+        setFeaturedArtwork(fetch.queryResult);
+
+    }
+
+    useEffect(() => {
+        fetchMostPopular();
+
+    }, [])
 
     useEffect(() => {
         fetchGames();
-    }, [selectedGenre, activeFilter, selectedSort]);
+    }, [selectedCategory, priceRange, searchQuery]);
+
+
 
     return (
-        <div className="min-h-screen bg-(--color-background)">
+        <div className="min-h-screen bg-[#0A0E17]">
             <Header searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+            <div className="container mx-auto px-4 py-8">
+                <div className="flex gap-8">
+                    {/* Sidebar */}
+                    <div className="w-64 flex-shrink-0">
+                        <h1 className="text-3xl font-bold text-white mb-8">CATALOG</h1>
 
-            <main className="container mx-auto px-4 py-8">
-                <div className="flex flex-col space-y-6">
-                    <div className="flex items-center justify-between">
-                        <h1 className="text-4xl font-bold text-(--color-foreground)">Explore Games</h1>
-                        <div className="flex items-center space-x-2">
-                            <SlidersHorizontal className="h-5 w-5 text-(--color-foreground)" />
-                            <span className="text-(--color-foreground)">Sort by:</span>
-                            <div className="flex space-x-2">
-                                {sortOptions.map(({ id, label, icon: Icon }) => (
-                                    <Button
-                                        key={id}
-                                        variant={selectedSort === id ? "default" : "outline"}
-                                        onClick={() => setSelectedSort(id)}
-                                        className={
-                                            selectedSort === id
-                                                ? "bg-(--color-foreground) text-(--color-background)"
-                                                : "border-(--color-foreground)/10 text-(--color-foreground) hover:bg-(--color-light-ed)/10"
-                                        }
-                                    >
-                                        <Icon className="mr-2 h-4 w-4" />
-                                        {label}
-                                    </Button>
-                                ))}
+                        {/* Price Range */}
+                        <div className="mb-6 bg-[#1A1F2E] p-4 rounded-lg">
+                            <h3 className="text-white mb-4">Price</h3>
+                            <input
+                                type="range"
+                                min="0"
+                                max="200"
+                                value={priceRange}
+                                onChange={(e) => setPriceRange(e.target.value)}
+                                className="w-full accent-blue-500"
+                            />
+                            <div className="flex justify-between text-gray-400 mt-2">
+                                <span>0$</span>
+                                <span>{priceRange}$</span>
                             </div>
                         </div>
-                    </div>
 
-                    <div className="flex flex-wrap gap-2">
-                        {filters.map(filter => (
-                            <Button
-                                key={filter.id}
-                                variant={activeFilter === filter.id ? "default" : "outline"}
-                                onClick={() => setActiveFilter(filter.id)}
-                                className={
-                                    activeFilter === filter.id
-                                        ? "bg-[#0F161E] text-[#EDEDED]"
-                                        : "border-(--color-foreground)/10 text-(--color-foreground) hover:bg-(--color-light-ed)/10"
-                                }
-                            >
-                                {filter.label}
-                            </Button>
-                        ))}
-                    </div>
-
-                    <div className="flex flex-wrap gap-2">
-                        {genres.map(genre => (
-                            <Button
-                                key={genre}
-                                variant={selectedGenre === genre ? "default" : "outline"}
-                                onClick={() => setSelectedGenre(genre)}
-                                className={
-                                    selectedGenre === genre
-                                        ? "bg-[#0F161E] text-[#EDEDED]"
-                                        : "border-(--color-foreground)/10 text-(--color-foreground) hover:bg-(--color-light-ed)/10"
-                                }
-                            >
-                                {genre}
-                            </Button>
-                        ))}
-                    </div>
-
-                    {isLoading ? (
-                        <div className="flex justify-center items-center w-full py-8">
-                            <div className="loader-dots"></div>
+                        {/* Categories */}
+                        <div className="space-y-1">
+                            {categories.map(category => (
+                                <button
+                                    key={category.id}
+                                    onClick={() => setSelectedCategory(category.label)}
+                                    className={`w-full text-left px-4 py-2 rounded-r-full transition-colors ${selectedCategory === category.label
+                                        ? 'bg-[#2563EB] text-white'
+                                        : 'text-gray-400 hover:bg-[#1A1F2E]'
+                                        }`}
+                                >
+                                    {category.label}
+                                </button>
+                            ))}
                         </div>
-                    ) : games && games.length > 0 ? (
-                        <GamesGrid filteredGames={games} gridCol={4} />
-                    ) : (
-                        <div className="text-center text-(--color-light-ed) text-sm italic py-6">
-                            No games found with the selected filters.
+                    </div>
+
+                    {/* Main Content */}
+                    <div className="flex-1">
+                        {/* Search Bar */}
+                        <div className="flex gap-4 mb-8">
+                            <div className="flex-1 relative">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                                <input
+                                    type="text"
+                                    placeholder="Search products"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full bg-[#1A1F2E] text-white pl-10 pr-4 py-2 rounded-lg"
+                                />
+                            </div>
                         </div>
-                    )}
+
+                        {/* Featured Game */}
+                        {!searchQuery && featured &&
+                            <div className="mb-8 relative rounded-lg overflow-hidden">
+                                <img
+                                    src={featuredArtwork && featuredArtwork.length > 0
+                                        && createImageUrl(featuredArtwork[0]?.image_id)}
+                                    alt={featured.name}
+                                    className="w-full h-[400px] object-cover"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
+                                <div className="absolute bottom-0 left-0 right-0 p-8">
+                                    <div className="flex justify-between items-center">
+                                        <div>
+                                            <h2 className="text-4xl font-bold text-white mb-4">{featured.name}</h2>
+                                            <p className="text-2xl font-bold text-white">{featured.price}$</p>
+                                        </div>
+                                        <div className="flex gap-4">
+                                            <Link to={`/games/${featured.id}`}>
+                                                <Button className="bg-[#2563EB] hover:bg-[#1E40AF] text-white px-8">
+                                                    Buy now
+                                                </Button>
+                                            </Link>
+                                            <Button variant="outline" className="text-white border-white hover:bg-white/10">
+                                                Add to cart
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="absolute top-4 right-4 flex gap-2">
+
+                                    <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm">
+                                        FEATURED
+                                    </span>
+                                </div>
+
+                            </div>
+                        }
+
+                        {/* Games Grid */}
+                        {isLoading ? (
+                            <div className="flex justify-center items-center h-64">
+                                <div className="loader-dots text-white"></div>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-4 gap-6">
+                                {games?.map(game => (
+                                    <Link to={`/games/${game.id}`}>
+                                        <div key={game.id} className="group cursor-pointer">
+                                            <div className="relative">
+                                                <img
+                                                    src={game.image || game.cover_url}
+                                                    alt={game.title}
+                                                    className="w-full h-full object-cover rounded-lg"
+                                                />
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
+                                                <div className="absolute bottom-0 left-0 right-0 pb-4 flex flex-col gap-2">
+                                                    <div className="flex items-center">
+                                                        <span className="bg-[#1A1F2E] text-white px-4 py-1 rounded-r-full">
+                                                            {game.price}$
+                                                        </span>
+                                                    </div>
+                                                    <h3 className="text-white font-bold pl-2">{game.name}</h3>
+                                                </div>
+                                                {game.isNew && (
+                                                    <span className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs">
+                                                        NEW
+                                                    </span>
+                                                )}
+                                                {game.onSale && (
+                                                    <span className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs">
+                                                        SALE
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </Link>
+                                ))}
+                            </div>
+
+                        )}
+
+                        {/* Pagination */}
+                        <div className="flex justify-center mt-8 gap-2">
+                            {[1, 2, 3, '...', 21].map((page, index) => (
+                                <button
+                                    key={index}
+                                    className={`w-8 h-8 rounded-full ${page === 1
+                                        ? 'bg-[#2563EB] text-white'
+                                        : 'bg-[#1A1F2E] text-gray-400 hover:bg-[#2563EB]/50'
+                                        }`}
+                                >
+                                    {page}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
                 </div>
-            </main>
+            </div>
         </div>
     );
 }
