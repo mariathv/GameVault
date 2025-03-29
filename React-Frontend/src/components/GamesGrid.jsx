@@ -29,7 +29,9 @@ const GamesGrid = ({ filteredGames, gridCol = 4, variant = "default", start = 0,
     const getCardImageClass = () => {
         return variant === "wide" ? "aspect-video w-full overflow-hidden" : "aspect-[4/4] w-full overflow-hidden"
     }
-
+    function createImageUrl(id) {
+        return `https://images.igdb.com/igdb/image/upload/t_1080p/${id}.jpg`;
+    }
 
 
     return (
@@ -39,15 +41,25 @@ const GamesGrid = ({ filteredGames, gridCol = 4, variant = "default", start = 0,
                     key={game.id || `game-${index}`}
                     className="flex flex-col pt-0 overflow-hidden border-(--color-light-ed)/10 bg-(--color-light-ed)/5 text-(--color-foreground)"
                 >
-                    <Link to={`/games/${game.id}`}>
-                        <div className={getCardImageClass()}>
-                            <img
-                                src={game.cover_url || game.image || "/placeholder.svg"}
-                                alt={game.name || game.title}
-                                className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
-                            />
-                        </div>
-                    </Link>
+                    {variant != "wide" ? (
+                        <Link to={`/games/${game.id}`}>
+                            <div className={getCardImageClass()}>
+                                <img
+                                    src={game.cover_url || game.image || "/placeholder.svg"}
+                                    alt={game.name || game.title}
+                                    className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+                                />
+                            </div>
+                        </Link>) : (<Link to={`/games/${game.id}`}>
+                            <div className={getCardImageClass()}>
+                                <img
+                                    src={(game.artworks_extracted && game.artworks_extracted.length > 0 && createImageUrl(game.artworks_extracted[0]?.image_id)) || "/placeholder.svg"}
+                                    alt={game.name || game.title}
+                                    className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+                                />
+                            </div>
+                        </Link>)
+                    }
 
                     <CardHeader>
                         <div className="flex items-start justify-between">

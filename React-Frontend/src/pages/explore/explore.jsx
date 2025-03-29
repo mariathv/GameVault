@@ -15,6 +15,7 @@ export default function ExplorePage() {
     const [isLoading, setIsLoading] = useState(true);
     const [featured, setFeatured] = useState(null);
     const [featuredArtwork, setFeaturedArtwork] = useState(null);
+    const [initLoading, setInitLoading] = useState(true);
 
 
     const categories = [
@@ -62,11 +63,20 @@ export default function ExplorePage() {
         setIsLoading(false);
     };
 
-
-    const fetchMostPopular = async () => {
+    const fetchPromisedData = async () => {
         const fetch = await getFeatured();
         setFeatured(fetch.game);
         fetchArtworks(fetch.game.artworks);
+    }
+    const fetchMostPopular = async () => {
+        setInitLoading(true);
+        const promises = [fetchPromisedData()]
+        await Promise.all(promises);
+
+        setInitLoading(false);
+
+
+
     }
 
     const fetchArtworks = async (artworkss) => {
@@ -84,10 +94,21 @@ export default function ExplorePage() {
         fetchGames();
     }, [selectedCategory, priceRange, searchQuery]);
 
+    if (initLoading) {
+        return (
+            <div className="min-h-screen bg-(--color-background) flex flex-col items-center justify-center text-(--color-foreground)">
+                <div className="loader border-t-4 border-(--color-foreground)"></div> {/* Loader */}
+            </div>
+        );
+    }
+
 
 
     return (
-        <div className="min-h-screen bg-[#0A0E17]">
+        <div
+            className="min-h-screen bg-(--color-background) bg-cover bg-center bg-no-repeat bg-image-dark"
+            style={{ backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url(https://i.ibb.co/Wv97xg0d/514-2880x1800-desktop-hd-assassins-creed-wallpaper.jpg)`, backgroundAttachment: 'fixed', }}
+        >
             <Header searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
             <div className="container mx-auto px-4 py-8">
                 <div className="flex gap-8">
@@ -119,7 +140,7 @@ export default function ExplorePage() {
                                     key={category.id}
                                     onClick={() => setSelectedCategory(category.label)}
                                     className={`w-full text-left px-4 py-2 rounded-r-full transition-colors ${selectedCategory === category.label
-                                        ? 'bg-[#2563EB] text-white'
+                                        ? 'bg-(--color-accent-primary) text-white'
                                         : 'text-gray-400 hover:bg-[#1A1F2E]'
                                         }`}
                                 >
@@ -151,7 +172,7 @@ export default function ExplorePage() {
                                 <img
                                     src={featuredArtwork && featuredArtwork.length > 0
                                         && createImageUrl(featuredArtwork[0]?.image_id)}
-                                    alt={featured.name}
+
                                     className="w-full h-[400px] object-cover"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
@@ -168,9 +189,6 @@ export default function ExplorePage() {
                                                     Buy now
                                                 </Button>
                                             </Link>
-                                            <Button variant="outline" className="text-white border-white hover:bg-white/10">
-                                                Add to cart
-                                            </Button>
                                         </div>
                                     </div>
                                 </div>

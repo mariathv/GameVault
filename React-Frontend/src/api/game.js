@@ -6,7 +6,18 @@ export const getGameArtworks = async (artworks) => {
         const response = await api.get(url);
         return response.data;
     } catch (error) {
-        console.error('fetch artwork games failed:', error?.response?.data || error.message);
+        console.error('fetch artworks failed:', error?.response?.data || error.message);
+        throw error;
+    }
+};
+
+export const getGameThemes = async (themes) => {
+    try {
+        let url = `games/get/themes?ids=${themes}`;
+        const response = await api.get(url);
+        return response.data;
+    } catch (error) {
+        console.error('fetch themes failed:', error?.response?.data || error.message);
         throw error;
     }
 };
