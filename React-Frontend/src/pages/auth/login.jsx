@@ -62,11 +62,18 @@ export default function LoginPage() {
 
 
     return (
-        <div className="min-h-screen bg-(--color-background)">
+        /*
+        https://i.ibb.co/wNhs296g/wallpaperflare-com-wallpaper.jpg
+https://i.ibb.co/kgJQ2qg7/wallpaperflare-com-wallpaper-1.jpg
+        */
+        <div
+            className="min-h-screen bg-[#0A0E17] bg-cover bg-center bg-no-repeat bg-image-dark"
+            style={{ backgroundImage: `url( https://i.ibb.co/wNhs296g/wallpaperflare-com-wallpaper.jpg)`, backgroundAttachment: 'fixed', }}
+        >
             <Header searchQuery="" setSearchQuery={() => { }} />
 
             <div className="container mx-auto px-4 py-16 flex justify-center">
-                <Card className="gradient-border w-full max-w-md border-(--color-light-ed)/10 bg-(--color-light-ed)/5 text-(--color-light-ed)">
+                <Card className="gradient-border w-full max-w-md border-(--color-light-ed)/10 bg-(--color-background)/80 text-(--color-light-ed)">
                     <CardHeader className="space-y-1">
                         <CardTitle className="text-2xl font-bold">Login</CardTitle>
                         <CardDescription className="text-(--color-light-ed)/60">

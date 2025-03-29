@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { LogOut, Search, ShoppingCart, User, Heart } from "lucide-react"
+import { LogOut, Search, ShoppingCart, User, Heart, LogInIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Link, useNavigate } from "react-router-dom"
@@ -148,7 +148,7 @@ export default function Header({ searchQuery = "", setSearchQuery }) {
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent
                                         align="end"
-                                        className="w-56 bg-(--color-background)/80 text-(--color-light-ed)/80"
+                                        className="w-56 bg-(--color-background) text-(--color-light-ed)/80"
                                     >
                                         <div className="px-3 py-2 text-sm">
                                             <p className="font-medium">{user?.username}</p>
@@ -213,11 +213,46 @@ export default function Header({ searchQuery = "", setSearchQuery }) {
                                 </DropdownMenu>
                             </>
                         ) : (
-                            <Link to="/login">
-                                <Button variant="ghost" size="icon" className="text-(--color-foreground)">
-                                    <User className="h-5 w-5" />
-                                </Button>
-                            </Link>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger className="flex items-center gap-1 text-sm text-(--color-foreground) h-8 px-5 rounded bg-transparent hover:bg-(--color-foreground)/10 focus:outline-none">
+
+                                    <Button variant="ghost" size="icon" className="text-(--color-foreground)">
+                                        <User className="h-5 w-5" />
+                                        Login
+                                    </Button>
+
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent
+                                    align="end"
+                                    className="w-56 bg-(--color-background) text-(--color-light-ed)/80"
+                                >
+
+
+                                    <DropdownMenuItem
+                                        className="cursor-pointer focus:bg-(--color-foreground)/5"
+                                        onClick={() => navigate("/cart")}
+                                    >
+                                        <ShoppingCart className="mr-2 h-4 w-4" />
+                                        <span>Cart</span>
+                                    </DropdownMenuItem>
+
+
+                                    <ThemeToggle />
+
+                                    <DropdownMenuSeparator />
+
+
+                                    <Link to="/login">
+                                        <DropdownMenuItem
+                                            className="cursor-pointer focus:bg-(--color-foreground)/5 flex justify-between items-center "
+                                        >
+                                            <span>Login</span>
+                                            <LogInIcon className="h-4 w-4 ml-2" />
+
+                                        </DropdownMenuItem>
+                                    </Link>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         )}
                     </div>
                 </div>
