@@ -56,15 +56,17 @@ export default function HomePage() {
 
     const fetchRecentlyAdded = async () => {
         try {
-            let fetch = await fetchData("store/games/get-all/?sortBy=createdAt&limit=3");
-            const games = fetch.games;
+            if (!recentlyAdded) {
+                let fetch = await fetchData("store/games/get-all/?sortBy=createdAt&limit=3");
+                const games = fetch.games;
 
-            const gamesWithArtworks = await Promise.all(games.map(async (game) => {
-                const artworks_extracted = await fetchOnlyArtworks(game.artworks);
-                return { ...game, artworks_extracted };
-            }));
+                const gamesWithArtworks = await Promise.all(games.map(async (game) => {
+                    const artworks_extracted = await fetchOnlyArtworks(game.artworks);
+                    return { ...game, artworks_extracted };
+                }));
 
-            setRecentlyAdded(gamesWithArtworks);
+                setRecentlyAdded(gamesWithArtworks);
+            }
         } catch (error) {
             console.error("Error fetching recently added games with artworks:", error);
         }

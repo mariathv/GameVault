@@ -16,12 +16,12 @@ const gamesController = {
             //exact searched (lowercase == upper case)
             // const body = `fields *; where name ~ "${search_query}";`;
 
-            const body = `fields *; search "${search_query}"; where (version_parent = null) & (parent_game = null) & (name ~ *"${search_query}"*) & (rating != null);`;
+            const body = `fields *; search "${search_query}"; where (version_parent = null) & (name ~ *"${search_query}"*) & (rating != null);`;
             let searchData = await fetchIGDB(`games`, body);
 
             if (!searchData || searchData.length == 0) {
 
-                const body_alt = `fields *; search "${search_query} where (version_parent = null) & (parent_game = null)";`;
+                const body_alt = `fields *; search "${search_query}";`;
                 const searchData_alt = await fetchIGDB(`games`, body_alt);
 
                 if (!searchData_alt || searchData_alt.length == 0) {

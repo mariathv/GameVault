@@ -9,7 +9,8 @@ const authRouter = require("./routes/auth.router");
 const usersRouter = require("./routes/users.router");
 const gamesRouter = require("./routes/games.router");
 const storeRouter = require("./routes/store.router");
-const wishlistRouter = require("./routes/wishlist.router")
+const wishlistRouter = require("./routes/wishlist.router");
+const emailRouter = require("./routes/email.router");
 
 const app = express();
 
@@ -41,6 +42,7 @@ app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/games", gamesRouter);
 app.use("/api/v1/store", storeRouter);
 app.use("/api/v1/wishlist", wishlistRouter)
+app.use("/api/v1/mail", emailRouter)
 
 app.get("/", (req, res) => {
     res.send("Server Running");
