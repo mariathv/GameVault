@@ -18,10 +18,12 @@ function ViewGames() {
     const [selectedGame, setSelectedGame] = useState(null);
     const [search, setSearch] = useState("");
     const [isSearching, setIsSearching] = useState(false);
+    const [loading, isLoading] = useState(true);
 
     const navigate = useNavigate();
 
     const fetchGames = async () => {
+        isLoading(true);
         setIsSearching(true);
         try {
             const instoreGames = await fetchData("store/games/get-all/");
@@ -36,6 +38,7 @@ function ViewGames() {
             console.error("Error fetching games:", error);
         } finally {
             setIsSearching(false);
+            isLoading(false);
         }
     };
 
@@ -109,7 +112,7 @@ function ViewGames() {
                     </span>
                     <input
                         type="text"
-                        className="w-full pl-10 pr-4 py-2 border rounded-lg text-[#DDD9FE] focus:outline-none focus:border-white"
+                        className="w-full pl-10 pr-4 py-2 border-2 border-(--color-light-ed)/50 rounded-full text-[#DDD9FE] focus:outline-none "
                         placeholder="Search store games ..."
                         value={search}
                         onChange={handleSearchInputChange}
@@ -140,98 +143,125 @@ function ViewGames() {
                     </button>
                 </div>
             </div>
-
-            <div className="list-view">
-                {inStoreGames === null ? (
-                    <div className="flex justify-center items-center min-h-[200px] w-full">
-                        <div className="loader"></div>
-                    </div>
-                ) : inStoreGames.length === 0 ? (
-                    <div className="text-center py-10 text-[#EDEDED]">No games found</div>
-                ) : viewMode === "list" ? (
-                    inStoreGames.map((item) => (
-                        <div
-                            key={item.id}
-                            className={`list-item ${viewMode === "compact" ? "compact" : "detailed"} bg-(--color-background) p-4 rounded-lg shadow mb-3`}
-                            style={{ listStyleType: 'none' }}
-                        >
-                            <div className="flex flex-row gap-10 ">
-                                <div>
-                                    <Image className="w-20"
-                                        src={item.cover_url || 'fallback_image_url.jpg'}
-                                        borderRadius="5"
-                                        alt={item.name}
-                                    />
-                                </div>
-                                <div className="m-4">
-                                    <div className="flex justify-between items-center mb-4 font-bold text-[20px]">
-                                        <h3 className="text-[#EDEDED] text-1xl">{item.name}</h3>
-                                    </div>
-                                    <button className="bn3 bg-(--color-background)" onClick={() => openModal(item)}>
-                                        <FaEdit className="inline-block mr-2" /> Edit Details
-                                    </button>
-                                </div>
-                                <div className="m-4">
-                                    <div className="flex justify-between items-center">
-                                        <h3 className="text-[#EDEDED] text-1xl"> Copies : {item.gameKeys?.length || 0}</h3>
-                                    </div>
-                                    <div className="flex justify-between items-center">
-                                        <h3 className="text-[#EDEDED] text-1xl"> Price : ${item.price}</h3>
-                                    </div>
-                                    <div className="flex justify-between items-center">
-                                        <h3 className="text-[#EDEDED] text-1xl"> Discount : none</h3>
-                                    </div>
-                                </div>
-                            </div>
+            {loading ? (<div className="flex justify-center items-center min-h-[200px] w-full">
+                <div className="loader border-t-4 border-white"></div>
+            </div>) : (
+                <div className="list-view">
+                    {inStoreGames === null ? (
+                        <div className="flex justify-center items-center min-h-[200px] w-full">
+                            <div className="loader"></div>
                         </div>
-                    ))
-                ) : (
-                    // <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-                    //     {inStoreGames.map((game) => (
-                    //         <div key={game.id + game.name} className="bg-(--color-background) p-4 rounded-lg shadow flex flex-col">
-                    //             <div className="mb-3">
-                    //                 <AspectRatio maxW="auto" ratio={3 / 4}>
-                    //                     <Image
-                    //                         src={game.cover_url || 'fallback_image_url.jpg'}
-                    //                         borderTopRadius="10"
-                    //                         alt={game.name}
-                    //                     />
-                    //                 </AspectRatio>
-                    //             </div>
-                    //             <h3 className="text-x font-semibold mb-2 text-[#EDEDED]">{game.name}</h3>
-                    //             <div className="flex-grow" />
+                    ) : inStoreGames.length === 0 ? (
+                        <div className="text-center py-10 text-[#EDEDED]">No games found</div>
+                    ) : viewMode === "list" ? (
+                        <div className="bg-(--color-background) shadow overflow-hidden sm:rounded-md">
+                            <ul className="divide-y divide-gray-200/50">
+                                {inStoreGames.map((item) => (
+                                    <li key={item.id}>
+                                        <div className="px-4 py-4 sm:px-6">
+                                            <div className="flex items-center gap-4">
+                                                <div className="flex-shrink-0 h-20 w-20">
+                                                    <img
+                                                        className="h-20 w-20 rounded-lg object-cover"
+                                                        src={item.cover_url}
+                                                        alt={item.name}
+                                                    />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center justify-between pt-2">
+                                                        <div className="flex flex-col">
+                                                            <p className="text-lg font-medium text-(--color-foreground) truncate">
+                                                                {item.name}
+                                                            </p>
+                                                            <div className="flex pt-2">
+                                                                <button className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" onClick={() => openModal(item)}>
+                                                                    Edit
+                                                                </button>
+                                                            </div>
+                                                        </div>
 
-                    //             <button className="bn3" onClick={() => openModal(game)}>
-                    //                 <FaEdit className="text-[15px] inline-block mr-2" /> Edit Details
-                    //             </button>
-                    //         </div>
-                    //     ))}
-                    // </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-                        {inStoreGames.map((game) => (
-                            <Card key={game.id} className="bg-[#1D2127] border-[#2D3237] text-white overflow-hidden">
-                                <div className="p-2">
-                                    <AspectRatio ratio={3 / 4} className="overflow-hidden rounded-md">
-                                        <img
-                                            src={game.cover_url || "/placeholder.svg"}
-                                            alt={game.name}
-                                            className="object-cover w-full h-full"
-                                        />
-                                    </AspectRatio>
-                                </div>
-                                <CardContent className="p-4">
-                                    <h3 className="font-semibold mb-2 line-clamp-1">{game.name}</h3>
-                                    <div className="text-sm text-gray-400 mb-4">Price: ${game.price}</div>
-                                    <Button className="w-full bg-(--color-accent)/100 hover:bg-(--color-accent)/50 " onClick={() => openModal(game)}>
-                                        <Edit className="mr-2 h-4 w-4" /> Edit Details
-                                    </Button>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
+                                                        <div className="flex flex-col gap-2 pt-2">
+                                                            <div className="ml-2 flex-shrink-0 flex">
+                                                                <p className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                                    In Stock: {item.copies}
+                                                                </p>
 
-                )}
-            </div>
+                                                            </div>
+                                                            <div className="ml-2 flex-shrink-0 flex">
+                                                                <p className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-green-800">
+                                                                    Price: ${item.price}
+                                                                </p>
+
+                                                            </div>
+                                                            <div className="ml-2 flex-shrink-0 flex">
+                                                                <p className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-green-800">
+                                                                    Discount: None
+                                                                </p>
+
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <p className="mt-2 text-sm font-medium text-gray-900">
+                                                        ${item.price.toFixed(2)}
+                                                    </p>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+
+                    ) : (
+                        // <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                        //     {inStoreGames.map((game) => (
+                        //         <div key={game.id + game.name} className="bg-(--color-background) p-4 rounded-lg shadow flex flex-col">
+                        //             <div className="mb-3">
+                        //                 <AspectRatio maxW="auto" ratio={3 / 4}>
+                        //                     <Image
+                        //                         src={game.cover_url || 'fallback_image_url.jpg'}
+                        //                         borderTopRadius="10"
+                        //                         alt={game.name}
+                        //                     />
+                        //                 </AspectRatio>
+                        //             </div>
+                        //             <h3 className="text-x font-semibold mb-2 text-[#EDEDED]">{game.name}</h3>
+                        //             <div className="flex-grow" />
+
+                        //             <button className="bn3" onClick={() => openModal(game)}>
+                        //                 <FaEdit className="text-[15px] inline-block mr-2" /> Edit Details
+                        //             </button>
+                        //         </div>
+                        //     ))}
+                        // </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                            {inStoreGames.map((game) => (
+                                <Card key={game.id} className="bg-[#1D2127] border-[#2D3237] text-white overflow-hidden">
+                                    <div className="p-2">
+                                        <AspectRatio ratio={3 / 4} className="overflow-hidden rounded-md">
+                                            <img
+                                                src={game.cover_url || "/placeholder.svg"}
+                                                alt={game.name}
+                                                className="object-cover w-full h-full"
+                                            />
+                                        </AspectRatio>
+                                    </div>
+                                    <CardContent className="p-4">
+                                        <h3 className="font-semibold mb-2 line-clamp-1">{game.name}</h3>
+                                        <div className="text-sm text-gray-400 mb-4">Price: ${game.price}</div>
+                                        <Button className="w-full bg-(--color-accent)/100 hover:bg-(--color-accent)/50 " onClick={() => openModal(game)}>
+                                            <Edit className="mr-2 h-4 w-4" /> Edit Details
+                                        </Button>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </div>
+
+                    )}
+                </div>
+            )}
 
             {selectedGame && isModalOpen && (
                 // <Modal

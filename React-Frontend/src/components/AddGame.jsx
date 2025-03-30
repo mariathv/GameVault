@@ -112,7 +112,7 @@ function AddGame() {
                     </span>
                     <input
                         type="text"
-                        className="w-full pl-10 pr-4 py-2 border rounded-lg text-[#DDD9FE] focus:outline-none focus:border-white"
+                        className="w-full pl-10 pr-4 py-2 border-2 border-(--color-light-ed)/50 rounded-full text-[#DDD9FE] focus:outline-none "
                         placeholder="Search for games..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}

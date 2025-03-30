@@ -10,5 +10,5 @@ export default {
 	prefix: "",
 
 	// Note: tailwindcss-animate plugin may need to be updated for v4 compatibility
-	plugins: [],
+	plugins: { tailwindcss: {} },
 }

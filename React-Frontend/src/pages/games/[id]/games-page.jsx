@@ -36,7 +36,8 @@ export default function GamePage() {
     const [videos, setVideos] = useState(null);
     const [gameFeatures, setFeatures] = useState(null);
     const [companies, setCompanies] = useState(null);
-    const [loading, setLoading] = useState(true); // Add loading state
+    const [themes, setThemes] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     const fetchGameData = async () => {
         try {
@@ -51,7 +52,8 @@ export default function GamePage() {
                 fetchGameScreenshots(gameData.screenshots),
                 fetchGameGenres(gameData.genres),
                 fetchGameVideos(gameData.videos),
-                fetchGameCompanies(gameData.involved_companies)
+                fetchGameCompanies(gameData.involved_companies),
+                fetchGameThemes(gameData.themes)
             ];
 
             setFeatures(extractFeaturesFromGame(gameData));
@@ -92,8 +94,12 @@ export default function GamePage() {
         setCompanies(fetch.queryResult);
     }
 
+    const fetchGameThemes = async (thms) => {
+        let fetch = await fetchData(`games/get/themes?ids=${thms}`);
+        setThemes(fetch.queryResult);
+    }
+
     useEffect(() => {
-        console.log("gonna fetch");
         if (game == null || !game) fetchGameData();
     }, []);
 
@@ -146,6 +152,45 @@ export default function GamePage() {
     return (
         <div className="min-h-screen bg-(--color-background)">
             <Header />
+            {artworks &&
+                <div className="h-150 bg-image-dark" style={{ backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url(${createImageUrl(artworks[0]?.image_id)})` }}>
+                    <div className="flex gap-20 justify-center items-center py-30">
+                        <img src={game.cover_url} alt={game.name.toUpperCase()} className="h-[320px] object-cover" />
+                        <div className="flex-row flex-1 max-w-lg">
+                            <h1 className="text-white font-bold text-3xl">{game.name.toUpperCase()}</h1>
+                            <p className="text-white/80 line-clamp-3 text-sm pt-2">
+                                {game.storyline}
+                            </p>
+                            {themes && themes.length > 0 ? (
+                                themes.slice(0, 3).map((theme, index) => (
+                                    <Badge key={index} variant="outline" className="border-(--color-light-ed)/20 bg-[#EDEDED]/5 mr-2 text-white/80 mt-2">
+                                        {theme.name}
+                                    </Badge>
+                                ))
+                            ) : (<></>
+                            )}
+                            <div className="mt-5 flex gap-10">
+                                <div className="bg-yellow-500 rounded-full w-10 h-10 flex items-center justify-center mr-2">
+                                    <span className="text-black font-bold">{game.rating.toFixed(1)}</span>
+                                </div>
+                                <div className="text-white font-bold text-5xl">
+                                    {game.price} $
+                                </div>
+                            </div>
+                            <div>
+
+                                <button className="text-white border border-white px-10 rounded-full text-sm mt-5 py-1 transform transition duration-300 hover:scale-105" onClick={() => addToCart(game)}>
+                                    BUY
+                                </button>
+
+                            </div>
+                        </div>
+
+
+                    </div>
+
+                </div>
+            }
 
             <main className="container mx-auto px-4 py-8">
                 <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
@@ -155,7 +200,7 @@ export default function GamePage() {
                             <img
                                 src={
                                     activeScreenshot === 0 && artworks && artworks.length > 0
-                                        ? createImageUrl(artworks[0]?.image_id)
+                                        ? createImageUrl(artworks[1]?.image_id || artworks[0]?.image_id)
                                         : screenshots && screenshots.length > 0
                                             ? createImageUrl(screenshots[activeScreenshot - 1]?.image_id)
                                             : "/placeholder.svg" // Fallback image if screenshots are null or empty
@@ -171,7 +216,7 @@ export default function GamePage() {
                                 className={`overflow-hidden rounded-md border-2 ${activeScreenshot === 0 ? "border-(--color-foreground)" : "border-transparent"}`}
                             >
                                 <img
-                                    src={artworks && createImageUrl(artworks[0]?.image_id) || "/placeholder.svg"}
+                                    src={artworks && createImageUrl(artworks[1]?.image_id || artworks[0]?.image_id) || "/placeholder.svg"}
                                     alt="Main"
                                     className="w-full h-auto object-cover aspect-video"
                                 />

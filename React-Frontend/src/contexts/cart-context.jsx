@@ -2,11 +2,13 @@
 
 import { createContext, useContext, useState, useEffect } from "react";
 import { initialCart, calculateCartTotals } from "@/dummydata-lib/data";
+import { Navigate, useNavigate } from "react-router-dom";
 
 const CartContext = createContext(undefined);
 
 export function CartProvider({ children }) {
     const [cart, setCart] = useState(initialCart);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const savedCart = localStorage.getItem("gameVaultCart");
@@ -38,11 +40,9 @@ export function CartProvider({ children }) {
                 updatedItems = [...prevCart.items, { game, quantity: 1 }];
             }
 
-            console.log(updatedItems);
-
             const { subtotal, tax, total } = calculateCartTotals(updatedItems);
+            navigate("/cart")
 
-            console.log(total, tax, subtotal);
             return { items: updatedItems, subtotal, tax, total };
         });
     };
