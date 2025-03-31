@@ -121,6 +121,51 @@ const storeController = {
             return res.status(500).json({ success: false, message: "Failed to set featured game", error: error.message });
         }
     },
+    addGameDiscount: async (req, res) => {
+        const { gameId, discount } = req.body;
+
+        if (!gameId) {
+            return res.status(400).json({ success: false, message: "Game ID is missing!" });
+        }
+
+        try {
+            const updatedGame = await Store.findOneAndUpdate(
+                { _id: gameId },
+                { isDiscount: true, discountPercentage: discount },
+                { new: true }
+            );
+
+            if (!updatedGame) {
+                return res.status(404).json({ success: false, message: "Game not found" });
+            }
+
+            console.log("Set discount successfully", gameId, "discount", discount);
+            return res.status(200).json({ success: true, message: "Game discount added", game: updatedGame });
+        } catch (error) {
+            console.error("Error setting discount game:", error);
+            return res.status(500).json({ success: false, message: "Failed to set discount game", error: error.message });
+        }
+    },
+    getGameDiscount: async (req, res) => {
+        try {
+            const { gameId } = req.body;
+            const game = await Store.findOne({ _id: gameId });
+
+            if (!game) {
+                return res.status(404).json({ success: false, message: "No game found" });
+            }
+
+            discount = game.discountPercentage || 0;
+
+            return res.status(200).json({ success: true, message: "Discount retrieved", discount });
+
+
+        } catch (error) {
+            console.error("Error retrieving  game:", error);
+            return res.status(500).json({ success: false, message: "Failed to retrieve  game", error: error.message });
+        }
+    },
+
     getFeaturedGame: async (req, res) => {
         try {
             const featuredGame = await Store.findOne({ isFeatured: true });

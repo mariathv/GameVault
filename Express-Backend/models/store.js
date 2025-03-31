@@ -55,6 +55,8 @@ const StoreSchema = new mongoose.Schema({
     price: Number,
     copies: Number,
     isFeatured: Boolean,
+    isDiscount: Boolean,
+    discountPercentage: Number,
 
     // Timestamps
     createdAt: {

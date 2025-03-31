@@ -68,7 +68,7 @@ function GameCardExtended({
                     className="w-full h-full object-cover"
                 />
                 <div className="absolute bottom-2 left-2 bg-yellow-400 px-2 py-1 rounded">
-                    <span className="font-bold text-black">{featuredGame.price}</span>
+                    <span className="font-bold text-black">${featuredGame.price}</span>
                 </div>
                 <div className="absolute bottom-0 left-0 right-0 h-25    bg-gradient-to-t from-black to-transparent"></div>
                 <div className="absolute bottom-12 left-2">
@@ -107,7 +107,7 @@ function GameCardExtended({
                         <div className="flex flex-wrap mb-4">
                             {themes && themes.length > 0 && themes.map((theme, themetag) => (
                                 <div key={themetag} className="bg-gray-800/80 rounded-full px-3 py-1 mr-2 mb-2">
-                                    <span className="text-white text-xs">{theme.name}</span>
+                                    <div className="text-white text-xs">{theme.name}</div>
                                 </div>
                             ))}
 

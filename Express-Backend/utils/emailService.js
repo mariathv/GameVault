@@ -1,5 +1,3 @@
-// emailService.js
-
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
@@ -10,13 +8,18 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-const sendMail = (to, subject, text) => {
+const sendMail = (to, subject, content, isHtml = false) => {
     const mailOptions = {
         from: process.env.SMTP_MAIL,
         to,
         subject,
-        text
     };
+
+    if (isHtml) {
+        mailOptions.html = content;
+    } else {
+        mailOptions.text = content;
+    }
 
     return transporter.sendMail(mailOptions);
 };

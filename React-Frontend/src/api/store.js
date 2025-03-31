@@ -43,3 +43,21 @@ export const getFeatured = async () => {
     }
 }
 
+export const setGameDiscount = async (gameId, discount) => {
+    try {
+        console.log("sicsjiad", discount);
+        let url = `store/set-discount/`;
+
+        const response = await api.post(url, {
+            gameId,
+            discount,
+        });
+
+        return response.data;
+    } catch (error) {
+        console.error('Failed to set game discount:', error?.response?.data || error.message);
+        throw error;
+    }
+};
+
+
