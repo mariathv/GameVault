@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            text-align: center;
+        }
+
+        .logo {
+            margin-bottom: 10px;
+            font-size: 24px;
+            color: #888;
+        }
+
+        .back-link {
+            text-align: right;
+            margin-bottom: 30px;
+        }
+
+        .back-link a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        .eyes {
+            margin: 20px 0;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 30px;
+        }
+
+        .content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        .instruction {
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .button {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            margin: 20px 0;
+        }
+
+        .email-display {
+            margin: 20px 0;
+            color: #888;
+        }
+
+        .email-display a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        .footer {
+            font-size: 12px;
+            color: #888;
+            margin-top: 20px;
+        }
+
+        .disclaimer {
+            font-size: 12px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="logo">GameVault </div>
+        <div class="eyes">
+            <span style="font-size: 24px;">🔑</span>
+        </div>
+        <h1>Password reset</h1>
+        <div class="content">
+            <p class="message">Someone requested that the password be reset for your account</p>
+            <p class="instruction">To reset your password, visit the following address:</p>
+            <a href="{{resetLink}}" class="button">Click here to reset your password</a>
+            <p class="email-display">Your email: <a href="mailto:{{email}}">{{email}}</a></p>
+            <p class="disclaimer">If this was a mistake, just ignore this email and nothing will happen.</p>
+        </div>
+        <div class="footer">
+            Copyright © 2025 GameVault. All Rights Reserved.
+        </div>
+    </div>
+</body>
+
+</html>

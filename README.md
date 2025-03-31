@@ -1,5 +1,5 @@
 
-# GameVault: A Digital Marketplace and Top-Up Store
+# GameVault: A Digital Marketplace
 
 ![Home](React-Frontend/previews/home.png)
 ![Home](React-Frontend/previews/admin.png)
@@ -25,7 +25,7 @@
 
 
 ## Description
-**GameVault** is a web-based platform where users can purchase video games, top-up in-game currencies, and explore game details. The platform integrates external APIs (like Steam and RAWG) to fetch game data while utilizing a custom backend for user management, transactions, and digital purchases.
+**GameVault** is a web-based platform where users can purchase video games and explore game details. The platform integrates external APIs (like Steam and RAWG) to fetch game data while utilizing a custom backend for user management, transactions, and digital purchases.
 
 ## Scope
 GameVault is a digital marketplace and top-up store for gamers, providing seamless access to game purchases and in-game currency. It consists of two core modules:
