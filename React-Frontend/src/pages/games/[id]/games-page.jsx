@@ -20,6 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Header from "@/src/components/Header";
 import { games } from "@/dummydata-lib/data";
 import { useCart } from "@/src/contexts/cart-context";
+import { SiStockx } from "react-icons/si";
 
 
 export default function GamePage() {
@@ -178,10 +179,13 @@ export default function GamePage() {
                                 </div>
                             </div>
                             <div>
-
-                                <button className="text-white border border-white px-10 rounded-full text-sm mt-5 py-1 transform transition duration-300 hover:scale-105" onClick={() => addToCart(game)}>
-                                    BUY
-                                </button>
+                                {
+                                    game.copies > 0 ? (
+                                        <button className="text-white border border-white px-10 rounded-full text-sm mt-5 py-1 transform transition duration-300 hover:scale-105" onClick={() => addToCart(game)}>
+                                            BUY
+                                        </button>
+                                    ) : (<div className=" mt-5 font-bold text-red-400"> Out of Stock</div>)
+                                }
 
                             </div>
                         </div>
@@ -277,13 +281,18 @@ export default function GamePage() {
                         </div>
 
                         <div className="flex flex-col gap-3 mb-6">
-                            <Button
+                            {game.copies > 0 ? (<Button
                                 className="w-full bg-(--color-light-ed) text-(--color-alt-foreground) hover:bg-[#EDEDED]/90"
                                 onClick={() => addToCart(game)}
                             >
                                 <ShoppingCart className="mr-2 h-4 w-4" />
                                 Add to Cart
-                            </Button>
+                            </Button>) : (<Button
+                                className="w-full bg-(--color-light-ed) text-(--color-alt-foreground) hover:bg-[#EDEDED]/90"
+                            >
+                                <SiStockx className="mr-2 h-4 w-4" />
+                                Out Of Stock
+                            </Button>)}
 
                             <Button
                                 variant="outline"

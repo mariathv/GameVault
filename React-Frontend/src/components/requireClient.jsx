@@ -1,12 +1,11 @@
-
-import { useAuth } from "../contexts/auth-context";
-import { Navigate } from "react-router-dom";
+import { Navigate } from 'react-router-dom';
+import { useAuth } from '../contexts/auth-context';
 
 const RequireClient = ({ children }) => {
     const { user } = useAuth();
 
-    if (user?.role === "admin") {
-        return <Navigate to="/admin" replace />;
+    if (!user) {
+        return <Navigate to="/login" />;
     }
 
     return children;

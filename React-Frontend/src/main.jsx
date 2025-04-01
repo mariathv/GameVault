@@ -23,14 +23,15 @@ import ViewGames from './components/ViewGames';
 import Settings from './components/Settings';
 import Purchases from './components/Purchases';
 import { Footer } from './components/Footer';
-import RequireClient from './components/requireClient';
 
 
 import RequireAdmin from './components/RequireAdmin';
+import RequireClient from './components/RequireClient';
 import Users from './pages/admin/Users';
 import Profile from './pages/profile/profile';
 import ExplorePage from './pages/explore/explore';
 import CheckoutPage from './pages/checkout/checkout';
+
 
 console.log("-------> in main");
 
@@ -52,8 +53,10 @@ createRoot(document.getElementById('root')).render(
                   <Route path="/wishlist" element={<WishlistPage />} />
                   <Route path="/explore" element={<ExplorePage />} />
                   <Route path="/profile" element={<Profile />} />
-                  <Route path="/checkout/" element={<CheckoutPage />} />
 
+                  {/* Client protected routes (User must Login to access)*/}
+                  <Route path="/checkout/" element={<RequireClient><CheckoutPage /></RequireClient>} />
+                  <Route path="/wishlist" element={<RequireClient><WishlistPage /></RequireClient>} />
 
                   {/* Admin Routes protected by RequireAdmin */}
                   <Route path="/admin" element={<RequireAdmin><AdminApp /></RequireAdmin>}>

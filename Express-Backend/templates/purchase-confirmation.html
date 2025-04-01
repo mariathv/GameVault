@@ -34,7 +34,7 @@
             background-color: #e0ffe0;
             border-radius: 4px;
             font-weight: bold;
-            color: #2b8a3e;
+            color: #335e86;
         }
 
         .footer {
@@ -49,12 +49,15 @@
     <div class="email-container">
         <div class="header">Thank You for Your Purchase!</div>
         <div class="content">
-            <p>Hello [User's Name],</p>
             <p>We’re excited to confirm your purchase. Here are your details:</p>
-            <p><strong>Game Title:</strong> [Game Title]</p>
-            <p><strong>Order ID:</strong> [Order ID]</p>
-            <div class="game-key">Game Key: [Game Key]</div>
-            <p>Redeem your game using the provided key. Enjoy your adventure!</p>
+            <p><strong>Order ID:</strong> {{this.orderID}}</p>
+            {{#each games}}
+            <p><strong>Game Title:</strong> {{this.title}}</p>
+            <div class="game-key">
+                <p><strong>Game Keys:</strong> {{this.gameKeys}}</p>
+            </div>
+            {{/each}}
+            <p>Redeem your game using the provided key(s). Enjoy your adventure!</p>
         </div>
         <div class="footer">
             &copy; 2025 GameVault. All rights reserved.

@@ -12,11 +12,18 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Header from "@/src/components/Header"
 import { useCart } from "@/src/contexts/cart-context"
+import { FaCreditCard } from "react-icons/fa"
+import { SiVisa, SiMastercard, SiPaypal, SiAmericanexpress, SiDiscover } from "react-icons/si";
+import { placeOrder } from "@/src/api/order"
+import { useAuth } from "@/src/contexts/auth-context"
 
 export default function CheckoutPage() {
     const navigate = useNavigate()
+
+    const { user } = useAuth();
     const { cart, clearCart } = useCart()
     const [paymentMethod, setPaymentMethod] = useState("credit-card")
+    const [processedData, setProcessedData] = useState(null);
     const [formState, setFormState] = useState({
         firstName: "",
         lastName: "",
@@ -30,8 +37,76 @@ export default function CheckoutPage() {
         expiryDate: "",
         cvv: "",
     })
+
+    const [errors, setErrors] = useState({
+        firstName: "",
+        lastName: "",
+        email: "",
+        address: "",
+        city: "",
+        state: "",
+        zipCode: "",
+        cardNumber: "",
+        cardName: "",
+        expiryDate: "",
+        cvv: ""
+    });
+
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [isComplete, setIsComplete] = useState(false)
+
+    const validateForm = () => {
+        let validationErrors = {};
+        let formValid = true;
+
+        // Check if required fields are filled
+        if (!formState.firstName) {
+            validationErrors.firstName = "First Name is required";
+            formValid = false;
+        }
+        if (!formState.lastName) {
+            validationErrors.lastName = "Last Name is required";
+            formValid = false;
+        }
+        if (!formState.email) {
+            validationErrors.email = "Email is required";
+            formValid = false;
+        }
+        if (!formState.address) {
+            validationErrors.address = "Address is required";
+            formValid = false;
+        }
+        if (!formState.city) {
+            validationErrors.city = "City is required";
+            formValid = false;
+        }
+        if (!formState.zipCode) {
+            validationErrors.zipCode = "ZIP Code is required";
+            formValid = false;
+        }
+        if (paymentMethod === "credit-card") {
+            if (!formState.cardNumber) {
+                validationErrors.cardNumber = "Card Number is required";
+                formValid = false;
+            }
+            if (!formState.cardName) {
+                validationErrors.cardName = "Name on Card is required";
+                formValid = false;
+            }
+            if (!formState.expiryDate) {
+                validationErrors.expiryDate = "Expiry Date is required";
+                formValid = false;
+            }
+            if (!formState.cvv) {
+                validationErrors.cvv = "CVV is required";
+                formValid = false;
+            }
+        }
+
+        setErrors(validationErrors);
+        return formValid;
+    };
+
 
     const handleInputChange = (e) => {
         const { name, value } = e.target
@@ -41,39 +116,81 @@ export default function CheckoutPage() {
         }))
     }
 
-    const handleSubmit = (e) => {
-        e.preventDefault()
-        setIsSubmitting(true)
+    const handleSubmit = async (e) => {
+        e.preventDefault();
 
-        // Simulate API call
-        setTimeout(() => {
-            setIsSubmitting(false)
-            setIsComplete(true)
-            clearCart()
-        }, 1500)
-    }
+        setIsSubmitting(true);
+        console.log(user, "userid");
+
+        const orderData = {
+            userId: user._id,
+            games: cart.items.map(item => ({
+                gameId: item.game._id,
+                quantity: item.quantity,
+            })),
+            paymentMethod,
+        };
+
+        try {
+            const response = await placeOrder(orderData.userId, orderData.games, orderData.paymentMethod);
+
+            console.log(response);
+            setProcessedData(response);
+
+            setIsSubmitting(false);
+            setIsComplete(true);
+            clearCart();
+        } catch (error) {
+            setIsSubmitting(false);
+        }
+
+    };
+
 
     if (isComplete) {
         return (
             <div className="min-h-screen bg-(--color-background)">
                 <Header />
-                <main className="container mx-auto px-4 py-16">
-                    <div className="max-w-md mx-auto text-center">
-                        <div className="mx-auto w-24 h-24 rounded-full bg-(--color-light-ed)/5 flex items-center justify-center mb-6">
-                            <CheckCircle className="h-12 w-12 text-green-400" />
+                <main className=" container mx-auto px-4 py-16">
+                    <div className="max-w-5xl mx-auto gap-8 flex flex-row items-center">
+
+                        <div className="w-full md:w-1/2 max-w-md mx-auto text-center">
+                            <div className="mx-auto w-24 h-24 rounded-full bg-(--color-light-ed)/5 flex items-center justify-center mb-6">
+                                <CheckCircle className="h-12 w-12 text-green-400" />
+                            </div>
+                            <h1 className="text-3xl font-bold text-(--color-light-ed) mb-4">Order Complete!</h1>
+                            <p className="text-(--color-light-ed)/80 mb-8">
+                                Thank you for your purchase. Your order has been processed successfully. You will receive a confirmation email shortly.
+                            </p>
+                            <Button className="bg-[#EDEDED] text-[#030404] hover:bg-[#EDEDED]/90" onClick={() => navigate("/")}>
+                                Continue Shopping
+                            </Button>
                         </div>
-                        <h1 className="text-3xl font-bold text-(--color-light-ed) mb-4">Order Complete!</h1>
-                        <p className="text-(--color-light-ed)/80 mb-8">
-                            Thank you for your purchase. Your order has been processed successfully. You will receive a confirmation
-                            email shortly.
-                        </p>
-                        <Button className="bg-[#EDEDED] text-[#030404] hover:bg-[#EDEDED]/90" onClick={() => navigate("/")}>
-                            Continue Shopping
-                        </Button>
+                        <div className="flex flex-col items-center text-center">
+                            <div className="space-y-4">
+                                {processedData?.order?.games?.map((game, index) => (
+                                    <div
+                                        key={game.gameId}
+                                        className="bg-(--color-light-ed)/5 p-6 rounded-lg shadow-md w-full max-w-xs"
+                                    >
+                                        <h4 className="text-lg font-semibold text-(--color-light-ed)">{game.title}</h4>
+                                        <p className="text-(--color-light-ed)/80 mt-2">
+                                            {game.gameKeys.map((key, keyIndex) => (
+                                                <span key={keyIndex} className="font-bold block mt-2">
+                                                    Game Key {keyIndex + 1}: {key}
+                                                </span>
+                                            ))}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+
                     </div>
                 </main>
             </div>
-        )
+        );
     }
 
     return (
@@ -93,49 +210,6 @@ export default function CheckoutPage() {
                 <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
                     <div className="lg:col-span-2">
                         <form onSubmit={handleSubmit}>
-                            <Card className="border-(--color-light-ed)/10 bg-(--color-light-ed)/5 text-(--color-light-ed) mb-6">
-                                <CardHeader>
-                                    <CardTitle>Contact Information</CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="firstName">First Name</Label>
-                                            <Input
-                                                id="firstName"
-                                                name="firstName"
-                                                value={formState.firstName}
-                                                onChange={handleInputChange}
-                                                required
-                                                className="bg-(--color-light-ed)/5 border-(--color-light-ed)/10 text-(--color-light-ed)"
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="lastName">Last Name</Label>
-                                            <Input
-                                                id="lastName"
-                                                name="lastName"
-                                                value={formState.lastName}
-                                                onChange={handleInputChange}
-                                                required
-                                                className="bg-(--color-light-ed)/5 border-(--color-light-ed)/10 text-(--color-light-ed)"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="email">Email</Label>
-                                        <Input
-                                            id="email"
-                                            name="email"
-                                            type="email"
-                                            value={formState.email}
-                                            onChange={handleInputChange}
-                                            required
-                                            className="bg-(--color-light-ed)/5 border-(--color-light-ed)/10 text-(--color-light-ed)"
-                                        />
-                                    </div>
-                                </CardContent>
-                            </Card>
 
                             <Card className="border-(--color-light-ed)/10 bg-(--color-light-ed)/5 text-(--color-light-ed) mb-6">
                                 <CardHeader>
@@ -165,7 +239,7 @@ export default function CheckoutPage() {
                                                 className="bg-(--color-light-ed)/5 border-(--color-light-ed)/10 text-(--color-light-ed)"
                                             />
                                         </div>
-                                        <div className="space-y-2">
+                                        {/* <div className="space-y-2">
                                             <Label htmlFor="state">State</Label>
                                             <Select
                                                 onValueChange={(value) => setFormState((prev) => ({ ...prev, state: value }))}
@@ -182,10 +256,9 @@ export default function CheckoutPage() {
                                                     <SelectItem value="CO">Colorado</SelectItem>
                                                     <SelectItem value="NY">New York</SelectItem>
                                                     <SelectItem value="TX">Texas</SelectItem>
-                                                    {/* Add more states as needed */}
                                                 </SelectContent>
                                             </Select>
-                                        </div>
+                                        </div> */}
                                         <div className="space-y-2">
                                             <Label htmlFor="zipCode">ZIP Code</Label>
                                             <Input
@@ -211,7 +284,7 @@ export default function CheckoutPage() {
                                             <RadioGroupItem value="credit-card" id="credit-card" />
                                             <Label htmlFor="credit-card" className="flex-1 cursor-pointer">
                                                 <div className="flex items-center">
-                                                    <CreditCard className="mr-2 h-5 w-5" />
+                                                    <FaCreditCard className="mr-2 h-5 w-5" />
                                                     Credit / Debit Card
                                                 </div>
                                             </Label>
@@ -220,34 +293,7 @@ export default function CheckoutPage() {
                                             <RadioGroupItem value="paypal" id="paypal" />
                                             <Label htmlFor="paypal" className="flex-1 cursor-pointer">
                                                 <div className="flex items-center">
-                                                    <svg
-                                                        className="mr-2 h-5 w-5"
-                                                        viewBox="0 0 24 24"
-                                                        fill="none"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                    >
-                                                        <path
-                                                            d="M19.5 8.5H18.5C18.5 5.74 16.26 3.5 13.5 3.5H7.5C4.74 3.5 2.5 5.74 2.5 8.5C2.5 11.26 4.74 13.5 7.5 13.5H10.5C13.26 13.5 15.5 15.74 15.5 18.5C15.5 21.26 13.26 23.5 10.5 23.5H4.5"
-                                                            stroke="currentColor"
-                                                            strokeWidth="1.5"
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                        />
-                                                        <path
-                                                            d="M12 3.5V8.5"
-                                                            stroke="currentColor"
-                                                            strokeWidth="1.5"
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                        />
-                                                        <path
-                                                            d="M8 5.5L12 8.5L16 5.5"
-                                                            stroke="currentColor"
-                                                            strokeWidth="1.5"
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                        />
-                                                    </svg>
+                                                    <SiPaypal className="mr-2 h-6 w-6 text-blue-600" />
                                                     PayPal
                                                 </div>
                                             </Label>
@@ -256,6 +302,18 @@ export default function CheckoutPage() {
 
                                     {paymentMethod === "credit-card" && (
                                         <div className="space-y-4 mt-4 p-4 border-(--color-light-ed)/10 rounded-md">
+
+                                            <div className="flex gap-6 p-2  text-sm ">
+                                                <div className="flex flex-col items-center space-y-2 cursor-pointer hover:text-blue-600">
+                                                    <SiVisa className="h-6 w-6 text-blue-500" />
+                                                </div>
+                                                <div className="flex flex-col items-center space-y-2 cursor-pointer hover:text-red-600">
+                                                    <SiMastercard className="h-6 w-6  text-red-500" />
+                                                </div>
+                                                <div className="flex flex-col items-center space-y-2 cursor-pointer hover:text-blue-600">
+                                                    <SiDiscover className="h-6 w-6  text-blue-600" />
+                                                </div>
+                                            </div>
                                             <div className="space-y-2">
                                                 <Label htmlFor="cardNumber">Card Number</Label>
                                                 <Input

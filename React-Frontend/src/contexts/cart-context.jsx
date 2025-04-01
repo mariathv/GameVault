@@ -1,10 +1,29 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect } from "react";
-import { initialCart, calculateCartTotals } from "@/dummydata-lib/data";
+import { initialCart } from "@/dummydata-lib/data";
 import { Navigate, useNavigate } from "react-router-dom";
 
 const CartContext = createContext(undefined);
+
+const calculateCartTotals = (items) => {
+    const subtotal = items.reduce((total, item) => {
+        const game = item.game; // No need to look up game, it's already in the cart
+        if (!game) return total;
+
+        const price = game.onSale ? game.price * (1 - game.discount / 100) : game.price;
+        return total + price * item.quantity;
+    }, 0);
+
+    const tax = subtotal * 0.08; // 8% tax
+    const total = subtotal + tax;
+
+    return {
+        subtotal: Number.parseFloat(subtotal.toFixed(2)),
+        tax: Number.parseFloat(tax.toFixed(2)),
+        total: Number.parseFloat(total.toFixed(2)),
+    };
+};
 
 export function CartProvider({ children }) {
     const [cart, setCart] = useState(initialCart);
