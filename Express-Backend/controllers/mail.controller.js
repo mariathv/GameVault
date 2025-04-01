@@ -4,20 +4,24 @@ const path = require('path');
 const handlebars = require('handlebars');
 
 const mailController = {
-    purchaseConfirmation: async (req, res) => {
-        const { email, gameKey } = req.body;
-
+    purchaseConfirmation: async (email, games, orderID) => {
         try {
             const templatePath = path.join(__dirname, '../templates/purchase-confirmation.html');
             const templateContent = await fs.readFile(templatePath, 'utf8');
-
             const template = handlebars.compile(templateContent);
-            const htmlContent = template({ email, gameKey });
 
-            await sendMail(email, "Purchase Confirmation", htmlContent, true);
-            res.status(200).send('Purchase confirmation email sent!');
+            const gameDetails = games.map((game) => ({
+                title: game.title,
+                gameKeys: game.gameKeys.join(', ') // Join all game keys for this game
+            }));
+
+            const htmlContent = template({ email, games: gameDetails, orderID });
+
+            await sendMail(email, 'Purchase Confirmation', htmlContent, true);
+            console.log('Purchase confirmation email sent!');
         } catch (error) {
-            res.status(500).send('Failed to send email');
+            console.error('Failed to send email:', error?.response?.data || error.message);
+            throw error;
         }
     },
 

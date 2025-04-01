@@ -94,10 +94,10 @@ const GamesGrid = ({ filteredGames, gridCol = 4, variant = "default", start = 0,
                             onClick={(e) => {
                                 e.preventDefault()
                                 addToCart(game)
-                                navigate("/cart")
+                                navigate(`/games/${game.id}`)
                             }}
                         >
-                            Add to Cart
+                            Buy
                         </Button>
                     </CardFooter>
                 </Card>

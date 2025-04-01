@@ -97,6 +97,8 @@ export function AuthProvider({ children }) {
             setUser(response.data?.user)
             setIsAuthenticated(true)
             localStorage.setItem("gamevault_user", JSON.stringify(response.data?.user))
+            localStorage.setItem("gamevault_token", response.token);
+
             return Promise.resolve(response.data?.user)
         } else {
             return Promise.resolve(null);
