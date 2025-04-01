@@ -56,16 +56,20 @@ export default function HomePage() {
 
     const fetchRecentlyAdded = async () => {
         try {
-            if (!recentlyAdded) {
-                let fetch = await fetchData("store/games/get-all/?sortBy=createdAt&limit=3");
-                const games = fetch.games;
+            let success = false;
+            while (!success) {
+                if (!recentlyAdded) {
+                    let fetch = await fetchData("store/games/get-all/?sortBy=createdAt&limit=3");
+                    const games = fetch.games;
 
-                const gamesWithArtworks = await Promise.all(games.map(async (game) => {
-                    const artworks_extracted = await fetchOnlyArtworks(game.artworks);
-                    return { ...game, artworks_extracted };
-                }));
+                    const gamesWithArtworks = await Promise.all(games.map(async (game) => {
+                        const artworks_extracted = await fetchOnlyArtworks(game.artworks);
+                        return { ...game, artworks_extracted };
+                    }));
 
-                setRecentlyAdded(gamesWithArtworks);
+                    setRecentlyAdded(gamesWithArtworks);
+                    success = true;
+                }
             }
         } catch (error) {
             console.error("Error fetching recently added games with artworks:", error);
@@ -75,7 +79,7 @@ export default function HomePage() {
 
 
     const fetchTopRated = async () => {
-        let fetch = await fetchData("store/games/get-all/?sortBy=rating&limit=20");
+        let fetch = await fetchData("store/games/get-all/?sortBy=rating&limit=10");
         setTopRated(fetch.games);
     }
 
@@ -112,15 +116,28 @@ export default function HomePage() {
     };
 
     useEffect(() => {
-        if (popularGames == null || !popularGames)
-            fetchPopularGames();
-        if (recentlyAdded == null || !recentlyAdded)
-            fetchRecentlyAdded()
-        if (topRated == null || !topRated)
-            fetchTopRated();
-        if (featuredGame == null || !featuredGame)
-            fetchFeatured();
-    }, [])
+        const fetchData = async () => {
+            try {
+                if (!popularGames) {
+                    await fetchPopularGames();
+                }
+                if (!featuredGame) {
+                    await fetchFeatured();
+                }
+                if (!recentlyAdded) {
+                    await fetchRecentlyAdded();
+                }
+                if (!topRated) {
+                    await fetchTopRated();
+                }
+
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        };
+
+        fetchData();
+    }, []);
 
     useEffect(() => {
         fetchGenreGames();

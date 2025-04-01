@@ -222,7 +222,7 @@ export default function GamePage() {
                                 />
                             </button>
 
-                            {screenshots?.slice(0, 4).map((screenshot, index) => (
+                            {screenshots && screenshots.length > 0 && screenshots?.slice(0, 4)?.map((screenshot, index) => (
                                 <button
                                     key={index}
                                     onClick={() => setActiveScreenshot(index + 1)}

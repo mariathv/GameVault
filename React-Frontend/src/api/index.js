@@ -14,6 +14,22 @@ export const setGlobalAuthToken = (token) => {
     localStorage.setItem("gamevault_token", token);
 };
 
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 1000;
+
+async function retryRequest(error) {
+    let retries = error.config.__retryCount || 0;
+    if (retries >= MAX_RETRIES) return Promise.reject(error);
+
+    retries += 1;
+    error.config.__retryCount = retries;
+
+    const delay = RETRY_DELAY * Math.pow(2, retries - 1);
+    await new Promise((resolve) => setTimeout(resolve, delay));
+
+    return api(error.config);
+}
+
 api.interceptors.request.use(
     async (config) => {
         const tokenToUse = latestToken || localStorage.getItem("gamevault_token");
@@ -28,6 +44,13 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     (response) => response,
     (error) => {
+        const status = error.response?.status;
+        const message = error.response?.data?.message;
+
+        if (status === 429 && message === "Too Many Requests") {
+            return retryRequest(error);
+        }
+
         console.error("API error:", error?.response?.data || error.message);
         return Promise.reject(error);
     }

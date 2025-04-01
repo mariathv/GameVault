@@ -7,15 +7,25 @@ export default function GameCard({ game }) {
     const [themes, setThemes] = useState(null);
 
     const fetchThemes = async () => {
-        const fetch = await getGameThemes(game.themes);
-        setThemes(fetch.queryResult);
-        console.log(fetch.queryResult);
+        if (!themes) {
+            let success = false;
+            while (!success) {
+                const fetch = await getGameThemes(game.themes);
+                if (fetch.queryResult) {
+                    setThemes(fetch.queryResult);
+                    success = true;
+                } else {
+                    console.log("err");
+                }
+
+            }
+        }
 
     }
 
     useEffect(() => {
         fetchThemes();
-    }, [])
+    }, [themes])
 
 
     return (

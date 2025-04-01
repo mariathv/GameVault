@@ -10,8 +10,11 @@ function GameCardExtended({
 
 
     const fetchThemes = async () => {
-        const fetch = await getGameThemes(featuredGame.themes);
-        setThemes(fetch.queryResult);
+        console.log("fetching themes", themes);
+        if (!themes) {
+            const fetch = await getGameThemes(featuredGame.themes);
+            setThemes(fetch.queryResult);
+        }
         console.log(fetch.queryResult);
 
     }
@@ -21,7 +24,7 @@ function GameCardExtended({
 
     useEffect(() => {
         fetchThemes();
-    }, [])
+    }, [themes])
 
     // Generate star rating
     const renderStars = () => {
