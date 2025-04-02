@@ -152,7 +152,7 @@ export default function GamePage() {
 
     return (
         <div className="min-h-screen bg-(--color-background)">
-            <Header />
+
             {artworks &&
                 <div className="h-150 bg-image-dark" style={{ backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url(${createImageUrl(artworks[0]?.image_id)})` }}>
                     <div className="flex gap-20 justify-center items-center py-30">
@@ -319,30 +319,30 @@ export default function GamePage() {
                                 Share
                             </Button>
                         </div>
-                        <div className="space-y-4 text-sm text-[#EDEDED]/80">
+                        <div className="space-y-4 text-sm text-(--color-foreground) ">
                             <div className="flex justify-between">
-                                <span>Developer:</span>
-                                <span className="text-[#EDEDED]">
+                                <span className="font-bold">Developer:</span>
+                                <span className="text-(--color-light-ed)">
                                     {
                                         companies?.filter(c => c.role === "Developer").map(c => c.companyName).join(", ") || "Unknown"
                                     }
                                 </span>
                             </div>
                             <div className="flex justify-between">
-                                <span>Publisher:</span>
-                                <span className="text-[#EDEDED]">
+                                <span className="font-bold">Publisher:</span>
+                                <span className="text-(--color-light-ed)">
                                     {
                                         companies?.filter(c => c.role === "Publisher").map(c => c.companyName).join(", ") || "Unknown"
                                     }
                                 </span>
                             </div>
                             <div className="flex justify-between">
-                                <span>Release Date:</span>
-                                <span className="text-[#EDEDED]">{game.release_dates}</span>
+                                <span className="font-bold">Release Date:</span>
+                                <span className="text-(--color-light-ed)">{game.release_dates}</span>
                             </div>
                             <div className="flex justify-between">
-                                <span>Platforms:</span>
-                                <span className="text-[#EDEDED]">{game.platforms.join(", ")}</span>
+                                <span className="font-bold">Platforms:</span>
+                                <span className="text-(--color-light-ed)">{game.platforms.join(", ")}</span>
                             </div>
                         </div>
                     </div>

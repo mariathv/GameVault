@@ -56,7 +56,7 @@ export default function WishlistPage() {
   return (
     <div className="min-h-screen bg-[#0f1623]">
       {/* Header */}
-      <Header />
+
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-8">
