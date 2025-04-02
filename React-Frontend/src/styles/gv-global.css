@@ -162,3 +162,15 @@
         background-size: 25px 100%, 25px 100%, 25px 100%
     }
 }
+
+
+.fade-img::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 100%);
+    z-index: 1;
+}

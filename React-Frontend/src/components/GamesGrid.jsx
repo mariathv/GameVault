@@ -90,7 +90,7 @@ const GamesGrid = ({ filteredGames, gridCol = 4, variant = "default", start = 0,
                     <CardFooter className="flex items-center justify-between">
                         <span className="text-lg font-bold">${game.price}</span>
                         <Button
-                            className="bg-(--color-light-ed) text-(--color-alt-foreground) hover:bg-[#EDEDED]/90"
+                            className="bg-(--color-light-ed) text-(--color-alt-foreground) hover:bg-(--color-light-ed)/90"
                             onClick={(e) => {
                                 e.preventDefault()
                                 addToCart(game)

@@ -6,6 +6,7 @@ import { getFeatured, getGamesByGenre, getMostPopular } from '@/src/api/store';
 import Header from '@/src/components/Header';
 import { Link } from 'react-router-dom';
 import { getGameArtworks } from '@/src/api/game';
+import GameCardWide from '@/src/components/wide-game-card';
 
 export default function ExplorePage() {
     const [searchQuery, setSearchQuery] = useState("");
@@ -16,6 +17,9 @@ export default function ExplorePage() {
     const [featured, setFeatured] = useState(null);
     const [featuredArtwork, setFeaturedArtwork] = useState(null);
     const [initLoading, setInitLoading] = useState(true);
+    const [popularGames, setPopularGames] = useState(null);
+
+
 
 
     const categories = [
@@ -33,6 +37,7 @@ export default function ExplorePage() {
     function createImageUrl(id) {
         return `https://images.igdb.com/igdb/image/upload/t_1080p/${id}.jpg`;
     }
+
 
     const fetchGames = async () => {
         setIsLoading(true);
@@ -64,31 +69,37 @@ export default function ExplorePage() {
     };
 
     const fetchPromisedData = async () => {
-        const fetch = await getFeatured();
-        setFeatured(fetch.game);
-        fetchArtworks(fetch.game.artworks);
-    }
+        try {
+            const fetch = await getFeatured();
+            setFeatured(fetch.game);
+            await fetchArtworks(fetch.game.artworks); // Ensure artwork fetch completes
+
+            const fetch1 = await fetchData(`store/games/get-all?sortBy=hypes`);
+            setPopularGames(fetch1.games);
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        }
+    };
+
+    const fetchArtworks = async (artworks) => {
+        try {
+            const fetch = await getGameArtworks(artworks);
+            setFeaturedArtwork(fetch.queryResult);
+        } catch (error) {
+            console.error("Error fetching artworks:", error);
+        }
+    };
+
     const fetchMostPopular = async () => {
         setInitLoading(true);
-        const promises = [fetchPromisedData()]
-        await Promise.all(promises);
-
+        await fetchPromisedData();
         setInitLoading(false);
-
-
-
-    }
-
-    const fetchArtworks = async (artworkss) => {
-        const fetch = await getGameArtworks(artworkss);
-        setFeaturedArtwork(fetch.queryResult);
-
-    }
+    };
 
     useEffect(() => {
         fetchMostPopular();
+    }, []);
 
-    }, [])
 
     useEffect(() => {
         fetchGames();
@@ -109,7 +120,7 @@ export default function ExplorePage() {
             className="min-h-screen bg-(--color-background) bg-cover bg-center bg-no-repeat bg-image-dark"
             style={{ backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url(https://i.ibb.co/Wv97xg0d/514-2880x1800-desktop-hd-assassins-creed-wallpaper.jpg)`, backgroundAttachment: 'fixed', }}
         >
-            <Header searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+
             <div className="container mx-auto px-4 py-8">
                 <div className="flex gap-8">
                     {/* Sidebar */}
@@ -117,8 +128,8 @@ export default function ExplorePage() {
                         <h1 className="text-3xl font-bold text-white mb-8">CATALOG</h1>
 
                         {/* Price Range */}
-                        <div className="mb-6 bg-[#1A1F2E] p-4 rounded-lg">
-                            <h3 className="text-white mb-4">Price</h3>
+                        <div className="mb-6 bg-(--color-background)/50 p-4 rounded-lg">
+                            <h3 className="text-(--color-foreground) mb-4 ">Price</h3>
                             <input
                                 type="range"
                                 min="0"
@@ -127,7 +138,7 @@ export default function ExplorePage() {
                                 onChange={(e) => setPriceRange(e.target.value)}
                                 className="w-full accent-blue-500"
                             />
-                            <div className="flex justify-between text-gray-400 mt-2">
+                            <div className="flex justify-between text-(--color-foreground)/80 mt-2">
                                 <span>0$</span>
                                 <span>{priceRange}$</span>
                             </div>
@@ -148,6 +159,14 @@ export default function ExplorePage() {
                                 </button>
                             ))}
                         </div>
+                        <div className=' bg-(--color-background)/50 rounded-xl mt-2'>
+                            <h1 className='text-white font-bold pl-4 pt-4'> Popular 🔥</h1>
+                            {popularGames && popularGames.slice(0, 8).map((game, ids) => (
+                                <Link to={`/games/${game.id}`}>
+                                    <GameCardWide key={game.id} id={ids + 1} game={game} />
+                                </Link>
+                            ))}
+                        </div>
                     </div>
 
                     {/* Main Content */}
@@ -161,7 +180,7 @@ export default function ExplorePage() {
                                     placeholder="Search products"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full bg-[#1A1F2E] text-white pl-10 pr-4 py-2 rounded-lg"
+                                    className="w-full bg-(--color-background) text-(--color-foreground) pl-10 pr-4 py-2 rounded-lg"
                                 />
                             </div>
                         </div>

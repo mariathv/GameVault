@@ -2,26 +2,22 @@ import React, { useState, useEffect } from 'react'
 import { Badge } from "@/components/ui/badge"
 import { getGameThemes } from '../api/game'
 import { Link } from 'react-router-dom';
+import { themes as allThemes } from "@/lib/game-themes"
 
 export default function GameCard({ game }) {
     const [themes, setThemes] = useState(null);
 
-    const fetchThemes = async () => {
+
+    const fetchThemes = () => {
         if (!themes) {
-            let success = false;
-            while (!success) {
-                const fetch = await getGameThemes(game.themes);
-                if (fetch.queryResult) {
-                    setThemes(fetch.queryResult);
-                    success = true;
-                } else {
-                    console.log("err");
-                }
+            const filteredThemes = game.themes
+                .filter(id => allThemes[id]) // Ensure valid IDs
+                .map(id => ({ name: allThemes[id] })); // Map to array of objects
 
-            }
+            setThemes(filteredThemes);
         }
+    };
 
-    }
 
     useEffect(() => {
         fetchThemes();

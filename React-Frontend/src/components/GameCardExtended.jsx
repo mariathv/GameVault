@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { getGameThemes } from "../api/game";
 import { Link } from "react-router-dom";
+import { themes as allThemes } from "@/lib/game-themes";
 
 function GameCardExtended({
     featuredGame, featuredArtwork
@@ -9,22 +10,28 @@ function GameCardExtended({
     const [themes, setThemes] = useState(null);
 
 
-    const fetchThemes = async () => {
+    const fetchThemes = () => {
         console.log("fetching themes", themes);
-        if (!themes) {
-            const fetch = await getGameThemes(featuredGame.themes);
-            setThemes(fetch.queryResult);
-        }
-        console.log(fetch.queryResult);
 
-    }
+        if (featuredGame.themes) {
+            // Map to an array of objects
+            const filteredThemes = featuredGame.themes
+                .filter(id => allThemes[id])
+                .map(id => ({ name: allThemes[id] }));
+
+            setThemes(filteredThemes);
+            console.log(filteredThemes);
+        }
+
+    };
+
     function createImageUrl(id) {
         return `https://images.igdb.com/igdb/image/upload/t_1080p/${id}.jpg`;
     }
 
     useEffect(() => {
         fetchThemes();
-    }, [themes])
+    }, [featuredGame])
 
     // Generate star rating
     const renderStars = () => {
