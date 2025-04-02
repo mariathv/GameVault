@@ -1,6 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { ChakraProvider } from '@chakra-ui/react';
 import { LoadingBarContainer } from 'react-top-loading-bar';
 import './index.css';
@@ -14,7 +14,6 @@ import RegisterPage from './pages/auth/register';
 import { NotFound } from './pages/not-found';
 import WishlistPage from './pages/wishlist/wishlist-page';
 
-
 import { CartProvider } from './contexts/cart-context';
 import { ThemeProvider } from './contexts/theme-context';
 import { AuthProvider } from './contexts/auth-context';
@@ -25,7 +24,6 @@ import Purchases from './components/Purchases';
 import { Footer } from './components/Footer';
 import Header from './components/Header';
 
-
 import RequireAdmin from './components/RequireAdmin';
 import RequireClient from './components/RequireClient';
 import Users from './pages/admin/Users';
@@ -33,58 +31,64 @@ import Profile from './pages/profile/profile';
 import ExplorePage from './pages/explore/explore';
 import CheckoutPage from './pages/checkout/checkout';
 
-
 console.log("-------> in main");
+
+const App = () => {
+  const { pathname } = useLocation();
+
+  // Show header only for client routes
+  const isAdminRoute = pathname.startsWith('/admin');
+
+  return (
+    <AuthProvider>
+      <CartProvider>
+        <LoadingBarContainer>
+          <ThemeProvider>
+            <>
+              <div className="bg-(--color-background)">
+                {!isAdminRoute && <Header />}
+                <Routes>
+                  {/* Client Routes protected by RequireClient */}
+                  <Route path="/" element={<HomeGameStore />} />
+                  <Route path="/cart" element={<CartPage />} />
+                  <Route path="/games/:id" element={<GamePage />} />
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/register" element={<RegisterPage />} />
+                  <Route path="/wishlist" element={<WishlistPage />} />
+                  <Route path="/explore" element={<ExplorePage />} />
+                  <Route path="/profile" element={<Profile />} />
+
+                  {/* Client protected routes */}
+                  <Route path="/checkout" element={<RequireClient><CheckoutPage /></RequireClient>} />
+                  <Route path="/wishlist" element={<RequireClient><WishlistPage /></RequireClient>} />
+
+                  {/* Admin Routes protected by RequireAdmin */}
+                  <Route path="/admin" element={<RequireAdmin><AdminApp /></RequireAdmin>}>
+                    <Route index element={<AddGame />} />
+                    <Route path="add-a-game" element={<AddGame />} />
+                    <Route path="view-games" element={<ViewGames />} />
+                    <Route path="purchases" element={<Purchases />} />
+                    <Route path="users" element={<Users />} />
+                    <Route path="settings" element={<Settings />} />
+                  </Route>
+
+                  {/* Fallback */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+                <Footer />
+              </div>
+            </>
+          </ThemeProvider>
+        </LoadingBarContainer>
+      </CartProvider>
+    </AuthProvider>
+  );
+};
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
-      <AuthProvider>
-        <CartProvider>
-          <LoadingBarContainer>
-            <ThemeProvider>
-              <>
-                <div className="bg-(--color-background)">
-                  <Header />
-                  <Routes>
-                    {/* Client Routes protected by RequireClient */}
-                    <Route path="/" element={<HomeGameStore />} />
-                    <Route path="/cart" element={<CartPage />} />
-                    <Route path="/games/:id" element={<GamePage />} />
-                    <Route path="/login" element={<LoginPage />} />
-                    <Route path="/register" element={<RegisterPage />} />
-                    <Route path="/wishlist" element={<WishlistPage />} />
-                    <Route path="/explore" element={<ExplorePage />} />
-                    <Route path="/profile" element={<Profile />} />
-
-                    {/* Client protected routes (User must Login to access)*/}
-                    <Route path="/checkout/" element={<RequireClient><CheckoutPage /></RequireClient>} />
-                    <Route path="/wishlist" element={<RequireClient><WishlistPage /></RequireClient>} />
-
-                    {/* Admin Routes protected by RequireAdmin */}
-                    <Route path="/admin" element={<RequireAdmin><AdminApp /></RequireAdmin>}>
-                      <Route index element={<AddGame />} />
-                      <Route path="add-a-game" element={<AddGame />} />
-                      <Route path="view-games" element={<ViewGames />} />
-                      <Route path="purchases" element={<Purchases />} />
-                      <Route path="users" element={<Users />} />
-                      <Route path="settings" element={<Settings />} />
-                    </Route>
-
-                    {/* Fallback */}
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                  <Footer />
-
-                  {/* Optional: Hide footer on admin routes */}
-                  {/* {!isAdminRoute && <Footer />} */}
-                </div>
-              </>
-            </ThemeProvider>
-          </LoadingBarContainer>
-        </CartProvider>
-      </AuthProvider>
+      <App />
     </BrowserRouter>
   </StrictMode>
 );
-

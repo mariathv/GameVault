@@ -112,7 +112,7 @@ function ViewGames() {
                     </span>
                     <input
                         type="text"
-                        className="w-full pl-10 pr-4 py-2 border-2 border-(--color-light-ed)/50 rounded-full text-[#DDD9FE] focus:outline-none "
+                        className="w-full pl-10 pr-4 py-2 border-2 border-(--color-light-ed)/50 rounded-full text-[#DDD9FE] focus:outline-none hover:border-(--color-light-ed) "
                         placeholder="Search store games ..."
                         value={search}
                         onChange={handleSearchInputChange}
