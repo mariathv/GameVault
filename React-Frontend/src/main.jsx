@@ -30,6 +30,7 @@ import Users from './pages/admin/Users';
 import Profile from './pages/profile/profile';
 import ExplorePage from './pages/explore/explore';
 import CheckoutPage from './pages/checkout/checkout';
+import Inventory from './pages/inventory/inventory';
 
 console.log("-------> in main");
 
@@ -61,6 +62,8 @@ const App = () => {
                   {/* Client protected routes */}
                   <Route path="/checkout" element={<RequireClient><CheckoutPage /></RequireClient>} />
                   <Route path="/wishlist" element={<RequireClient><WishlistPage /></RequireClient>} />
+                  <Route path="/inventory" element={<RequireClient><Inventory /></RequireClient>} />
+
 
                   {/* Admin Routes protected by RequireAdmin */}
                   <Route path="/admin" element={<RequireAdmin><AdminApp /></RequireAdmin>}>
@@ -92,3 +95,4 @@ createRoot(document.getElementById('root')).render(
     </BrowserRouter>
   </StrictMode>
 );
+

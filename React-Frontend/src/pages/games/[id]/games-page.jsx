@@ -152,7 +152,6 @@ export default function GamePage() {
 
     return (
         <div className="min-h-screen bg-(--color-background)">
-
             {artworks &&
                 <div className="h-150 bg-image-dark" style={{ backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url(${createImageUrl(artworks[0]?.image_id)})` }}>
                     <div className="flex gap-20 justify-center items-center py-30">

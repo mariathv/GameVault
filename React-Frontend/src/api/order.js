@@ -3,6 +3,7 @@ import api from './index';
 
 export const placeOrder = async (userId, games, paymentMethod) => {
     try {
+        console.log("Placing order for user:", userId);
         let url = `order/create-order/`;
 
         const response = await api.post(url, {

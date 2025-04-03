@@ -107,7 +107,7 @@ export default function Header() {
                                             <span>Cart</span>
                                         </DropdownMenuItem>
 
-                                        <DropdownMenuItem className="cursor-pointer focus:bg-(--color-foreground)/5">
+                                        <DropdownMenuItem className="cursor-pointer focus:bg-(--color-foreground)/5" onClick={() => navigate("/inventory")}>
                                             <Key className="mr-2 h-4 w-4" />
                                             <span>Inventory</span>
                                         </DropdownMenuItem>
