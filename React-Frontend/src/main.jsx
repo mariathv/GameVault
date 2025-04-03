@@ -31,6 +31,10 @@ import Profile from './pages/profile/profile';
 import ExplorePage from './pages/explore/explore';
 import CheckoutPage from './pages/checkout/checkout';
 import Inventory from './pages/inventory/inventory';
+<<<<<<< HEAD
+=======
+
+>>>>>>> 41377b0 (feat(inventory): module added)
 
 console.log("-------> in main");
 
@@ -91,7 +95,52 @@ const App = () => {
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
-      <App />
+      <AuthProvider>
+        <CartProvider>
+          <LoadingBarContainer>
+            <ThemeProvider>
+              <>
+                <div className="bg-(--color-background)">
+                  <Header />
+                  <Routes>
+                    {/* Client Routes protected by RequireClient */}
+                    <Route path="/" element={<HomeGameStore />} />
+                    <Route path="/cart" element={<CartPage />} />
+                    <Route path="/games/:id" element={<GamePage />} />
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/register" element={<RegisterPage />} />
+                    <Route path="/wishlist" element={<WishlistPage />} />
+                    <Route path="/explore" element={<ExplorePage />} />
+                    <Route path="/profile" element={<Profile />} />
+
+                    {/* Client protected routes (User must Login to access)*/}
+                    <Route path="/checkout/" element={<RequireClient><CheckoutPage /></RequireClient>} />
+                    <Route path="/wishlist/" element={<RequireClient><WishlistPage /></RequireClient>} />
+                    <Route path="/inventory/" element={<RequireClient><Inventory /></RequireClient>} />
+
+                    {/* Admin Routes protected by RequireAdmin */}
+                    <Route path="/admin" element={<RequireAdmin><AdminApp /></RequireAdmin>}>
+                      <Route index element={<AddGame />} />
+                      <Route path="add-a-game" element={<AddGame />} />
+                      <Route path="view-games" element={<ViewGames />} />
+                      <Route path="purchases" element={<Purchases />} />
+                      <Route path="users" element={<Users />} />
+                      <Route path="settings" element={<Settings />} />
+                    </Route>
+
+                    {/* Fallback */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                  <Footer />
+
+                  {/* Optional: Hide footer on admin routes */}
+                  {/* {!isAdminRoute && <Footer />} */}
+                </div>
+              </>
+            </ThemeProvider>
+          </LoadingBarContainer>
+        </CartProvider>
+      </AuthProvider>
     </BrowserRouter>
   </StrictMode>
 );
