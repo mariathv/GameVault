@@ -6,20 +6,26 @@ function Purchases() {
     const [purchases, setPurchases] = useState(null);
     const [email, setEmail] = useState("");
     const [date, setDate] = useState("");
+    const [loading, isLoading] = useState(true);
 
     const fetchData = async (email, date) => {
+        isLoading(true);
         const fetched = await getAllOrders(email, date); // Pass filters as arguments
         setPurchases(fetched.orders);
-        console.log(fetched.orders);
+        isLoading(false);
     };
 
     const filteredSearch = () => {
-        fetchData(email, date); // Trigger filtered search with current input values
+        isLoading(true);
+        fetchData(email, date);
+        isLoading(false);
     };
 
     useEffect(() => {
         fetchData(); // Fetch initial data when the component mounts
     }, []);
+
+
 
     return (
         <div className="mt-8">
@@ -53,7 +59,10 @@ function Purchases() {
                         <ArrowRight />
                     </button>
                 </div>
-                <table className="min-w-full bg-white ">
+
+                {loading ? (<div className="flex justify-center items-center min-h-[200px] w-full">
+                    <div className="loader border-t-4 border-white"></div>
+                </div>) : (<table className="min-w-full bg-white ">
                     <thead className="bg-gray-800 text-(--color-foreground)">
                         <tr>
                             <th className="w-1/4 text-left py-3 px-4 uppercase font-semibold text-sm">Game</th>
@@ -97,7 +106,8 @@ function Purchases() {
                             </>
                         ))}
                     </tbody>
-                </table>
+                </table>)}
+
             </div>
         </div>
     );

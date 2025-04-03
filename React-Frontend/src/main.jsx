@@ -31,6 +31,7 @@ import Profile from './pages/profile/profile';
 import ExplorePage from './pages/explore/explore';
 import CheckoutPage from './pages/checkout/checkout';
 import Inventory from './pages/inventory/inventory';
+import Help from './pages/admin/Help';
 
 console.log("-------> in main");
 
@@ -57,6 +58,8 @@ const App = () => {
                   <Route path="/register" element={<RegisterPage />} />
                   <Route path="/wishlist" element={<WishlistPage />} />
                   <Route path="/explore" element={<ExplorePage />} />
+                  <Route path="/explore/genres/:id/:type" element={<ExplorePage />} />
+                  <Route path="/explore/themes/:id/:type" element={<ExplorePage />} />
                   <Route path="/profile" element={<Profile />} />
 
                   {/* Client protected routes */}
@@ -73,6 +76,7 @@ const App = () => {
                     <Route path="purchases" element={<Purchases />} />
                     <Route path="users" element={<Users />} />
                     <Route path="settings" element={<Settings />} />
+                    <Route path="help" element={<Help />} />
                   </Route>
 
                   {/* Fallback */}
@@ -95,4 +99,3 @@ createRoot(document.getElementById('root')).render(
     </BrowserRouter>
   </StrictMode>
 );
-

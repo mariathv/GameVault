@@ -185,7 +185,7 @@ const storeController = {
         try {
             const sortBy = req.query.sortBy;
             const sortField = sortBy ? { [sortBy]: -1 } : { createdAt: -1 };
-            const limit = parseInt(req.query.limit) || 10;
+            const limit = parseInt(req.query.limit) || 12;
             const page = parseInt(req.query.page) || 1;
             const skip = (page - 1) * limit;
 
@@ -194,6 +194,11 @@ const storeController = {
             if (req.query.genre) {
                 const genreVal = parseInt(req.query.genre);
                 filter.genres = { $in: [genreVal] };
+            }
+
+            if (req.query.theme) {
+                const themesVal = parseInt(req.query.theme);
+                filter.themes = { $in: [themesVal] };
             }
 
             const games = await Store.find(filter)
