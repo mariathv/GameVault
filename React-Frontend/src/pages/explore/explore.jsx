@@ -38,6 +38,7 @@ export default function ExplorePage() {
         return `https://images.igdb.com/igdb/image/upload/t_1080p/${id}.jpg`;
     }
 
+
     const fetchGames = async () => {
         setIsLoading(true);
 

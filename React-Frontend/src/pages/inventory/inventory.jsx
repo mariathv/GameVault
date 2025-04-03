@@ -25,7 +25,7 @@ const Inventory = () => {
       try {
         setLoading(true);
         setError(null);
-        
+
         const response = await axios.get(
           `http://localhost:3000/api/v1/inventory`,
           {
@@ -61,7 +61,7 @@ const Inventory = () => {
   }, [user, authToken]);
 
   const openModal = (game, order) => {
-    setSelectedGame({...game, order});
+    setSelectedGame({ ...game, order });
     setModalOpen(true);
   };
 
@@ -78,10 +78,10 @@ const Inventory = () => {
   // Modal component
   const GameDetailsModal = () => {
     if (!selectedGame) return null;
-    
+
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.9 }}
@@ -89,8 +89,8 @@ const Inventory = () => {
         >
           <div className="relative">
             <div className="h-36 bg-gradient-to-r from-blue-600 to-purple-600 rounded-t-xl overflow-hidden">
-              <img 
-                src={selectedGame.cover_url?.startsWith('//') 
+              <img
+                src={selectedGame.cover_url?.startsWith('//')
                   ? `https:${selectedGame.cover_url}`
                   : selectedGame.cover_url || '/placeholder-game.png'
                 }
@@ -98,18 +98,18 @@ const Inventory = () => {
                 className="w-full h-full object-cover opacity-50"
               />
             </div>
-            <Button 
-              onClick={closeModal} 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              onClick={closeModal}
+              variant="ghost"
+              size="icon"
               className="absolute top-2 right-2 bg-black/30 hover:bg-black/50 text-white rounded-full"
             >
               <X className="w-5 h-5" />
             </Button>
             <div className="absolute bottom-0 left-0 translate-y-1/2 ml-6">
               <div className="w-20 h-20 rounded-lg overflow-hidden border-4 border-(--color-background) shadow-lg">
-                <img 
-                  src={selectedGame.cover_url?.startsWith('//') 
+                <img
+                  src={selectedGame.cover_url?.startsWith('//')
                     ? `https:${selectedGame.cover_url}`
                     : selectedGame.cover_url || '/placeholder-game.png'
                   }
@@ -122,7 +122,7 @@ const Inventory = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="pt-12 px-6 pb-6">
             <div className="flex justify-between items-start mb-4">
               <div>
@@ -133,23 +133,23 @@ const Inventory = () => {
               </div>
               <div className="text-right">
                 <div className="text-lg font-bold text-(--color-foreground)">${selectedGame.price?.toFixed(2) || '0.00'}</div>
-                {selectedGame.quantity > 1 && 
+                {selectedGame.quantity > 1 &&
                   <Badge className="bg-(--color-accent-primary)">{selectedGame.quantity} Copies</Badge>
                 }
               </div>
             </div>
-            
+
             <div className="py-4 border-t border-(--color-foreground)/10">
               <h3 className="text-lg font-semibold mb-2 text-(--color-foreground)">Purchase Details</h3>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div className="text-(--color-foreground)/60">Order ID:</div>
                 <div className="text-(--color-foreground) font-medium">#{selectedGame.order.transactionId?.slice(-6) || 'N/A'}</div>
-                
+
                 <div className="text-(--color-foreground)/60">Total Amount:</div>
                 <div className="text-(--color-foreground) font-medium">${selectedGame.order.totalAmount?.toFixed(2) || '0.00'}</div>
               </div>
             </div>
-            
+
             {selectedGame.gameKeys?.length > 0 && (
               <div className="py-4 border-t border-(--color-foreground)/10">
                 <h3 className="text-lg font-semibold mb-2 text-(--color-foreground)">Game Keys</h3>
@@ -162,7 +162,7 @@ const Inventory = () => {
                 </div>
               </div>
             )}
-            
+
             <div className="mt-6 flex justify-end">
               <Button onClick={closeModal} className="bg-(--color-secondary-background) text-(--color-alt-foreground) hover:bg-(--color-light-ed)/90">
                 Close
@@ -179,13 +179,13 @@ const Inventory = () => {
       <div className="loader-dots text-(--color-light-ed)"></div>
     </div>
   );
-  
+
   if (error) return (
-    <div className="container mx-auto p-4">
+    <div className="min-h-screen container mx-auto p-4">
       <div className="bg-(--color-secondary-background)/10 p-6 rounded-xl text-center text-(--color-foreground)">
         <h2 className="text-xl font-bold mb-2">Error Loading Inventory</h2>
         <p className="text-(--color-foreground)/80 mb-4">{error}</p>
-        <Button 
+        <Button
           onClick={() => window.location.reload()}
           className="bg-(--color-secondary-background) text-(--color-alt-foreground) hover:bg-(--color-light-ed)/90"
         >
@@ -194,7 +194,7 @@ const Inventory = () => {
       </div>
     </div>
   );
-  
+
   if (!user) return (
     <div className="container mx-auto p-4">
       <div className="bg-(--color-secondary-background)/10 p-6 rounded-xl text-center text-(--color-foreground)">
@@ -213,7 +213,7 @@ const Inventory = () => {
             {inventoryItems.reduce((total, order) => total + (order.games?.length || 0), 0)} Games
           </Badge>
         </div>
-        
+
         {inventoryItems.length === 0 ? (
           <div className="bg-(--color-secondary-background)/10 p-8 rounded-xl text-center">
             <h3 className="text-xl font-medium text-(--color-foreground) mb-2">Your library is empty</h3>
@@ -245,21 +245,21 @@ const Inventory = () => {
                       </p>
                     </div>
                   </div>
-                  
+
                   {order.games?.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {order.games.map((game) => (
-                        <div 
-                          key={game.gameId} 
+                        <div
+                          key={game.gameId}
                           onClick={() => openModal(game, order)}
                           className="bg-(--color-background) hover:bg-(--color-foreground)/5 transition-colors rounded-lg overflow-hidden cursor-pointer flex border border-(--color-foreground)/10"
                         >
                           <div className="w-1/3 relative">
-                            <img 
-                              src={game.cover_url?.startsWith('//') 
+                            <img
+                              src={game.cover_url?.startsWith('//')
                                 ? `https:${game.cover_url}`
                                 : game.cover_url || '/placeholder-game.png'
-                              } 
+                              }
                               alt={game.title}
                               className="w-full h-full object-cover"
                               onError={(e) => {
@@ -295,7 +295,7 @@ const Inventory = () => {
           </div>
         )}
       </div>
-      
+
       {modalOpen && <GameDetailsModal />}
     </div>
   );

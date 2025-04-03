@@ -69,7 +69,7 @@ export default function Header() {
                         <Link to="/" >Genres</Link>
                         <Link to="/explore">Themes</Link>
                     </nav>
-                    <div className="h-6 border-l border-(--color-foreground)/80   mx-2"></div>
+                    <div className="h-6 border-1 border-(--color-foreground)/80   mx-2"></div>
 
 
                     <div className="flex items-center space-x-4">
@@ -107,14 +107,10 @@ export default function Header() {
                                             <span>Cart</span>
                                         </DropdownMenuItem>
 
-                                        <DropdownMenuItem
-                                            className="cursor-pointer focus:bg-(--color-foreground)/5"
-                                            onClick={() => navigate("/inventory")}
-                                        >
+                                        <DropdownMenuItem className="cursor-pointer focus:bg-(--color-foreground)/5" onClick={() => navigate("/inventory")}>
                                             <Key className="mr-2 h-4 w-4" />
                                             <span>Inventory</span>
                                         </DropdownMenuItem>
-
 
                                         <DropdownMenuItem className="cursor-pointer focus:bg-(--color-foreground)/5">
                                             <ClipboardList className="mr-2 h-4 w-4" />
@@ -160,16 +156,20 @@ export default function Header() {
                             </>
                         ) : (
                             <DropdownMenu>
-                                <DropdownMenuTrigger>
-                                    <Button variant="ghost" className="flex items-center gap-1 text-sm text-(--color-foreground)">
-                                        <User className="h-5 w-5 mr-1" />
+                                <DropdownMenuTrigger className="flex items-center gap-1 text-sm text-(--color-foreground) h-8 px-5 rounded bg-transparent hover:bg-(--color-foreground)/10 focus:outline-none">
+
+                                    <Button variant="ghost" size="icon" className="text-(--color-foreground)">
+                                        <User className="h-5 w-5" />
                                         Login
                                     </Button>
+
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent
                                     align="end"
                                     className="w-56 bg-(--color-background) text-(--color-light-ed)/80"
                                 >
+
+
                                     <DropdownMenuItem
                                         className="cursor-pointer focus:bg-(--color-foreground)/5"
                                         onClick={() => navigate("/cart")}
@@ -178,16 +178,19 @@ export default function Header() {
                                         <span>Cart</span>
                                     </DropdownMenuItem>
 
+
                                     <ThemeToggle />
 
                                     <DropdownMenuSeparator />
 
+
                                     <Link to="/login">
                                         <DropdownMenuItem
-                                            className="cursor-pointer focus:bg-(--color-foreground)/5 flex justify-between items-center"
+                                            className="cursor-pointer focus:bg-(--color-foreground)/5 flex justify-between items-center "
                                         >
                                             <span>Login</span>
                                             <LogInIcon className="h-4 w-4 ml-2" />
+
                                         </DropdownMenuItem>
                                     </Link>
                                 </DropdownMenuContent>

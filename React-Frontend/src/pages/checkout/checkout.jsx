@@ -188,7 +188,7 @@ export default function CheckoutPage() {
 
                     </div>
                 </main>
-            </div>
+            </div >
         );
     }
 

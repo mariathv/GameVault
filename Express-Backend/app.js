@@ -14,8 +14,6 @@ const emailRouter = require("./routes/email.router");
 const orderRouter = require("./routes/order.router");
 const inventoryRoutes = require('./routes/inventory.router');
 
-
-
 const app = express();
 
 //------------------- middleware -----------------------
