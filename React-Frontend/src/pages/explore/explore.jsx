@@ -38,7 +38,6 @@ export default function ExplorePage() {
         return `https://images.igdb.com/igdb/image/upload/t_1080p/${id}.jpg`;
     }
 
-
     const fetchGames = async () => {
         setIsLoading(true);
 
@@ -120,7 +119,6 @@ export default function ExplorePage() {
             className="min-h-screen bg-(--color-background) bg-cover bg-center bg-no-repeat bg-image-dark"
             style={{ backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url(https://i.ibb.co/Wv97xg0d/514-2880x1800-desktop-hd-assassins-creed-wallpaper.jpg)`, backgroundAttachment: 'fixed', }}
         >
-
             <div className="container mx-auto px-4 py-8">
                 <div className="flex gap-8">
                     {/* Sidebar */}

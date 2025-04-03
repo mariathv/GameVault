@@ -1,0 +1,16 @@
+API_KEY_GB = 8e7ef3643c812954730f6711f3d22e14cc6864e0
+API_GB = https://www.giantbomb.com/api
+MONGO_DB_CON = mongodb+srv://mariank:sllgV20HopTkguyshgv@kguyah-gv.8mwx6.mongodb.net/?retryWrites=true&w=majority&appName=kguyah-gv
+MONGOOSE_CON = mongodb+srv://mariank:sllgV20HopTkguyshgv@kguyah-gv.8mwx6.mongodb.net/game-vault?retryWrites=true&w=majority&appName=kguyah-gv
+
+API_IGDB = https://api.igdb.com/v4
+IGDB_CLIENT_KEY = 7eldbeoryge64x71ke0x4474hi8xuv
+IGDB_TOKEN = ox1jg82qmzopqmf9wkaeeoz4hmvrjx
+
+
+NODE_ENV = "development"
+JWT_SECRET = "KguyshmoGV_@MNK"
+JWT_EXPIRES_IN=1d
+
+SMTP_APP_PASSWORD = "cvve ujrp qwbh kwty "
+SMTP_MAIL = "gamevault.kguysh@gmail.com"

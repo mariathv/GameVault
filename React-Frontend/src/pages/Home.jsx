@@ -149,7 +149,6 @@ export default function HomePage() {
 
     return (
         <div className="min-h-screen bg-(--color-background)">
-
             {/*later make this dynamiccc*/}
             <section className="relative h-[500px] overflow-hidden">
                 {

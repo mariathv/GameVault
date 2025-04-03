@@ -67,9 +67,15 @@ const orderController = {
 
             await order.save();
 
-            const user = await User.findById(userId);
-            if (user && user.email) {
-                await mailController.purchaseConfirmation(user.email, gameDetails, transactionId);
+            // Try to send email but don't fail if email sending fails
+            try {
+                const user = await User.findById(userId);
+                if (user && user.email) {
+                    await mailController.purchaseConfirmation(user.email, gameDetails, transactionId);
+                }
+            } catch (emailError) {
+                console.log("Email sending failed, but order was created successfully:", emailError.message);
+                // Continue processing without failing the order creation
             }
 
             res.status(201).json({ message: "Order successfully created", order });

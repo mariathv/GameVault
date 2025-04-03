@@ -150,7 +150,6 @@ export default function CheckoutPage() {
     if (isComplete) {
         return (
             <div className="min-h-screen bg-(--color-background)">
-
                 <main className=" container mx-auto px-4 py-16">
                     <div className="max-w-5xl mx-auto gap-8 flex flex-row items-center">
 
@@ -195,7 +194,6 @@ export default function CheckoutPage() {
 
     return (
         <div className="min-h-screen bg-(--color-background)">
-
             <main className="container mx-auto px-4 py-8">
                 <Button
                     variant="ghost"
