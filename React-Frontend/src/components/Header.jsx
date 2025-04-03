@@ -1,12 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import { LogOut, Search, ShoppingCart, User, Heart, LogInIcon } from "lucide-react"
+import { LogOut, Search, ShoppingCart, User, Heart, LogInIcon, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Link, useNavigate } from "react-router-dom"
 import { useCart } from "../contexts/cart-context"
-import { Badge } from "@/components/ui/badge"
 import { ThemeToggle } from "./theme-toggle"
 import { useAuth } from "../contexts/auth-context"
 import {
@@ -17,8 +15,9 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Bell, Settings, ClipboardList, Key, ThumbsUp } from "lucide-react"
+import { themes } from "@/lib/game-themes"
+import { genres } from "@/lib/game-genres"
 
-// Mock game data - replace with real API call in production
 const games = [
     { id: 1, title: "Cyber Adventures 2077", price: "$59.99" },
     { id: 2, title: "Mystic Quest Legends", price: "$49.99" },
@@ -28,26 +27,48 @@ const games = [
     { id: 6, title: "Medieval Kingdom", price: "$34.99" },
     { id: 7, title: "Zombie Survival", price: "$24.99" },
     { id: 8, title: "Pirate's Adventure", price: "$19.99" },
-];
+]
+
+const gameGenres = [
+    ["Shooter", "RPG", "Simulator", "Sport", "Strategy", "Turn-based strategy", "Tactical", "MOBA"],
+    ["Quiz-Trivia", "Pinball", "Adventure", "Indie", "Arcade", "Visual Novel", "Card & Board Game"],
+    ["Point-and-click", "Fighting", "Music", "Platform", "Puzzle", "Racing", "RTS"],
+]
+
+const gameThemes = [
+    ["Action", "Fantasy", "Science fiction", "Horror", "Thriller", "Survival", "Historical"],
+    ["Stealth", "Comedy", "Business", "Drama", "Non-fiction", "Sandbox", "Educational"],
+    ["Kids", "Open-World", "Warfare", "Party", "4X", "Mystery"],
+]
 
 export default function Header() {
     const { cart } = useCart()
     const navigate = useNavigate()
-    const [showAllResults, setShowAllResults] = useState(false)
-    const [isDropdownVisible, setIsDropdownVisible] = useState(false)
-
 
     const { user, isAuthenticated, logout } = useAuth()
 
+    const [showGenres, setShowGenres] = useState(false);
+    const [showThemes, setShowThemes] = useState(false);
+    let dropdownTimer;
+    const handleMouseOver = (type) => {
+        clearTimeout(dropdownTimer);
+        if (type === 'genres') { setShowGenres(true); setShowThemes(false); }
+        if (type === 'themes') { setShowThemes(true); setShowGenres(false); }
+    };
+
+    const handleMouseOut = (type) => {
+        dropdownTimer = setTimeout(() => {
+            if (type === 'genres') setShowGenres(false);
+            if (type === 'themes') setShowThemes(false);
+        }, 200); // Short delay before hiding
+    };
+
     const cartItemCount = cart.items.reduce((total, item) => total + item.quantity, 0)
-
-
 
     const isActive = (path) =>
         location.pathname === path
             ? "text-(--color-accent-secondary) underline underline-offset-4 decoration-2"
-            : "hover:text-(--color-foreground)";
-
+            : "hover:text-(--color-foreground)"
 
     return (
         <header className="sticky top-0 z-50 bg-(--color-background)/50 backdrop-blur-sm border-b border-border">
@@ -61,16 +82,98 @@ export default function Header() {
                     </Link>
 
                     <nav className="hidden md:flex flex-1 items-center gap-8 text-(--color-foreground) ">
-                        <Link to="/" className={isActive("/")}>Home</Link>
-                        <Link to="/explore" className={isActive("/explore")}>Explore</Link>
+                        <Link to="/" className={isActive("/")}>
+                            Home
+                        </Link>
+                        <Link to="/explore" className={isActive("/explore")}>
+                            Explore
+                        </Link>
                     </nav>
 
-                    <nav className="hidden md:flex  items-center gap-8 text-(--color-foreground)  pr-4 ">
-                        <Link to="/" >Genres</Link>
-                        <Link to="/explore">Themes</Link>
+                    <nav className="hidden md:flex items-center gap-8 text-(--color-foreground) pr-4">
+                        <div className="relative">
+                            <button
+                                className="flex items-center gap-1 hover:text-(--color-foreground)"
+                                onMouseOver={() => handleMouseOver('genres')}
+                                onMouseOut={() => handleMouseOut('genres')}
+                            >
+                                Genres
+                                <ChevronDown className="h-4 w-4" />
+                            </button>
+                            {showGenres && (
+                                <div
+                                    className="absolute right-0 top-full mt-1 bg-[#121318] border border-[#2D3237] rounded-md shadow-lg w-[600px] z-50"
+                                    onMouseOver={() => handleMouseOver('genres')}
+                                    onMouseOut={() => handleMouseOut('genres')}
+                                    style={{ right: "-200px" }}
+                                >
+                                    <div className="p-4 grid grid-cols-3 gap-6">
+                                        {gameGenres.map((column, colIndex) => (
+                                            <div key={colIndex} className="space-y-2">
+                                                {column.map((genre, index) => {
+                                                    const genreId = Object.keys(genres).find(
+                                                        (key) => genres[key] === genre
+                                                    );
+                                                    const genreURL = `/explore/genres/${genreId}/${genre.toLowerCase().replace(/\s+/g, "-")}`;
+                                                    return (
+                                                        <Link
+                                                            key={index}
+                                                            to={genreURL}
+                                                            className="block text-[#EDEDED] hover:text-[#668389] text-sm"
+                                                        >
+                                                            {genre}
+                                                        </Link>
+                                                    )
+                                                })}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="relative">
+                            <button
+                                className="flex items-center gap-1 hover:text-(--color-foreground)"
+                                onMouseOver={() => handleMouseOver('themes')}
+                                onMouseOut={() => handleMouseOut('themes')}
+                            >
+                                Themes
+                                <ChevronDown className="h-4 w-4" />
+                            </button>
+                            {showThemes && (
+                                <div
+                                    className="absolute right-0 top-full mt-1 bg-[#121318] border border-[#2D3237] rounded-md shadow-lg w-[600px] z-50"
+                                    onMouseOver={() => handleMouseOver('themes')}
+                                    onMouseOut={() => handleMouseOut('themes')}
+                                    style={{ right: "-100px" }}
+                                >
+                                    <div className="p-4 grid grid-cols-3 gap-6">
+                                        {gameThemes.map((column, colIndex) => (
+                                            <div key={colIndex} className="space-y-2">
+                                                {column.map((theme, index) => {
+                                                    const themeId = Object.keys(themes).find(
+                                                        (key) => themes[key] === theme
+                                                    );
+                                                    const themeUrl = `/explore/themes/${themeId}/${theme.toLowerCase().replace(/\s+/g, "-")}`;
+                                                    return (
+                                                        <Link
+                                                            key={index}
+                                                            to={themeUrl}
+                                                            className="block text-[#EDEDED] hover:text-[#668389] text-sm"
+                                                        >
+                                                            {theme}
+                                                        </Link>
+                                                    );
+                                                })}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </nav>
                     <div className="h-6 border-1 border-(--color-foreground)/80   mx-2"></div>
-
 
                     <div className="flex items-center space-x-4">
                         <Link to="/search">
@@ -88,10 +191,7 @@ export default function Header() {
                                         </div>
                                         <span className="truncate max-w-[100px] text-(--color-foreground)/80">{user?.username}</span>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent
-                                        align="end"
-                                        className="w-56 bg-(--color-background) text-(--color-light-ed)/80"
-                                    >
+                                    <DropdownMenuContent align="end" className="w-56 bg-(--color-background) text-(--color-light-ed)/80">
                                         <div className="px-3 py-2 text-sm">
                                             <p className="font-medium">{user?.username}</p>
                                             <p className="text-muted-foreground text-xs truncate">{user?.email}</p>
@@ -107,7 +207,10 @@ export default function Header() {
                                             <span>Cart</span>
                                         </DropdownMenuItem>
 
-                                        <DropdownMenuItem className="cursor-pointer focus:bg-(--color-foreground)/5" onClick={() => navigate("/inventory")}>
+                                        <DropdownMenuItem
+                                            className="cursor-pointer focus:bg-(--color-foreground)/5"
+                                            onClick={() => navigate("/inventory")}
+                                        >
                                             <Key className="mr-2 h-4 w-4" />
                                             <span>Inventory</span>
                                         </DropdownMenuItem>
@@ -157,19 +260,12 @@ export default function Header() {
                         ) : (
                             <DropdownMenu>
                                 <DropdownMenuTrigger className="flex items-center gap-1 text-sm text-(--color-foreground) h-8 px-5 rounded bg-transparent hover:bg-(--color-foreground)/10 focus:outline-none">
-
                                     <Button variant="ghost" size="icon" className="text-(--color-foreground)">
                                         <User className="h-5 w-5" />
                                         Login
                                     </Button>
-
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent
-                                    align="end"
-                                    className="w-56 bg-(--color-background) text-(--color-light-ed)/80"
-                                >
-
-
+                                <DropdownMenuContent align="end" className="w-56 bg-(--color-background) text-(--color-light-ed)/80">
                                     <DropdownMenuItem
                                         className="cursor-pointer focus:bg-(--color-foreground)/5"
                                         onClick={() => navigate("/cart")}
@@ -178,19 +274,14 @@ export default function Header() {
                                         <span>Cart</span>
                                     </DropdownMenuItem>
 
-
                                     <ThemeToggle />
 
                                     <DropdownMenuSeparator />
 
-
                                     <Link to="/login">
-                                        <DropdownMenuItem
-                                            className="cursor-pointer focus:bg-(--color-foreground)/5 flex justify-between items-center "
-                                        >
+                                        <DropdownMenuItem className="cursor-pointer focus:bg-(--color-foreground)/5 flex justify-between items-center ">
                                             <span>Login</span>
                                             <LogInIcon className="h-4 w-4 ml-2" />
-
                                         </DropdownMenuItem>
                                     </Link>
                                 </DropdownMenuContent>
@@ -202,3 +293,4 @@ export default function Header() {
         </header>
     )
 }
+

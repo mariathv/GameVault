@@ -78,12 +78,12 @@ const Sidebar = () => {
             path: "/admin/purchases",
             badge: "12",
         },
-        {
-            title: "Users",
-            icon: <Users size={20} />,
-            path: "/admin/users",
-            badge: null,
-        },
+        // {
+        //     title: "Users",
+        //     icon: <Users size={20} />,
+        //     path: "/admin/users",
+        //     badge: null,
+        // },
         // {
         //     title: "Analytics",
         //     icon: <BarChart3 size={20} />,
