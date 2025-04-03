@@ -13,6 +13,7 @@ import {
     MemoryStickIcon as Memory,
     HardDrive,
     Monitor,
+    TagIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -155,7 +156,14 @@ export default function GamePage() {
             {artworks &&
                 <div className="h-150 bg-image-dark" style={{ backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url(${createImageUrl(artworks[0]?.image_id)})` }}>
                     <div className="flex gap-20 justify-center items-center py-30">
-                        <img src={game.cover_url} alt={game.name.toUpperCase()} className="h-[320px] object-cover" />
+                        <div className="relative">
+                            <img src={game.cover_url} alt={game.name.toUpperCase()} className="h-[320px] object-cover" />
+                            {game.isDiscount && (
+                                <div className="absolute -top-4 -right-4 bg-red-500 text-white px-4 py-2 rounded-full transform rotate-12 font-bold shadow-lg">
+                                    SALE!
+                                </div>
+                            )}
+                        </div>
                         <div className="flex-row flex-1 max-w-lg">
                             <h1 className="text-white font-bold text-3xl">{game.name.toUpperCase()}</h1>
                             <p className="text-white/80 line-clamp-3 text-sm pt-2">
@@ -169,12 +177,28 @@ export default function GamePage() {
                                 ))
                             ) : (<></>
                             )}
-                            <div className="mt-5 flex gap-10">
+                            <div className="mt-5 flex gap-10 items-center">
                                 <div className="bg-yellow-500 rounded-full w-10 h-10 flex items-center justify-center mr-2">
                                     <span className="text-black font-bold">{game.rating.toFixed(1)}</span>
                                 </div>
-                                <div className="text-white font-bold text-5xl">
-                                    {game.price} $
+                                <div className="flex flex-col">
+                                    {game.isDiscount ? (
+                                        <>
+                                            <div className="flex items-center gap-3">
+                                                <span className="text-white font-bold text-5xl">${(game.price * (1 - game.discountPercentage / 100)).toFixed(2)}</span>
+                                                <div className="flex flex-col">
+                                                    <span className="text-gray-400 line-through text-xl">${game.price.toFixed(2)}</span>
+                                                    <span className="text-green-400 font-bold">-{game.discountPercentage}%</span>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2 mt-2">
+                                                <TagIcon className="w-4 h-4 text-green-400" />
+                                                <span className="text-green-400 text-sm">Special Offer!</span>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <span className="text-white font-bold text-5xl">${game.price.toFixed(2)}</span>
+                                    )}
                                 </div>
                             </div>
                             <div>
@@ -185,17 +209,16 @@ export default function GamePage() {
                                         </button>
                                     ) : (<div className=" mt-5 font-bold text-red-400"> Out of Stock</div>)
                                 }
-
                             </div>
                         </div>
-
-
                     </div>
-
                 </div>
             }
 
+
+
             <main className="container mx-auto px-4 py-8">
+
                 <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
                     {/* Left Column - Game Images */}
                     <div className="lg:col-span-2">
@@ -268,15 +291,33 @@ export default function GamePage() {
                         <p className="text-(--color-light-ed)/80 mb-6">{game.summary}</p>
 
                         <div className="mb-6">
-                            {game.onSale ? (
-                                <div className="mb-2">
-                                    <span className="text-2xl font-bold text-green-400">${discountedPrice.toFixed(2)}</span>
-                                    <span className="ml-2 text-lg line-through text-[#EDEDED]/60">${game.price.toFixed(2)}</span>
-                                    <Badge className="ml-2 bg-green-500">{game.discount}% OFF</Badge>
-                                </div>
-                            ) : (
-                                <span className="text-2xl font-bold text-(--color-light-ed) mb-2">${game.price.toFixed(2)}</span>
-                            )}
+                            <div className="mb-6">
+                                {game.isDiscount ? (
+                                    <div className="flex flex-col gap-2">
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-2xl font-bold text-green-400">
+                                                ${(game.price * (1 - game.discountPercentage / 100)).toFixed(2)}
+                                            </span>
+                                            <div className="flex flex-col">
+                                                <span className="text-lg line-through text-[#EDEDED]/60">
+                                                    ${game.price.toFixed(2)}
+                                                </span>
+                                                <Badge className="bg-green-500">
+                                                    {game.discountPercentage}% OFF
+                                                </Badge>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-green-400 text-sm">
+                                            <TagIcon className="w-4 h-4" />
+                                            <span>Limited Time Offer!</span>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <span className="text-2xl font-bold text-(--color-light-ed)">
+                                        ${game.price.toFixed(2)}
+                                    </span>
+                                )}
+                            </div>
                         </div>
 
                         <div className="flex flex-col gap-3 mb-6">

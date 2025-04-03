@@ -175,16 +175,17 @@ export default function ExplorePage() {
 
         let fetch
         if (!searchQuery && queryString) {
-            console.log(queryString);
             fetch = await fetchData(`store/games/get-all${queryString}`)
         } else {
-            fetch = await fetchData(`store/games/get-all`)
+            fetch = await fetchData(`store/games/get-all?limit=100`)
         }
 
         let filteredGames = fetch.games.filter((game) => game.price <= priceRange)
 
         if (searchQuery) {
-            filteredGames = filteredGames.filter((game) => game.name.toLowerCase().includes(searchQuery.toLowerCase()))
+            filteredGames = filteredGames.filter(game =>
+                game.name.toLowerCase().includes(searchQuery.toLowerCase())
+            );
         }
 
         console.log(filteredGames);
@@ -227,7 +228,7 @@ export default function ExplorePage() {
 
     useEffect(() => {
         fetchGames()
-    }, [selectedCategory])
+    }, [selectedCategory, searchQuery])
 
     useEffect(() => {
         if (initialMount.current) {
@@ -338,7 +339,7 @@ export default function ExplorePage() {
                         </div>
 
                         {/* Genres Dropdown */}
-                        <div className="mb-4 bg-(--color-background)/50 rounded-lg overflow-hidden">
+                        <div className="mb-4 bg-(--color-background) rounded-lg overflow-hidden">
                             <button
                                 onClick={toggleGenres}
                                 className="w-full flex items-center justify-between p-4 text-(--color-foreground) font-medium"
@@ -370,7 +371,7 @@ export default function ExplorePage() {
                         </div>
 
                         {/* Themes Dropdown */}
-                        <div className="mb-4 bg-(--color-background)/50 rounded-lg overflow-hidden">
+                        <div className="mb-4 bg-(--color-background) rounded-lg overflow-hidden">
                             <button
                                 onClick={toggleThemes}
                                 className="w-full flex items-center justify-between p-4 text-(--color-foreground) font-medium"

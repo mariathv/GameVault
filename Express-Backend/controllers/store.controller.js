@@ -185,7 +185,7 @@ const storeController = {
         try {
             const sortBy = req.query.sortBy;
             const sortField = sortBy ? { [sortBy]: -1 } : { createdAt: -1 };
-            const limit = parseInt(req.query.limit) || 10;
+            const limit = parseInt(req.query.limit) || 12;
             const page = parseInt(req.query.page) || 1;
             const skip = (page - 1) * limit;
 

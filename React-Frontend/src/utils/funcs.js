@@ -18,3 +18,9 @@ export function formatDescription(text) {
     formattedText = formattedText.replace(/overview/i, "");
     return formattedText;
 }
+
+export function getDiscountedPrice(price, discountPercentage) {
+    if (!discountPercentage || discountPercentage <= 0) return price;
+    const discountAmount = (price * discountPercentage) / 100;
+    return (price - discountAmount).toFixed(2);
+}
