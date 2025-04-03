@@ -9,7 +9,7 @@ router.get('/debug/:userId', async (req, res) => {
   try {
     const userId = req.params.userId;
     const orders = await Order.find({ user: userId });
-    
+
     res.status(200).json({
       success: true,
       message: 'Debug endpoint',

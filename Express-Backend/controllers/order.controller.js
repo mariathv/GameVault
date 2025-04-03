@@ -57,7 +57,7 @@ const orderController = {
             const order = new Order({
                 user: userId,
                 games: gameDetails,
-                totalAmountWithTax,
+                totalAmount: totalAmountWithTax,
                 status: "Completed",
                 paymentInfo: {
                     method: paymentMethod,

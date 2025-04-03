@@ -196,6 +196,11 @@ const storeController = {
                 filter.genres = { $in: [genreVal] };
             }
 
+            if (req.query.theme) {
+                const themesVal = parseInt(req.query.theme);
+                filter.themes = { $in: [themesVal] };
+            }
+
             const games = await Store.find(filter)
                 .sort(sortField)
                 .skip(skip)
