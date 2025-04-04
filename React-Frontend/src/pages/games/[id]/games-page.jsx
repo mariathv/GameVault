@@ -11,6 +11,7 @@ import { useCart } from "@/src/contexts/cart-context"
 import { SiStockx } from "react-icons/si"
 import { useAuth } from "@/src/contexts/auth-context"
 import { addToWishlist, removeFromWishlist, getWishlist, isGameInWishlist } from "@/src/hooks/useWishlist"
+import { TagIcon } from "lucide-react"
 
 export default function GamePage() {
     const { id } = useParams();
@@ -39,54 +40,54 @@ export default function GamePage() {
         setNotification({ message, type })
         // Auto-hide notification after 3 seconds
         setTimeout(() => setNotification(null), 3000)
-      }
-    
-      // Fetch wishlist data
-      useEffect(() => {
+    }
+
+    // Fetch wishlist data
+    useEffect(() => {
         const fetchWishlistData = async () => {
-          if (!user) return
-    
-          try {
-            console.log("Fetching wishlist for user:", user._id)
-            const data = await getWishlist(user._id)
-            console.log("Wishlist data received:", data)
-            setWishlistData(data)
-          } catch (error) {
-            console.error("Failed to fetch wishlist:", error)
-          }
-        }
-    
-        fetchWishlistData()
-      }, [user])
-    
-      // Check if the game is in the user's wishlist
-      useEffect(() => {
-        const checkWishlist = async () => {
-          if (!user || !game) return
-    
-          try {
-            console.log("Checking wishlist for game:", {
-              gameId: game._id,
-              gameNumId: game.id,
-              userId: user._id,
-            })
-    
-            const response = await getWishlist(user._id)
-            console.log("Wishlist data received:", response)
-    
-            if (response && response.status === "success" && response.wishlist && response.wishlist.games) {
-              const isInList = isGameInWishlist(response.wishlist.games, game)
-              console.log("Game in wishlist check result:", isInList)
-              setIsInWishlist(isInList)
+            if (!user) return
+
+            try {
+                console.log("Fetching wishlist for user:", user._id)
+                const data = await getWishlist(user._id)
+                console.log("Wishlist data received:", data)
+                setWishlistData(data)
+            } catch (error) {
+                console.error("Failed to fetch wishlist:", error)
             }
-          } catch (error) {
-            console.error("Failed to check wishlist:", error)
-          }
         }
-    
+
+        fetchWishlistData()
+    }, [user])
+
+    // Check if the game is in the user's wishlist
+    useEffect(() => {
+        const checkWishlist = async () => {
+            if (!user || !game) return
+
+            try {
+                console.log("Checking wishlist for game:", {
+                    gameId: game._id,
+                    gameNumId: game.id,
+                    userId: user._id,
+                })
+
+                const response = await getWishlist(user._id)
+                console.log("Wishlist data received:", response)
+
+                if (response && response.status === "success" && response.wishlist && response.wishlist.games) {
+                    const isInList = isGameInWishlist(response.wishlist.games, game)
+                    console.log("Game in wishlist check result:", isInList)
+                    setIsInWishlist(isInList)
+                }
+            } catch (error) {
+                console.error("Failed to check wishlist:", error)
+            }
+        }
+
         checkWishlist()
-      }, [user, game])
-    
+    }, [user, game])
+
 
     const fetchGameData = async () => {
         try {
@@ -150,41 +151,41 @@ export default function GamePage() {
 
     const handleWishlistAction = async () => {
         if (!user) {
-          // Redirect to login if user is not logged in
-          navigate("/login")
-          return
+            // Redirect to login if user is not logged in
+            navigate("/login")
+            return
         }
-    
+
         setWishlistLoading(true)
         try {
-          if (isInWishlist) {
-            // Remove from wishlist
-            console.log("Removing game from wishlist:", game._id)
-            await removeFromWishlist(user._id, game._id)
-    
-            // Update local state
-            setIsInWishlist(false)
-            showNotification(`${game.name} has been removed from your wishlist.`, "success")
-          } else {
-            // Add to wishlist
-            console.log("Adding game to wishlist:", game._id)
-            const response = await addToWishlist(user._id, game._id)
-            console.log("Add to wishlist response:", response)
-    
-            // Update local state
-            setIsInWishlist(true)
-            showNotification(`${game.name} has been added to your wishlist.`, "success")
-    
-            // Navigate to wishlist page after adding
-            navigate("/wishlist")
-          }
+            if (isInWishlist) {
+                // Remove from wishlist
+                console.log("Removing game from wishlist:", game._id)
+                await removeFromWishlist(user._id, game._id)
+
+                // Update local state
+                setIsInWishlist(false)
+                showNotification(`${game.name} has been removed from your wishlist.`, "success")
+            } else {
+                // Add to wishlist
+                console.log("Adding game to wishlist:", game._id)
+                const response = await addToWishlist(user._id, game._id)
+                console.log("Add to wishlist response:", response)
+
+                // Update local state
+                setIsInWishlist(true)
+                showNotification(`${game.name} has been added to your wishlist.`, "success")
+
+                // Navigate to wishlist page after adding
+                navigate("/wishlist")
+            }
         } catch (error) {
-          console.error("Wishlist operation failed:", error)
-          showNotification("Failed to update wishlist. Please try again.", "error")
+            console.error("Wishlist operation failed:", error)
+            showNotification("Failed to update wishlist. Please try again.", "error")
         } finally {
-          setWishlistLoading(false)
+            setWishlistLoading(false)
         }
-      }
+    }
 
     useEffect(() => {
         if (game == null || !game) fetchGameData();
@@ -240,11 +241,10 @@ export default function GamePage() {
         <div className="min-h-screen bg-(--color-background)">
             {notification && (
                 <div
-                className={`fixed top-4 right-4 z-50 p-4 rounded-md shadow-md ${
-                    notification.type === "error" ? "bg-red-500" : "bg-green-500"
-                } text-white`}
+                    className={`fixed top-4 right-4 z-50 p-4 rounded-md shadow-md ${notification.type === "error" ? "bg-red-500" : "bg-green-500"
+                        } text-white`}
                 >
-                {notification.message}
+                    {notification.message}
                 </div>
             )}
             {artworks &&
@@ -430,9 +430,8 @@ export default function GamePage() {
 
                             <Button
                                 variant="outline"
-                                className={`w-full border-(--color-light-ed)/10 text-(--color-light-ed) hover:bg-[#EDEDED]/10 ${
-                                isInWishlist ? "bg-[#EDEDED]/10" : ""
-                                }`}
+                                className={`w-full border-(--color-light-ed)/10 text-(--color-light-ed) hover:bg-[#EDEDED]/10 ${isInWishlist ? "bg-[#EDEDED]/10" : ""
+                                    }`}
                                 onClick={handleWishlistAction}
                                 disabled={wishlistLoading}
                             >
