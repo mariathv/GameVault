@@ -32,6 +32,9 @@ import ExplorePage from './pages/explore/explore';
 import CheckoutPage from './pages/checkout/checkout';
 import Inventory from './pages/inventory/inventory';
 import Help from './pages/admin/Help';
+import BlockAdmin from './components/BlockAdmin';
+
+import ScrollToTop from './utils/scrollToTop';
 
 console.log("-------> in main");
 
@@ -47,28 +50,30 @@ const App = () => {
         <LoadingBarContainer>
           <ThemeProvider>
             <>
+              <ScrollToTop />
               <div className="bg-(--color-background)">
                 {!isAdminRoute && <Header />}
                 <Routes>
-                  {/* Client Routes protected by RequireClient */}
-                  <Route path="/" element={<HomeGameStore />} />
-                  <Route path="/cart" element={<CartPage />} />
-                  <Route path="/games/:id" element={<GamePage />} />
-                  <Route path="/login" element={<LoginPage />} />
-                  <Route path="/register" element={<RegisterPage />} />
-                  <Route path="/wishlist" element={<WishlistPage />} />
-                  <Route path="/explore" element={<ExplorePage />} />
-                  <Route path="/explore/genres/:id/:type" element={<ExplorePage />} />
-                  <Route path="/explore/themes/:id/:type" element={<ExplorePage />} />
-                  <Route path="/profile" element={<Profile />} />
+                  {/* Public Routes (Blocked for Admins) */}
+                  <Route element={<BlockAdmin />}>
+                    <Route path="/" element={<HomeGameStore />} />
+                    <Route path="/cart" element={<CartPage />} />
+                    <Route path="/games/:id" element={<GamePage />} />
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/register" element={<RegisterPage />} />
+                    <Route path="/wishlist" element={<WishlistPage />} />
+                    <Route path="/explore" element={<ExplorePage />} />
+                    <Route path="/explore/genres/:id/:type" element={<ExplorePage />} />
+                    <Route path="/explore/themes/:id/:type" element={<ExplorePage />} />
+                  </Route>
 
-                  {/* Client protected routes */}
+                  {/* Protected Client Routes (Require Login & Block Admins) */}
+                  <Route path="/profile" element={<RequireClient><Profile /></RequireClient>} />
                   <Route path="/checkout" element={<RequireClient><CheckoutPage /></RequireClient>} />
                   <Route path="/wishlist" element={<RequireClient><WishlistPage /></RequireClient>} />
                   <Route path="/inventory" element={<RequireClient><Inventory /></RequireClient>} />
 
-
-                  {/* Admin Routes protected by RequireAdmin */}
+                  {/* Admin Routes (Require Admin) */}
                   <Route path="/admin" element={<RequireAdmin><AdminApp /></RequireAdmin>}>
                     <Route index element={<AddGame />} />
                     <Route path="add-a-game" element={<AddGame />} />
@@ -79,7 +84,7 @@ const App = () => {
                     <Route path="help" element={<Help />} />
                   </Route>
 
-                  {/* Fallback */}
+                  {/* Fallback Route */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
                 <Footer />
