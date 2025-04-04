@@ -1,32 +1,21 @@
-import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { fetchData } from '@/src/hooks/api/api-gamevault';
-import YouTubeVideo from "@/src/components/VideoPlayer";
-import {
-    Star,
-    ShoppingCart,
-    Heart,
-    Share2,
-    Check,
-    Info,
-    Cpu,
-    MemoryStickIcon as Memory,
-    HardDrive,
-    Monitor,
-    TagIcon,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import Header from "@/src/components/Header";
-import { games } from "@/dummydata-lib/data";
-import { useCart } from "@/src/contexts/cart-context";
-import { SiStockx } from "react-icons/si";
-
+import { useState, useEffect } from "react"
+import { useNavigate, useParams } from "react-router-dom"
+import { fetchData } from "@/src/hooks/api/api-gamevault"
+import YouTubeVideo from "@/src/components/VideoPlayer"
+import { Star, ShoppingCart, Heart, Share2, Check } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import Header from "@/src/components/Header"
+import { useCart } from "@/src/contexts/cart-context"
+import { SiStockx } from "react-icons/si"
+import { useAuth } from "@/src/contexts/auth-context"
+import { addToWishlist, removeFromWishlist, getWishlist, isGameInWishlist } from "@/src/hooks/useWishlist"
 
 export default function GamePage() {
     const { id } = useParams();
     const { addToCart } = useCart();
+    const { user } = useAuth()
     const [activeTab, setActiveTab] = useState("overview");
     const [activeScreenshot, setActiveScreenshot] = useState(0);
     const gameId = Number.parseInt(id);
@@ -40,6 +29,64 @@ export default function GamePage() {
     const [companies, setCompanies] = useState(null);
     const [themes, setThemes] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [isInWishlist, setIsInWishlist] = useState(false)
+    const [wishlistLoading, setWishlistLoading] = useState(false)
+    const [wishlistData, setWishlistData] = useState({ wishlist: { games: [] } })
+    const [notification, setNotification] = useState(null) // Simple notification state
+
+
+    const showNotification = (message, type = "info") => {
+        setNotification({ message, type })
+        // Auto-hide notification after 3 seconds
+        setTimeout(() => setNotification(null), 3000)
+      }
+    
+      // Fetch wishlist data
+      useEffect(() => {
+        const fetchWishlistData = async () => {
+          if (!user) return
+    
+          try {
+            console.log("Fetching wishlist for user:", user._id)
+            const data = await getWishlist(user._id)
+            console.log("Wishlist data received:", data)
+            setWishlistData(data)
+          } catch (error) {
+            console.error("Failed to fetch wishlist:", error)
+          }
+        }
+    
+        fetchWishlistData()
+      }, [user])
+    
+      // Check if the game is in the user's wishlist
+      useEffect(() => {
+        const checkWishlist = async () => {
+          if (!user || !game) return
+    
+          try {
+            console.log("Checking wishlist for game:", {
+              gameId: game._id,
+              gameNumId: game.id,
+              userId: user._id,
+            })
+    
+            const response = await getWishlist(user._id)
+            console.log("Wishlist data received:", response)
+    
+            if (response && response.status === "success" && response.wishlist && response.wishlist.games) {
+              const isInList = isGameInWishlist(response.wishlist.games, game)
+              console.log("Game in wishlist check result:", isInList)
+              setIsInWishlist(isInList)
+            }
+          } catch (error) {
+            console.error("Failed to check wishlist:", error)
+          }
+        }
+    
+        checkWishlist()
+      }, [user, game])
+    
 
     const fetchGameData = async () => {
         try {
@@ -101,6 +148,44 @@ export default function GamePage() {
         setThemes(fetch.queryResult);
     }
 
+    const handleWishlistAction = async () => {
+        if (!user) {
+          // Redirect to login if user is not logged in
+          navigate("/login")
+          return
+        }
+    
+        setWishlistLoading(true)
+        try {
+          if (isInWishlist) {
+            // Remove from wishlist
+            console.log("Removing game from wishlist:", game._id)
+            await removeFromWishlist(user._id, game._id)
+    
+            // Update local state
+            setIsInWishlist(false)
+            showNotification(`${game.name} has been removed from your wishlist.`, "success")
+          } else {
+            // Add to wishlist
+            console.log("Adding game to wishlist:", game._id)
+            const response = await addToWishlist(user._id, game._id)
+            console.log("Add to wishlist response:", response)
+    
+            // Update local state
+            setIsInWishlist(true)
+            showNotification(`${game.name} has been added to your wishlist.`, "success")
+    
+            // Navigate to wishlist page after adding
+            navigate("/wishlist")
+          }
+        } catch (error) {
+          console.error("Wishlist operation failed:", error)
+          showNotification("Failed to update wishlist. Please try again.", "error")
+        } finally {
+          setWishlistLoading(false)
+        }
+      }
+
     useEffect(() => {
         if (game == null || !game) fetchGameData();
     }, []);
@@ -153,6 +238,15 @@ export default function GamePage() {
 
     return (
         <div className="min-h-screen bg-(--color-background)">
+            {notification && (
+                <div
+                className={`fixed top-4 right-4 z-50 p-4 rounded-md shadow-md ${
+                    notification.type === "error" ? "bg-red-500" : "bg-green-500"
+                } text-white`}
+                >
+                {notification.message}
+                </div>
+            )}
             {artworks &&
                 <div className="h-150 bg-image-dark" style={{ backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url(${createImageUrl(artworks[0]?.image_id)})` }}>
                     <div className="flex gap-20 justify-center items-center py-30">
@@ -336,22 +430,14 @@ export default function GamePage() {
 
                             <Button
                                 variant="outline"
-                                className="w-full border-(--color-light-ed)/10 text-(--color-light-ed) hover:bg-[#EDEDED]/10"
-                                onClick={() => {
-                                    // Here you would add the game to wishlist in localStorage or context
-                                    // For example:
-                                    const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
-                                    if (!wishlist.includes(game.id)) {
-                                        wishlist.push(game.id);
-                                        localStorage.setItem('wishlist', JSON.stringify(wishlist));
-                                    }
-
-                                    // Then navigate to wishlist page
-                                    navigate('/wishlist');
-                                }}
+                                className={`w-full border-(--color-light-ed)/10 text-(--color-light-ed) hover:bg-[#EDEDED]/10 ${
+                                isInWishlist ? "bg-[#EDEDED]/10" : ""
+                                }`}
+                                onClick={handleWishlistAction}
+                                disabled={wishlistLoading}
                             >
-                                <Heart className="mr-2 h-4 w-4" />
-                                Add to Wishlist
+                                <Heart className={`mr-2 h-4 w-4 ${isInWishlist ? "fill-current" : ""}`} />
+                                {wishlistLoading ? "Processing..." : isInWishlist ? "Remove from Wishlist" : "Add to Wishlist"}
                             </Button>
 
                             <Button variant="outline" className="w-full border-(--color-light-ed)/10 text-(--color-light-ed) hover:bg-(--color-light-ed)/10">
