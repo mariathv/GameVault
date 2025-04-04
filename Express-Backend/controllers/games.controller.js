@@ -165,12 +165,30 @@ const gamesController = {
         const genres = await fetchIGDB("genres", body);
 
         if (!genres) {
-            console.log(chalk.yellow(`[${new Date().toISOString()}] ⚠️ No valid genre data found`));
             return res.status(400).json({ error: "genre info not found" });
         }
 
 
         return res.status(200).json({ success: true, queryResult: genres });
+    },
+    getGameThemes: async (req, res) => {
+        const { ids } = req.query;
+        const gameThemeIds = Array.isArray(ids) ? ids : ids.split(",");
+
+        const body = `fields *; where id = (${gameThemeIds});`
+
+        if (gameThemeIds.length === 0) {
+            return res.status(400).json({ error: "At least one ID is required!" });
+        }
+
+        const themes = await fetchIGDB("themes", body);
+
+        if (!themes) {
+            return res.status(400).json({ error: "genre info not found" });
+        }
+
+
+        return res.status(200).json({ success: true, queryResult: themes });
     },
     getGameVideos: async (req, res) => {
         const { ids } = req.query;
@@ -186,7 +204,6 @@ const gamesController = {
         const vids = await fetchIGDB("game_videos", body);
 
         if (!vids) {
-            console.log(chalk.yellow(`[${new Date().toISOString()}] ⚠️ No valid vid data found`));
             return res.status(400).json({ error: "vid info not found" });
         }
 

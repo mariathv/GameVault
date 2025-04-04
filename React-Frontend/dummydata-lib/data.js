@@ -446,23 +446,6 @@ export const initialCart = {
 }
 
 // Helper functions
-export const calculateCartTotals = (items) => {
-    const subtotal = items.reduce((total, item) => {
-        const game = item.game; // No need to look up game, it's already in the cart
-        if (!game) return total;
 
-        const price = game.onSale ? game.price * (1 - game.discount / 100) : game.price;
-        return total + price * item.quantity;
-    }, 0);
-
-    const tax = subtotal * 0.08; // 8% tax
-    const total = subtotal + tax;
-
-    return {
-        subtotal: Number.parseFloat(subtotal.toFixed(2)),
-        tax: Number.parseFloat(tax.toFixed(2)),
-        total: Number.parseFloat(total.toFixed(2)),
-    };
-};
 
 

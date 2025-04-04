@@ -78,12 +78,12 @@ const Sidebar = () => {
             path: "/admin/purchases",
             badge: "12",
         },
-        {
-            title: "Users",
-            icon: <Users size={20} />,
-            path: "/admin/users",
-            badge: null,
-        },
+        // {
+        //     title: "Users",
+        //     icon: <Users size={20} />,
+        //     path: "/admin/users",
+        //     badge: null,
+        // },
         // {
         //     title: "Analytics",
         //     icon: <BarChart3 size={20} />,
@@ -218,7 +218,7 @@ const Sidebar = () => {
                                     </Link>
                                 </TooltipTrigger>
                                 {collapsed && (
-                                    <TooltipContent side="right" className="font-medium">
+                                    <TooltipContent side="right" className="font-medium text-(--color-foreground)">
                                         {item.title}
                                     </TooltipContent>
                                 )}

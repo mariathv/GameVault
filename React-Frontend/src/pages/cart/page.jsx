@@ -26,7 +26,6 @@ export default function CartPage() {
 
     return (
         <div className="min-h-screen bg-(--color-background)">
-            <Header />
             <main className="container mx-auto px-4 py-8">
                 <h1 className="text-3xl font-bold text-(--color-light-ed) mb-8">Your Shopping Cart</h1>
                 {cart.items.length === 0 ? (

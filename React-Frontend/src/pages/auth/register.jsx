@@ -71,8 +71,10 @@ export default function RegisterPage() {
     }
 
     return (
-        <div className="min-h-screen bg-(--color-background)">
-            <Header searchQuery="" setSearchQuery={() => { }} />
+        <div
+            className="min-h-screen bg-[#0A0E17] bg-cover bg-center bg-no-repeat bg-image-dark"
+            style={{ backgroundImage: `url( https://i.ibb.co/wNhs296g/wallpaperflare-com-wallpaper.jpg)`, backgroundAttachment: 'fixed', }}
+        >
 
             <div className="container mx-auto px-4 py-16 flex justify-center">
                 <Card className="gradient-border sw-full max-w-md border-(--color-light-ed)/10 bg-(--color-light-ed)/5 text-(--color-light-ed)">

@@ -31,6 +31,8 @@
         --card-foreground: 0 0% 98%;
         --popover: 240 10% 3.9%;
         --popover-foreground: 0 0% 98%;
+        --color-accent-primary: #546885;
+        --color-accent-secondary: #33BCFA;
     }
 
     .dark {
@@ -61,5 +63,7 @@
         --card-foreground: 0 0% 98%;
         --popover: 240 10% 3.9%;
         --popover-foreground: 0 0% 98%;
+        --color-accent-primary: #546885;
+        --color-accent-secondary: #33BCFA;
     }
 }

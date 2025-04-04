@@ -90,7 +90,7 @@ const storeController = {
         }
 
         try {
-            const result = await Store.findOneAndDelete({ id: gameId });
+            const result = await Store.findOneAndDelete({ _id: gameId });
             if (!result) {
                 return res.status(404).json({ success: false, message: "Game not found with the given ID." });
             }
@@ -101,12 +101,91 @@ const storeController = {
             return res.status(500).json({ success: false, message: "Failed to remove game from store", error: error.message });
         }
     },
+    setFeaturedGame: async (req, res) => {
+        const { gameId } = req.body;
+        if (!gameId) {
+            return res.status(400).json({ success: false, message: "Game ID is missing!" });
+        }
+
+        try {
+            await Store.updateMany({}, { isFeatured: false });
+            const updatedGame = await Store.findOneAndUpdate({ _id: gameId }, { isFeatured: true }, { new: true });
+
+            if (!updatedGame) {
+                return res.status(404).json({ success: false, message: "Game not found" });
+            }
+            console.log("set featured", gameId);
+            return res.status(200).json({ success: true, message: "Game set as featured", game: updatedGame });
+        } catch (error) {
+            console.error("Error setting featured game:", error);
+            return res.status(500).json({ success: false, message: "Failed to set featured game", error: error.message });
+        }
+    },
+    addGameDiscount: async (req, res) => {
+        const { gameId, discount } = req.body;
+
+        if (!gameId) {
+            return res.status(400).json({ success: false, message: "Game ID is missing!" });
+        }
+
+        try {
+            const updatedGame = await Store.findOneAndUpdate(
+                { _id: gameId },
+                { isDiscount: true, discountPercentage: discount },
+                { new: true }
+            );
+
+            if (!updatedGame) {
+                return res.status(404).json({ success: false, message: "Game not found" });
+            }
+
+            console.log("Set discount successfully", gameId, "discount", discount);
+            return res.status(200).json({ success: true, message: "Game discount added", game: updatedGame });
+        } catch (error) {
+            console.error("Error setting discount game:", error);
+            return res.status(500).json({ success: false, message: "Failed to set discount game", error: error.message });
+        }
+    },
+    getGameDiscount: async (req, res) => {
+        try {
+            const { gameId } = req.body;
+            const game = await Store.findOne({ _id: gameId });
+
+            if (!game) {
+                return res.status(404).json({ success: false, message: "No game found" });
+            }
+
+            discount = game.discountPercentage || 0;
+
+            return res.status(200).json({ success: true, message: "Discount retrieved", discount });
+
+
+        } catch (error) {
+            console.error("Error retrieving  game:", error);
+            return res.status(500).json({ success: false, message: "Failed to retrieve  game", error: error.message });
+        }
+    },
+
+    getFeaturedGame: async (req, res) => {
+        try {
+            const featuredGame = await Store.findOne({ isFeatured: true });
+
+            if (!featuredGame) {
+                return res.status(404).json({ success: false, message: "No featured game found" });
+            }
+
+            return res.status(200).json({ success: true, message: "Featured game retrieved", game: featuredGame });
+        } catch (error) {
+            console.error("Error retrieving featured game:", error);
+            return res.status(500).json({ success: false, message: "Failed to retrieve featured game", error: error.message });
+        }
+    },
 
     getAllGames: async (req, res) => {
         try {
             const sortBy = req.query.sortBy;
             const sortField = sortBy ? { [sortBy]: -1 } : { createdAt: -1 };
-            const limit = parseInt(req.query.limit) || 10;
+            const limit = parseInt(req.query.limit) || 12;
             const page = parseInt(req.query.page) || 1;
             const skip = (page - 1) * limit;
 
@@ -115,6 +194,11 @@ const storeController = {
             if (req.query.genre) {
                 const genreVal = parseInt(req.query.genre);
                 filter.genres = { $in: [genreVal] };
+            }
+
+            if (req.query.theme) {
+                const themesVal = parseInt(req.query.theme);
+                filter.themes = { $in: [themesVal] };
             }
 
             const games = await Store.find(filter)
@@ -181,6 +265,7 @@ const storeController = {
         // Placeholder
         return res.status(200).json({ success: true, message: "No purchase data available." });
     },
+
 };
 
 module.exports = storeController;

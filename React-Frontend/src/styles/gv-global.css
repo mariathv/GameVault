@@ -1,5 +1,4 @@
 .bg-image-dark {
-    position: relative;
     background-image: url('https://i.ibb.co/pjW3NFLz/pxfuel.jpg');
     /* Replace with your image path */
     background-size: cover;
@@ -9,7 +8,6 @@
 
 .bg-image-dark::after {
     content: '';
-    position: absolute;
     top: 0;
     left: 0;
     width: 100%;
@@ -24,6 +22,32 @@
     position: relative;
     z-index: 2;
 }
+
+.bg-image-card {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: scroll;
+    /* ✅ Moves with scroll */
+    position: relative;
+}
+
+.bg-image-card::after {
+    position: absolute;
+    content: '';
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1;
+}
+
+.bg-image-card>* {
+    position: relative;
+    z-index: 2;
+}
+
 
 .bg-image-dark-blend {
     background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
@@ -65,7 +89,6 @@
 }
 
 .loader-dots {
-    color: #FFF;
     font-size: 3px;
     position: relative;
     text-indent: -9999em;
@@ -100,4 +123,54 @@
     40% {
         box-shadow: 0 2.5em 0 0
     }
+}
+
+/* HTML: <div class="loader"></div> */
+.loader-box {
+    width: 85px;
+    height: 25px;
+    --g1: conic-gradient(from 90deg at left 3px top 3px, #0000 90deg, #fff 0);
+    --g2: conic-gradient(from -90deg at bottom 3px right 3px, #0000 90deg, #fff 0);
+    background: var(--g1), var(--g1), var(--g1), var(--g2), var(--g2), var(--g2);
+    background-position: left, center, right;
+    background-repeat: no-repeat;
+    animation: l8 1s infinite;
+}
+
+@keyframes l8 {
+    0% {
+        background-size: 25px 100%, 25px 100%, 25px 100%
+    }
+
+    20% {
+        background-size: 25px 50%, 25px 100%, 25px 100%
+    }
+
+    40% {
+        background-size: 25px 50%, 25px 50%, 25px 100%
+    }
+
+    60% {
+        background-size: 25px 100%, 25px 50%, 25px 50%
+    }
+
+    80% {
+        background-size: 25px 100%, 25px 100%, 25px 50%
+    }
+
+    100% {
+        background-size: 25px 100%, 25px 100%, 25px 100%
+    }
+}
+
+
+.fade-img::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 100%);
+    z-index: 1;
 }

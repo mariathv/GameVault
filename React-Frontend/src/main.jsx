@@ -1,6 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { ChakraProvider } from '@chakra-ui/react';
 import { LoadingBarContainer } from 'react-top-loading-bar';
 import './index.css';
@@ -14,7 +14,6 @@ import RegisterPage from './pages/auth/register';
 import { NotFound } from './pages/not-found';
 import WishlistPage from './pages/wishlist/wishlist-page';
 
-
 import { CartProvider } from './contexts/cart-context';
 import { ThemeProvider } from './contexts/theme-context';
 import { AuthProvider } from './contexts/auth-context';
@@ -23,22 +22,33 @@ import ViewGames from './components/ViewGames';
 import Settings from './components/Settings';
 import Purchases from './components/Purchases';
 import { Footer } from './components/Footer';
-import RequireClient from './components/requireClient';
-
+import Header from './components/Header';
 
 import RequireAdmin from './components/RequireAdmin';
+import RequireClient from './components/RequireClient';
 import Users from './pages/admin/Users';
+import Profile from './pages/profile/profile';
+import ExplorePage from './pages/explore/explore';
+import CheckoutPage from './pages/checkout/checkout';
+import Inventory from './pages/inventory/inventory';
+import Help from './pages/admin/Help';
 
 console.log("-------> in main");
 
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <BrowserRouter>
-      <AuthProvider>
-        <CartProvider>
-          <LoadingBarContainer>
-            <ThemeProvider>
-              <>
+const App = () => {
+  const { pathname } = useLocation();
+
+  // Show header only for client routes
+  const isAdminRoute = pathname.startsWith('/admin');
+
+  return (
+    <AuthProvider>
+      <CartProvider>
+        <LoadingBarContainer>
+          <ThemeProvider>
+            <>
+              <div className="bg-(--color-background)">
+                {!isAdminRoute && <Header />}
                 <Routes>
                   {/* Client Routes protected by RequireClient */}
                   <Route path="/" element={<HomeGameStore />} />
@@ -47,6 +57,15 @@ createRoot(document.getElementById('root')).render(
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/register" element={<RegisterPage />} />
                   <Route path="/wishlist" element={<WishlistPage />} />
+                  <Route path="/explore" element={<ExplorePage />} />
+                  <Route path="/explore/genres/:id/:type" element={<ExplorePage />} />
+                  <Route path="/explore/themes/:id/:type" element={<ExplorePage />} />
+                  <Route path="/profile" element={<Profile />} />
+
+                  {/* Client protected routes */}
+                  <Route path="/checkout" element={<RequireClient><CheckoutPage /></RequireClient>} />
+                  <Route path="/wishlist" element={<RequireClient><WishlistPage /></RequireClient>} />
+                  <Route path="/inventory" element={<RequireClient><Inventory /></RequireClient>} />
 
 
                   {/* Admin Routes protected by RequireAdmin */}
@@ -57,19 +76,26 @@ createRoot(document.getElementById('root')).render(
                     <Route path="purchases" element={<Purchases />} />
                     <Route path="users" element={<Users />} />
                     <Route path="settings" element={<Settings />} />
+                    <Route path="help" element={<Help />} />
                   </Route>
 
                   {/* Fallback */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
+                <Footer />
+              </div>
+            </>
+          </ThemeProvider>
+        </LoadingBarContainer>
+      </CartProvider>
+    </AuthProvider>
+  );
+};
 
-                {/* Optional: Hide footer on admin routes */}
-                {/* {!isAdminRoute && <Footer />} */}
-              </>
-            </ThemeProvider>
-          </LoadingBarContainer>
-        </CartProvider>
-      </AuthProvider>
+createRoot(document.getElementById('root')).render(
+  <StrictMode>
+    <BrowserRouter>
+      <App />
     </BrowserRouter>
   </StrictMode>
 );

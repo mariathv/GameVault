@@ -10,6 +10,9 @@ import { AspectRatio } from "@/components/ui/aspect-ratio"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useCallback } from "react"
 import { apiRequest } from "../hooks/api/api-gamevault"
+import InputWithButton from "./ui/input-with-button"
+import ConfirmationModel from "./ui/confirmation-model"
+import { setGameDiscount } from "../api/store"
 
 export function GameModal({ isOpen, onClose, game, inStore }) {
     const [gameInfo, setGameInfo] = useState({
@@ -20,6 +23,24 @@ export function GameModal({ isOpen, onClose, game, inStore }) {
     })
     const [gameKeys, setGameKeys] = useState(null);
     const [constGameKeys, setConstGameKeys] = useState(null);
+    const [isFeatured, setIsFeatured] = useState(game.isFeatured || false);
+    const [discountSet, setDiscountSet] = useState(false);
+    const [discountSetLoading, setDiscountSetLoading] = useState(false);
+    const [discountPrice, setDiscountPrice] = useState(null);
+
+    const handleSetFeatured = async () => {
+        try {
+            const response = await apiRequest("store/set-featured", { gameId: gameInfo._id });
+            if (response.success) {
+                setIsFeatured(true);
+                console.log("Game set as featured");
+            } else {
+                console.log("Failed to set game as featured");
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
 
     const handleInputChange = (e) => {
@@ -38,9 +59,9 @@ export function GameModal({ isOpen, onClose, game, inStore }) {
     }
 
     const closeModal = useCallback(() => {
-        setIsModalOpen(false);
         onClose(isRemoveFromStore);
     }, [onClose]);
+
 
     const handleSave = async () => {
         console.log("Saving game:", gameInfo)
@@ -140,6 +161,15 @@ export function GameModal({ isOpen, onClose, game, inStore }) {
         }
     };
 
+    const setDiscount = async (price) => {
+        setDiscountSet(false);
+        setDiscountSetLoading(true);
+        const req = await setGameDiscount(game._id, price);
+        console.log("disc req", req);
+        setDiscountPrice(price);
+        setDiscountSet(true);
+        setDiscountSetLoading(false);
+    }
 
 
 
@@ -184,6 +214,12 @@ export function GameModal({ isOpen, onClose, game, inStore }) {
                                         className="bg-[#2D3237] border-[#3D4247]"
                                     />
                                 </div>
+                                <div> Current Discount Value : ${discountPrice || game.discountPercentage || 0}</div>
+                                <InputWithButton inputText="Enter Discount" buttonText="Set" confirmation="true" onButtonClick={setDiscount} />
+
+                                {discountSetLoading && <div className="loader-dots ml-5 text-white"></div>}
+                                {discountSet && <h3 className="text-xs text-green-600"> Discount Set Successfully!</h3>}
+
                                 <div className="space-y-2">
                                     <Label htmlFor="price">No. of Keys : {gameInfo?.gameKeys?.length || 0}</Label>
 
@@ -193,6 +229,13 @@ export function GameModal({ isOpen, onClose, game, inStore }) {
                                     className="px-2 py-1 mt-3 bg-[#0D151D] text-[#EDEDED] rounded hover:bg-[#030404] focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 flex items-center gap-2 border-1 border-black text-sm "
                                 >
                                     <i className="fas fa-trash"></i> Remove From Store
+                                </button>
+                                <button
+                                    onClick={handleSetFeatured}
+                                    disabled={isFeatured}
+                                    className="px-2 py-1 mt-3 bg-(--color-accent-primary) text-[#EDEDED] rounded hover:bg-[#030404] focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 flex items-center gap-2 border-1 border-black text-sm "
+                                >
+                                    {isFeatured ? "Already Featured" : "Set Featured"}
                                 </button>
 
                                 {/* <div className="space-y-2">
@@ -271,6 +314,11 @@ export function GameModal({ isOpen, onClose, game, inStore }) {
                     </Button>
                 </DialogFooter>
             </DialogContent>
-        </Dialog>
+        </Dialog >
     )
 }
+
+/*
+-> check if game featured, if its already featured, remove button and add simple text informing that already featured
+
+*/

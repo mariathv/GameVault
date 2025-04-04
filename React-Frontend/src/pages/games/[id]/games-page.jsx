@@ -1,30 +1,21 @@
-import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { fetchData } from '@/src/hooks/api/api-gamevault';
-import YouTubeVideo from "@/src/components/VideoPlayer";
-import {
-    Star,
-    ShoppingCart,
-    Heart,
-    Share2,
-    Check,
-    Info,
-    Cpu,
-    MemoryStickIcon as Memory,
-    HardDrive,
-    Monitor,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import Header from "@/src/components/Header";
-import { games } from "@/dummydata-lib/data";
-import { useCart } from "@/src/contexts/cart-context";
-
+import { useState, useEffect } from "react"
+import { useNavigate, useParams } from "react-router-dom"
+import { fetchData } from "@/src/hooks/api/api-gamevault"
+import YouTubeVideo from "@/src/components/VideoPlayer"
+import { Star, ShoppingCart, Heart, Share2, Check } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import Header from "@/src/components/Header"
+import { useCart } from "@/src/contexts/cart-context"
+import { SiStockx } from "react-icons/si"
+import { useAuth } from "@/src/contexts/auth-context"
+import { addToWishlist, removeFromWishlist, getWishlist, isGameInWishlist } from "@/src/hooks/useWishlist"
 
 export default function GamePage() {
     const { id } = useParams();
     const { addToCart } = useCart();
+    const { user } = useAuth()
     const [activeTab, setActiveTab] = useState("overview");
     const [activeScreenshot, setActiveScreenshot] = useState(0);
     const gameId = Number.parseInt(id);
@@ -36,7 +27,66 @@ export default function GamePage() {
     const [videos, setVideos] = useState(null);
     const [gameFeatures, setFeatures] = useState(null);
     const [companies, setCompanies] = useState(null);
-    const [loading, setLoading] = useState(true); // Add loading state
+    const [themes, setThemes] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [isInWishlist, setIsInWishlist] = useState(false)
+    const [wishlistLoading, setWishlistLoading] = useState(false)
+    const [wishlistData, setWishlistData] = useState({ wishlist: { games: [] } })
+    const [notification, setNotification] = useState(null) // Simple notification state
+
+
+    const showNotification = (message, type = "info") => {
+        setNotification({ message, type })
+        // Auto-hide notification after 3 seconds
+        setTimeout(() => setNotification(null), 3000)
+      }
+    
+      // Fetch wishlist data
+      useEffect(() => {
+        const fetchWishlistData = async () => {
+          if (!user) return
+    
+          try {
+            console.log("Fetching wishlist for user:", user._id)
+            const data = await getWishlist(user._id)
+            console.log("Wishlist data received:", data)
+            setWishlistData(data)
+          } catch (error) {
+            console.error("Failed to fetch wishlist:", error)
+          }
+        }
+    
+        fetchWishlistData()
+      }, [user])
+    
+      // Check if the game is in the user's wishlist
+      useEffect(() => {
+        const checkWishlist = async () => {
+          if (!user || !game) return
+    
+          try {
+            console.log("Checking wishlist for game:", {
+              gameId: game._id,
+              gameNumId: game.id,
+              userId: user._id,
+            })
+    
+            const response = await getWishlist(user._id)
+            console.log("Wishlist data received:", response)
+    
+            if (response && response.status === "success" && response.wishlist && response.wishlist.games) {
+              const isInList = isGameInWishlist(response.wishlist.games, game)
+              console.log("Game in wishlist check result:", isInList)
+              setIsInWishlist(isInList)
+            }
+          } catch (error) {
+            console.error("Failed to check wishlist:", error)
+          }
+        }
+    
+        checkWishlist()
+      }, [user, game])
+    
 
     const fetchGameData = async () => {
         try {
@@ -51,7 +101,8 @@ export default function GamePage() {
                 fetchGameScreenshots(gameData.screenshots),
                 fetchGameGenres(gameData.genres),
                 fetchGameVideos(gameData.videos),
-                fetchGameCompanies(gameData.involved_companies)
+                fetchGameCompanies(gameData.involved_companies),
+                fetchGameThemes(gameData.themes)
             ];
 
             setFeatures(extractFeaturesFromGame(gameData));
@@ -92,8 +143,50 @@ export default function GamePage() {
         setCompanies(fetch.queryResult);
     }
 
+    const fetchGameThemes = async (thms) => {
+        let fetch = await fetchData(`games/get/themes?ids=${thms}`);
+        setThemes(fetch.queryResult);
+    }
+
+    const handleWishlistAction = async () => {
+        if (!user) {
+          // Redirect to login if user is not logged in
+          navigate("/login")
+          return
+        }
+    
+        setWishlistLoading(true)
+        try {
+          if (isInWishlist) {
+            // Remove from wishlist
+            console.log("Removing game from wishlist:", game._id)
+            await removeFromWishlist(user._id, game._id)
+    
+            // Update local state
+            setIsInWishlist(false)
+            showNotification(`${game.name} has been removed from your wishlist.`, "success")
+          } else {
+            // Add to wishlist
+            console.log("Adding game to wishlist:", game._id)
+            const response = await addToWishlist(user._id, game._id)
+            console.log("Add to wishlist response:", response)
+    
+            // Update local state
+            setIsInWishlist(true)
+            showNotification(`${game.name} has been added to your wishlist.`, "success")
+    
+            // Navigate to wishlist page after adding
+            navigate("/wishlist")
+          }
+        } catch (error) {
+          console.error("Wishlist operation failed:", error)
+          showNotification("Failed to update wishlist. Please try again.", "error")
+        } finally {
+          setWishlistLoading(false)
+        }
+      }
+
     useEffect(() => {
-        console.log("gonna fetch");
         if (game == null || !game) fetchGameData();
     }, []);
 
@@ -123,15 +216,15 @@ export default function GamePage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-[#14202C] flex flex-col items-center justify-center text-[#EDEDED]">
-                <div className="loader"></div> {/* Loader */}
+            <div className="min-h-screen bg-(--color-background) flex flex-col items-center justify-center text-(--color-foreground)">
+                <div className="loader border-t-4 border-(--color-foreground)"></div> {/* Loader */}
             </div>
         );
     }
 
     if (!game) {
         return (
-            <div className="min-h-screen bg-[#14202C] flex flex-col items-center justify-center text-[#EDEDED]">
+            <div className="min-h-screen bg-(--color-background) flex flex-col items-center justify-center text-(--color-foreground)">
                 <h1 className="text-3xl font-bold mb-4">Game Not Found</h1>
                 <p className="mb-6">The game you're looking for doesn't exist.</p>
                 <Button onClick={() => navigate("/")} className="bg-[#EDEDED] text-[#030404] hover:bg-[#EDEDED]/90">
@@ -145,9 +238,81 @@ export default function GamePage() {
 
     return (
         <div className="min-h-screen bg-(--color-background)">
-            <Header />
+            {notification && (
+                <div
+                className={`fixed top-4 right-4 z-50 p-4 rounded-md shadow-md ${
+                    notification.type === "error" ? "bg-red-500" : "bg-green-500"
+                } text-white`}
+                >
+                {notification.message}
+                </div>
+            )}
+            {artworks &&
+                <div className="h-150 bg-image-dark" style={{ backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url(${createImageUrl(artworks[0]?.image_id)})` }}>
+                    <div className="flex gap-20 justify-center items-center py-30">
+                        <div className="relative">
+                            <img src={game.cover_url} alt={game.name.toUpperCase()} className="h-[320px] object-cover" />
+                            {game.isDiscount && (
+                                <div className="absolute -top-4 -right-4 bg-red-500 text-white px-4 py-2 rounded-full transform rotate-12 font-bold shadow-lg">
+                                    SALE!
+                                </div>
+                            )}
+                        </div>
+                        <div className="flex-row flex-1 max-w-lg">
+                            <h1 className="text-white font-bold text-3xl">{game.name.toUpperCase()}</h1>
+                            <p className="text-white/80 line-clamp-3 text-sm pt-2">
+                                {game.storyline}
+                            </p>
+                            {themes && themes.length > 0 ? (
+                                themes.slice(0, 3).map((theme, index) => (
+                                    <Badge key={index} variant="outline" className="border-(--color-light-ed)/20 bg-[#EDEDED]/5 mr-2 text-white/80 mt-2">
+                                        {theme.name}
+                                    </Badge>
+                                ))
+                            ) : (<></>
+                            )}
+                            <div className="mt-5 flex gap-10 items-center">
+                                <div className="bg-yellow-500 rounded-full w-10 h-10 flex items-center justify-center mr-2">
+                                    <span className="text-black font-bold">{game.rating.toFixed(1)}</span>
+                                </div>
+                                <div className="flex flex-col">
+                                    {game.isDiscount ? (
+                                        <>
+                                            <div className="flex items-center gap-3">
+                                                <span className="text-white font-bold text-5xl">${(game.price * (1 - game.discountPercentage / 100)).toFixed(2)}</span>
+                                                <div className="flex flex-col">
+                                                    <span className="text-gray-400 line-through text-xl">${game.price.toFixed(2)}</span>
+                                                    <span className="text-green-400 font-bold">-{game.discountPercentage}%</span>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2 mt-2">
+                                                <TagIcon className="w-4 h-4 text-green-400" />
+                                                <span className="text-green-400 text-sm">Special Offer!</span>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <span className="text-white font-bold text-5xl">${game.price.toFixed(2)}</span>
+                                    )}
+                                </div>
+                            </div>
+                            <div>
+                                {
+                                    game.copies > 0 ? (
+                                        <button className="text-white border border-white px-10 rounded-full text-sm mt-5 py-1 transform transition duration-300 hover:scale-105" onClick={() => addToCart(game)}>
+                                            BUY
+                                        </button>
+                                    ) : (<div className=" mt-5 font-bold text-red-400"> Out of Stock</div>)
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+
 
             <main className="container mx-auto px-4 py-8">
+
                 <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
                     {/* Left Column - Game Images */}
                     <div className="lg:col-span-2">
@@ -155,7 +320,7 @@ export default function GamePage() {
                             <img
                                 src={
                                     activeScreenshot === 0 && artworks && artworks.length > 0
-                                        ? createImageUrl(artworks[0]?.image_id)
+                                        ? createImageUrl(artworks[1]?.image_id || artworks[0]?.image_id)
                                         : screenshots && screenshots.length > 0
                                             ? createImageUrl(screenshots[activeScreenshot - 1]?.image_id)
                                             : "/placeholder.svg" // Fallback image if screenshots are null or empty
@@ -171,13 +336,13 @@ export default function GamePage() {
                                 className={`overflow-hidden rounded-md border-2 ${activeScreenshot === 0 ? "border-(--color-foreground)" : "border-transparent"}`}
                             >
                                 <img
-                                    src={artworks && createImageUrl(artworks[0]?.image_id) || "/placeholder.svg"}
+                                    src={artworks && createImageUrl(artworks[1]?.image_id || artworks[0]?.image_id) || "/placeholder.svg"}
                                     alt="Main"
                                     className="w-full h-auto object-cover aspect-video"
                                 />
                             </button>
 
-                            {screenshots?.slice(0, 4).map((screenshot, index) => (
+                            {screenshots && screenshots.length > 0 && screenshots?.slice(0, 4)?.map((screenshot, index) => (
                                 <button
                                     key={index}
                                     onClick={() => setActiveScreenshot(index + 1)}
@@ -220,44 +385,59 @@ export default function GamePage() {
                         <p className="text-(--color-light-ed)/80 mb-6">{game.summary}</p>
 
                         <div className="mb-6">
-                            {game.onSale ? (
-                                <div className="mb-2">
-                                    <span className="text-2xl font-bold text-green-400">${discountedPrice.toFixed(2)}</span>
-                                    <span className="ml-2 text-lg line-through text-[#EDEDED]/60">${game.price.toFixed(2)}</span>
-                                    <Badge className="ml-2 bg-green-500">{game.discount}% OFF</Badge>
-                                </div>
-                            ) : (
-                                <span className="text-2xl font-bold text-(--color-light-ed) mb-2">${game.price.toFixed(2)}</span>
-                            )}
+                            <div className="mb-6">
+                                {game.isDiscount ? (
+                                    <div className="flex flex-col gap-2">
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-2xl font-bold text-green-400">
+                                                ${(game.price * (1 - game.discountPercentage / 100)).toFixed(2)}
+                                            </span>
+                                            <div className="flex flex-col">
+                                                <span className="text-lg line-through text-[#EDEDED]/60">
+                                                    ${game.price.toFixed(2)}
+                                                </span>
+                                                <Badge className="bg-green-500">
+                                                    {game.discountPercentage}% OFF
+                                                </Badge>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-green-400 text-sm">
+                                            <TagIcon className="w-4 h-4" />
+                                            <span>Limited Time Offer!</span>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <span className="text-2xl font-bold text-(--color-light-ed)">
+                                        ${game.price.toFixed(2)}
+                                    </span>
+                                )}
+                            </div>
                         </div>
 
                         <div className="flex flex-col gap-3 mb-6">
-                            <Button
+                            {game.copies > 0 ? (<Button
                                 className="w-full bg-(--color-light-ed) text-(--color-alt-foreground) hover:bg-[#EDEDED]/90"
                                 onClick={() => addToCart(game)}
                             >
                                 <ShoppingCart className="mr-2 h-4 w-4" />
                                 Add to Cart
-                            </Button>
+                            </Button>) : (<Button
+                                className="w-full bg-(--color-light-ed) text-(--color-alt-foreground) hover:bg-[#EDEDED]/90"
+                            >
+                                <SiStockx className="mr-2 h-4 w-4" />
+                                Out Of Stock
+                            </Button>)}
 
-                            <Button 
-                                variant="outline" 
-                                className="w-full border-(--color-light-ed)/10 text-(--color-light-ed) hover:bg-[#EDEDED]/10"
-                                onClick={() => {
-                                    // Here you would add the game to wishlist in localStorage or context
-                                    // For example:
-                                    const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
-                                    if (!wishlist.includes(game.id)) {
-                                    wishlist.push(game.id);
-                                    localStorage.setItem('wishlist', JSON.stringify(wishlist));
-                                    }
-                                    
-                                    // Then navigate to wishlist page
-                                    navigate('/wishlist');
-                                }}
-                                >
-                                <Heart className="mr-2 h-4 w-4" />
-                                Add to Wishlist
+                            <Button
+                                variant="outline"
+                                className={`w-full border-(--color-light-ed)/10 text-(--color-light-ed) hover:bg-[#EDEDED]/10 ${
+                                isInWishlist ? "bg-[#EDEDED]/10" : ""
+                                }`}
+                                onClick={handleWishlistAction}
+                                disabled={wishlistLoading}
+                            >
+                                <Heart className={`mr-2 h-4 w-4 ${isInWishlist ? "fill-current" : ""}`} />
+                                {wishlistLoading ? "Processing..." : isInWishlist ? "Remove from Wishlist" : "Add to Wishlist"}
                             </Button>
 
                             <Button variant="outline" className="w-full border-(--color-light-ed)/10 text-(--color-light-ed) hover:bg-(--color-light-ed)/10">
@@ -265,30 +445,30 @@ export default function GamePage() {
                                 Share
                             </Button>
                         </div>
-                        <div className="space-y-4 text-sm text-[#EDEDED]/80">
+                        <div className="space-y-4 text-sm text-(--color-foreground) ">
                             <div className="flex justify-between">
-                                <span>Developer:</span>
-                                <span className="text-[#EDEDED]">
+                                <span className="font-bold">Developer:</span>
+                                <span className="text-(--color-light-ed)">
                                     {
                                         companies?.filter(c => c.role === "Developer").map(c => c.companyName).join(", ") || "Unknown"
                                     }
                                 </span>
                             </div>
                             <div className="flex justify-between">
-                                <span>Publisher:</span>
-                                <span className="text-[#EDEDED]">
+                                <span className="font-bold">Publisher:</span>
+                                <span className="text-(--color-light-ed)">
                                     {
                                         companies?.filter(c => c.role === "Publisher").map(c => c.companyName).join(", ") || "Unknown"
                                     }
                                 </span>
                             </div>
                             <div className="flex justify-between">
-                                <span>Release Date:</span>
-                                <span className="text-[#EDEDED]">{game.release_dates}</span>
+                                <span className="font-bold">Release Date:</span>
+                                <span className="text-(--color-light-ed)">{game.release_dates}</span>
                             </div>
                             <div className="flex justify-between">
-                                <span>Platforms:</span>
-                                <span className="text-[#EDEDED]">{game.platforms.join(", ")}</span>
+                                <span className="font-bold">Platforms:</span>
+                                <span className="text-(--color-light-ed)">{game.platforms.join(", ")}</span>
                             </div>
                         </div>
                     </div>
