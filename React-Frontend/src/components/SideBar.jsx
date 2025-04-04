@@ -17,6 +17,10 @@ import {
     HelpCircle,
     Bell,
     Plus,
+    Code,
+    CodeSquare,
+    Hash,
+    Gift,
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -76,7 +80,13 @@ const Sidebar = () => {
             title: "Purchases",
             icon: <ShoppingCart size={20} />,
             path: "/admin/purchases",
-            badge: "12",
+            badge: null,
+        },
+        {
+            title: "Promo Codes",
+            icon: <Gift size={20} />,
+            path: "/admin/promo-codes",
+            badge: null,
         },
         // {
         //     title: "Users",

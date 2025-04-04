@@ -9,12 +9,25 @@ export default function CarouselSlider({ mapItems }) {
     const [currentSlide, setCurrentSlide] = useState(0);
 
     const nextSlide = () => {
-        setCurrentSlide((prev) => (prev + 1) % mapItems.length);
+        setCurrentSlide((prev) => {
+            console.log(prev);
+            if (prev == 5)
+                return (1 % mapItems.length)
+            return (prev + 1) % mapItems.length;
+        });
     };
 
+
     const prevSlide = () => {
-        setCurrentSlide((prev) => (prev === 0 ? mapItems.length - 1 : prev - 1));
+        setCurrentSlide((prev) => {
+            console.log(prev);
+            if (prev == 0) {
+                return (mapItems.length - 5)
+            }
+            return prev === 0 ? mapItems.length - 1 : prev - 1;
+        });
     };
+
     return (
         <section className="mb-12">
             {/* <h2 className="text-2xl font-bold mb-6 text-(--color-foreground)">GAME EXPLORER</h2> */}

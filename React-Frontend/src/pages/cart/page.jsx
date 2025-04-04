@@ -56,10 +56,10 @@ export default function CartPage() {
                                                     <p className="text-sm text-[#EDEDED]/60 mb-2">{game.genre}</p>
                                                 </div>
                                                 <div className="mt-2 sm:mt-0 text-right">
-                                                    {game.onSale ? (
+                                                    {game.isDiscount ? (
                                                         <div>
                                                             <span className="line-through text-[#EDEDED]/60 text-sm mr-2">${game.price.toFixed(2)}</span>
-                                                            <span className="text-green-400 font-bold">${(game.price * (1 - game.discount / 100)).toFixed(2)}</span>
+                                                            <span className="text-green-400 font-bold">${(game.price * (1 - game.discountPercentage / 100)).toFixed(2)}</span>
                                                         </div>
                                                     ) : (
                                                         <span className="font-bold">${game.price?.toFixed(2)}</span>

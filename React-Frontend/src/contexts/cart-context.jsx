@@ -11,7 +11,7 @@ const calculateCartTotals = (items) => {
         const game = item.game; // No need to look up game, it's already in the cart
         if (!game) return total;
 
-        const price = game.onSale ? game.price * (1 - game.discount / 100) : game.price;
+        const price = game.isDiscount ? game.price * (1 - game.discountPercentage / 100) : game.price;
         return total + price * item.quantity;
     }, 0);
 
