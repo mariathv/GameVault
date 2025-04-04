@@ -116,17 +116,17 @@ The web application will be running at `http://localhost:5173`.
                 </a>
             </td>
             <td align="center">
-                <a href="https://github.com/amanasif01">
-                    <img src="https://avatars.githubusercontent.com/u/114746458?v=4" width="100;" alt="amanasif01"/>
-                    <br />
-                    <sub><b>amanasif01</b></sub>
-                </a>
-            </td>
-            <td align="center">
                 <a href="https://github.com/Ammarsyed04">
                     <img src="https://avatars.githubusercontent.com/u/114818937?v=4" width="100;" alt="Ammarsyed04"/>
                     <br />
                     <sub><b>Ammarsyed04</b></sub>
+                </a>
+            </td>
+            <td align="center">
+                <a href="https://github.com/amanasif01">
+                    <img src="https://avatars.githubusercontent.com/u/114746458?v=4" width="100;" alt="amanasif01"/>
+                    <br />
+                    <sub><b>amanasif01</b></sub>
                 </a>
             </td>
 		</tr>
