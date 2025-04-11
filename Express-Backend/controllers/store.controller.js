@@ -180,15 +180,8 @@ const storeController = {
             return res.status(500).json({ success: false, message: "Failed to retrieve featured game", error: error.message });
         }
     },
-
-    getAllGames: async (req, res) => {
+    getGameCount: async (req, res) => {
         try {
-            const sortBy = req.query.sortBy;
-            const sortField = sortBy ? { [sortBy]: -1 } : { createdAt: -1 };
-            const limit = parseInt(req.query.limit) || 12;
-            const page = parseInt(req.query.page) || 1;
-            const skip = (page - 1) * limit;
-
             const filter = {};
 
             if (req.query.genre) {
@@ -201,23 +194,83 @@ const storeController = {
                 filter.themes = { $in: [themesVal] };
             }
 
-            const games = await Store.find(filter)
-                .sort(sortField)
-                .skip(skip)
-                .limit(limit);
+            const total = await Store.countDocuments(filter);
 
-            if (games.length === 0) {
-                return res.status(200).json({ success: true, games: [], message: "No games found." });
-            }
-
-            return res.status(200).json({ success: true, games });
+            return res.status(200).json({
+                success: true,
+                total
+            });
         } catch (error) {
-            console.error("Error fetching games:", error);
-            return res.status(500).json({ success: false, message: "Failed to fetch games." });
+            console.error("Error getting game count:", error);
+            return res.status(500).json({
+                success: false,
+                message: "Failed to get game count."
+            });
         }
     },
 
+    getAllGames: async (req, res) => {
+        try {
+            // --- Sort logic ---
+            const sortBy = req.query.sortBy;
+            const sortField = sortBy ? { [sortBy]: -1 } : { createdAt: -1 };
 
+            // --- Pagination logic ---
+            const limit = Math.min(parseInt(req.query.limit) || 12, 100); // Max 100 items per page
+            const page = Math.max(parseInt(req.query.page) || 1, 1);
+            const skip = (page - 1) * limit;
+
+            // --- Filter logic ---
+            const filter = {};
+
+            if (req.query.genre) {
+                const genreVal = parseInt(req.query.genre);
+                filter.genres = { $in: [genreVal] };
+            }
+
+            if (req.query.theme) {
+                const themesVal = parseInt(req.query.theme);
+                filter.themes = { $in: [themesVal] };
+            }
+
+            // --- Fetch games + total count ---
+            const [games, total] = await Promise.all([
+                Store.find(filter)
+                    .sort(sortField)
+                    .skip(skip)
+                    .limit(limit),
+                Store.countDocuments(filter)
+            ]);
+
+            // --- If no games found ---
+            if (games.length === 0) {
+                return res.status(200).json({
+                    success: true,
+                    games: [],
+                    total,
+                    page,
+                    pages: 0,
+                    message: "No games found."
+                });
+            }
+
+            // --- Success response with metadata ---
+            return res.status(200).json({
+                success: true,
+                games,
+                total,
+                page,
+                pages: Math.ceil(total / limit)
+            });
+
+        } catch (error) {
+            console.error("Error fetching games:", error);
+            return res.status(500).json({
+                success: false,
+                message: "Failed to fetch games."
+            });
+        }
+    },
     searchGame: async (req, res) => {
         try {
             const rawQuery = (req.query.q || "").trim();

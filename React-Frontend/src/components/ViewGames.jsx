@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { AspectRatio } from "@/components/ui/aspect-ratio"
 import { Navigate, useNavigate } from "react-router-dom";
-import { Edit, LayoutGrid, List, Search } from "lucide-react"
+import { Edit, LayoutGrid, List, Search, ChevronLeft, ChevronRight } from "lucide-react"
 import { GameModal } from "./EditGameModal";
 
 function ViewGames() {
@@ -18,29 +18,23 @@ function ViewGames() {
     const [selectedGame, setSelectedGame] = useState(null);
     const [search, setSearch] = useState("");
     const [isSearching, setIsSearching] = useState(false);
-    const [loading, isLoading] = useState(true);
+    const [loading, setLoading] = useState(true);
+
+    // Pagination states
+    const [currentPage, setCurrentPage] = useState(1);
+    const [gamesPerPage] = useState(10);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalGamesCount, setTotalGamesCount] = useState(0);
+
+    // Remove debounce-related states since we want search on Enter only
+    const [searchQuery, setSearchQuery] = useState("");
 
     const navigate = useNavigate();
 
-    const fetchGames = async () => {
-        isLoading(true);
-        setIsSearching(true);
-        try {
-            const instoreGames = await fetchData("store/games/get-all/");
-
-            if (instoreGames.success === "true") {
-                console.log("no data fetched");
-            } else {
-                setInStoreGames(instoreGames.games);
-                console.log("Fetched all games:", instoreGames);
-            }
-        } catch (error) {
-            console.error("Error fetching games:", error);
-        } finally {
-            setIsSearching(false);
-            isLoading(false);
-        }
-    };
+    // Reset to page 1 when search changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery]);
 
     const searchGames = async () => {
         if (!search || search.trim() === "") {
@@ -67,9 +61,55 @@ function ViewGames() {
         }
     };
 
+    const fetchGames = async () => {
+        setLoading(true);
+        setIsSearching(true);
+        try {
+            // Build query parameters for pagination
+            const queryParams = new URLSearchParams();
+            queryParams.append("limit", gamesPerPage.toString());
+            queryParams.append("page", currentPage.toString());
+
+            // Add search parameter if it exists
+            if (searchQuery) {
+                searchGames();
+                return;
+            }
+
+            const queryString = queryParams.toString();
+            // Fix the endpoint construction - there was a bug here
+            const endpoint = `store/games/get-all${queryString ? "?" + queryString : ""}`;
+
+            const response = await fetchData(endpoint);
+
+            if (response && response.success === "true" && !response.games) {
+                console.log("no data fetched");
+                setInStoreGames([]);
+                setTotalGamesCount(0);
+                setTotalPages(1);
+            } else if (response && response.games) {
+                setInStoreGames(response.games);
+                setTotalGamesCount(response.total || response.games.length);
+                setTotalPages(Math.ceil((response.total || response.games.length) / gamesPerPage) || 1);
+                console.log("Fetched games:", response);
+            } else {
+                console.error("Unexpected response format:", response);
+                setInStoreGames([]);
+                setTotalGamesCount(0);
+                setTotalPages(1);
+            }
+        } catch (error) {
+            console.error("Error fetching games:", error);
+            setInStoreGames([]);
+        } finally {
+            setIsSearching(false);
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
         fetchGames();
-    }, []);
+    }, [currentPage, searchQuery]);
 
     const toggleViewMode = () => {
         setViewMode(viewMode === "compact" ? "list" : "compact");
@@ -95,12 +135,81 @@ function ViewGames() {
 
     const handleSearchKeyDown = (e) => {
         if (e.key === "Enter") {
-            searchGames();
+            // Only trigger search on Enter key
+            setSearchQuery(search);
         }
     };
 
     const handleSearchClick = () => {
-        searchGames();
+        const searchGames = async () => {
+            if (!search || search.trim() === "") {
+                fetchGames();
+                return;
+            }
+
+            setIsSearching(true);
+            try {
+                const searchQuery = encodeURIComponent(search.trim());
+                const instoreGames = await fetchData(`store/games/search?q=${searchQuery}`);
+
+                if (instoreGames.success === "true") {
+                    console.log("no search results found");
+                    setInStoreGames([]);
+                } else {
+                    setInStoreGames(instoreGames.games);
+                    console.log("Search results:", instoreGames);
+                }
+            } catch (error) {
+                console.error("Error searching games:", error);
+            } finally {
+                setIsSearching(false);
+            }
+        };
+
+    };
+
+    const handlePageChange = (pageNumber) => {
+        if (pageNumber >= 1 && pageNumber <= totalPages) {
+            setCurrentPage(pageNumber);
+            window.scrollTo(0, 0);
+        }
+    };
+
+    // Get pagination numbers with ellipsis
+    const getPaginationNumbers = () => {
+        const pageNumbers = [];
+        const maxVisiblePages = 5;
+
+        if (totalPages <= maxVisiblePages) {
+            // If we have less than maxVisiblePages, just show all pages
+            for (let i = 1; i <= totalPages; i++) {
+                pageNumbers.push({ number: i, isEllipsis: false });
+            }
+        } else {
+            pageNumbers.push({ number: 1, isEllipsis: false });
+
+            if (currentPage <= 3) {
+                pageNumbers.push({ number: 2, isEllipsis: false });
+                pageNumbers.push({ number: 3, isEllipsis: false });
+                pageNumbers.push({ number: 4, isEllipsis: false });
+                pageNumbers.push({ number: null, isEllipsis: true });
+            } else if (currentPage >= totalPages - 2) {
+                pageNumbers.push({ number: null, isEllipsis: true });
+                pageNumbers.push({ number: totalPages - 3, isEllipsis: false });
+                pageNumbers.push({ number: totalPages - 2, isEllipsis: false });
+                pageNumbers.push({ number: totalPages - 1, isEllipsis: false });
+            } else {
+                pageNumbers.push({ number: null, isEllipsis: true });
+                pageNumbers.push({ number: currentPage - 1, isEllipsis: false });
+                pageNumbers.push({ number: currentPage, isEllipsis: false });
+                pageNumbers.push({ number: currentPage + 1, isEllipsis: false });
+                pageNumbers.push({ number: null, isEllipsis: true });
+            }
+
+            pageNumbers.push({ number: totalPages, isEllipsis: false });
+        }
+
+        return pageNumbers;
     };
 
     return (
@@ -143,9 +252,19 @@ function ViewGames() {
                     </button>
                 </div>
             </div>
-            {loading ? (<div className="flex justify-center items-center min-h-[200px] w-full">
-                <div className="loader border-t-4 border-white"></div>
-            </div>) : (
+
+            {/* Search results count display */}
+            {searchQuery && (
+                <div className="mb-4 text-(--color-foreground)/70 text-sm">
+                    Found {inStoreGames.length} results for "{searchQuery}"
+                </div>
+            )}
+
+            {loading ? (
+                <div className="flex justify-center items-center min-h-[200px] w-full">
+                    <div className="loader border-t-4 border-white"></div>
+                </div>
+            ) : (
                 <div className="list-view">
                     {inStoreGames === null ? (
                         <div className="flex justify-center items-center min-h-[200px] w-full">
@@ -213,29 +332,7 @@ function ViewGames() {
                                 ))}
                             </ul>
                         </div>
-
                     ) : (
-                        // <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-                        //     {inStoreGames.map((game) => (
-                        //         <div key={game.id + game.name} className="bg-(--color-background) p-4 rounded-lg shadow flex flex-col">
-                        //             <div className="mb-3">
-                        //                 <AspectRatio maxW="auto" ratio={3 / 4}>
-                        //                     <Image
-                        //                         src={game.cover_url || 'fallback_image_url.jpg'}
-                        //                         borderTopRadius="10"
-                        //                         alt={game.name}
-                        //                     />
-                        //                 </AspectRatio>
-                        //             </div>
-                        //             <h3 className="text-x font-semibold mb-2 text-[#EDEDED]">{game.name}</h3>
-                        //             <div className="flex-grow" />
-
-                        //             <button className="bn3" onClick={() => openModal(game)}>
-                        //                 <FaEdit className="text-[15px] inline-block mr-2" /> Edit Details
-                        //             </button>
-                        //         </div>
-                        //     ))}
-                        // </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                             {inStoreGames.map((game) => (
                                 <Card key={game.id} className="bg-[#1D2127] border-[#2D3237] text-white overflow-hidden">
@@ -258,22 +355,73 @@ function ViewGames() {
                                 </Card>
                             ))}
                         </div>
+                    )}
 
+                    {/* Updated Pagination Controls */}
+                    {!searchQuery && inStoreGames && inStoreGames.length > 0 && totalPages > 1 && (
+                        <div className="flex justify-center mt-8 gap-2 items-center">
+                            {/* Previous page button */}
+                            <button
+                                onClick={() => handlePageChange(currentPage - 1)}
+                                disabled={currentPage === 1}
+                                className={`w-8 h-8 rounded-full flex items-center justify-center ${currentPage === 1
+                                    ? "bg-[#1A1F2E]/50 text-gray-500 cursor-not-allowed"
+                                    : "bg-[#1A1F2E] text-gray-400 hover:bg-[#2563EB]/50"
+                                    }`}
+                            >
+                                <ChevronLeft className="h-4 w-4" />
+                            </button>
+
+                            {/* Page numbers with ellipsis */}
+                            {getPaginationNumbers().map((page, index) => (
+                                page.isEllipsis ? (
+                                    <span
+                                        key={`ellipsis-${index}`}
+                                        className="text-gray-400 w-8 flex justify-center items-center"
+                                    >
+                                        ...
+                                    </span>
+                                ) : (
+                                    <button
+                                        key={`page-${page.number}`}
+                                        onClick={() => handlePageChange(page.number)}
+                                        className={`w-8 h-8 rounded-full flex items-center justify-center ${page.number === currentPage
+                                            ? "bg-[#2563EB] text-white"
+                                            : "bg-[#1A1F2E] text-gray-400 hover:bg-[#2563EB]/50"
+                                            }`}
+                                    >
+                                        {page.number}
+                                    </button>
+                                )
+                            ))}
+
+                            {/* Next page button */}
+                            <button
+                                onClick={() => handlePageChange(currentPage + 1)}
+                                disabled={currentPage === totalPages}
+                                className={`w-8 h-8 rounded-full flex items-center justify-center ${currentPage === totalPages
+                                    ? "bg-[#1A1F2E]/50 text-gray-500 cursor-not-allowed"
+                                    : "bg-[#1A1F2E] text-gray-400 hover:bg-[#2563EB]/50"
+                                    }`}
+                            >
+                                <ChevronRight className="h-4 w-4" />
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Results  count and page indicator */}
+                    {!searchQuery && inStoreGames && inStoreGames.length > 0 && totalPages > 1 && (
+                        <div className="text-center mt-4 text-(--color-foreground)/60 text-sm">
+                            Showing page {currentPage} of {totalPages}
+                            {totalGamesCount > 0 && (
+                                <span> ({totalGamesCount} total results)</span>
+                            )}
+                        </div>
                     )}
                 </div>
             )}
 
             {selectedGame && isModalOpen && (
-                // <Modal
-                //     isOpen={isModalOpen}
-                //     onClose={closeModal}
-                //     gameInfo={selectedGame}
-                //     setgameInfo={setSelectedGame}
-                //     cover={selectedGame.cover_url}
-                //     inStore={true}
-                //     setInStore={null}
-                //     fetchGamesFunc={fetchGames}
-                // />
                 <GameModal
                     isOpen={isModalOpen}
                     onClose={closeModal}

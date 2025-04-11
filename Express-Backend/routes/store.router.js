@@ -24,6 +24,7 @@ router.get("/games/get-all/", storeController.getAllGames);
 router.get("/games/get/", storeController.getGame);
 router.get("/get-featured/", storeController.getFeaturedGame);
 router.get("/get-discount/", storeController.getGameDiscount);
+router.get("/gameCount/", storeController.getGameCount);
 
 
 module.exports = router;

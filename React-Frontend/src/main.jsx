@@ -21,6 +21,7 @@ import AddGame from './components/AddGame';
 import ViewGames from './components/ViewGames';
 import Settings from './components/Settings';
 import Purchases from './components/Purchases';
+import Dashboard from './pages/admin/dashboard';
 import { Footer } from './components/Footer';
 import Header from './components/Header';
 
@@ -75,7 +76,7 @@ const App = () => {
 
                   {/* Admin Routes (Require Admin) */}
                   <Route path="/admin" element={<RequireAdmin><AdminApp /></RequireAdmin>}>
-                    <Route index element={<AddGame />} />
+                    <Route index element={<Dashboard />} />
                     <Route path="add-a-game" element={<AddGame />} />
                     <Route path="view-games" element={<ViewGames />} />
                     <Route path="purchases" element={<Purchases />} />

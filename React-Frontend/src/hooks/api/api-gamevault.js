@@ -97,3 +97,45 @@ export const apiRequest = async (endpoint, bodyData = {}, method = "POST", custo
   }
 }
 
+export const fetchDataDummy = async (endpoint) => {
+  // Simulate API call with a delay
+  await new Promise((resolve) => setTimeout(resolve, 500))
+
+  // Simulate different API responses based on the endpoint
+  if (endpoint === "store/stats") {
+    return {
+      totalGames: 50,
+      totalSales: 150,
+      totalRevenue: 4500.5,
+      activeUsers: 250,
+    }
+  } else if (endpoint === "store/games/get-all?limit=5") {
+    return {
+      games: [
+        { id: 5, name: "Grand Theft Auto V", price: 29.99, cover_url: "/placeholder.svg?height=120&width=90" },
+        { id: 6, name: "Minecraft", price: 19.99, cover_url: "/placeholder.svg?height=120&width=90" },
+        {
+          id: 7,
+          name: "Call of Duty: Modern Warfare",
+          price: 59.99,
+          cover_url: "/placeholder.svg?height=120&width=90",
+        },
+        { id: 8, name: "Fortnite", price: 0.0, cover_url: "/placeholder.svg?height=120&width=90" },
+        { id: 9, name: "Apex Legends", price: 0.0, cover_url: "/placeholder.svg?height=120&width=90" },
+      ],
+    }
+  } else if (endpoint === "store/purchases/recent") {
+    return {
+      purchases: [
+        { id: 4, game: "Grand Theft Auto V", user: "test@example.com", date: "2023-04-16", price: 29.99 },
+        { id: 5, game: "Minecraft", user: "demo@example.com", date: "2023-04-15", price: 19.99 },
+        { id: 6, game: "Call of Duty: Modern Warfare", user: "guest@example.com", date: "2023-04-14", price: 59.99 },
+      ],
+    }
+  } else {
+    console.log("Unknown endpoint:", endpoint)
+    return null
+  }
+}
+
+

@@ -60,4 +60,15 @@ export const setGameDiscount = async (gameId, discount) => {
     }
 };
 
+export const getGameCount = async () => {
+    try {
+        let url = `store/gameCount/`;
+        const response = await api.get(url);
+        return response.data;
+    } catch (error) {
+        console.error('fetch  game count failed:', error?.response?.data || error.message);
+        throw error;
+    }
+}
+
 
