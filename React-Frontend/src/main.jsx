@@ -36,6 +36,9 @@ import Help from './pages/admin/Help';
 import BlockAdmin from './components/BlockAdmin';
 
 import ScrollToTop from './utils/scrollToTop';
+import VerifyEmail from './pages/auth/verify';
+
+import { Toaster } from "@/components/ui/sonner"
 
 console.log("-------> in main");
 
@@ -52,6 +55,19 @@ const App = () => {
           <ThemeProvider>
             <>
               <ScrollToTop />
+              <Toaster
+                position="bottom-right"
+                richColors
+                theme="dark"
+                closeButton
+                toastOptions={{
+                  style: {
+                    color: '#F8FAFC',
+                  },
+                  className: 'rounded-2xl shadow-xl text-sm px-4 py-3'
+                }}
+              />
+
               <div className="bg-(--color-background)">
                 {!isAdminRoute && <Header />}
                 <Routes>
@@ -66,6 +82,7 @@ const App = () => {
                     <Route path="/explore" element={<ExplorePage />} />
                     <Route path="/explore/genres/:id/:type" element={<ExplorePage />} />
                     <Route path="/explore/themes/:id/:type" element={<ExplorePage />} />
+                    <Route path="/auth/verify-email/:token" element={<VerifyEmail />} />
                   </Route>
 
                   {/* Protected Client Routes (Require Login & Block Admins) */}
@@ -88,6 +105,8 @@ const App = () => {
                   {/* Fallback Route */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
+
+
                 <Footer />
               </div>
             </>

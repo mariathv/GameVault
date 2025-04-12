@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Checkbox } from "@/components/ui/checkbox"
 import { useAuth } from "@/src/contexts/auth-context"
 import Header from "@/src/components/Header"
-import { useToast } from "@/components/ui/use-toast"
+import { toast } from 'sonner';
 import "@/src/styles/gv-global.css"
 
 export default function LoginPage() {
@@ -20,45 +20,32 @@ export default function LoginPage() {
     const [error, setError] = useState("")
     const { login } = useAuth()
     const navigate = useNavigate()
-    const { toast } = useToast()
 
     const handleSubmit = async (e) => {
-        e.preventDefault()
-        setIsLoading(true)
-        setError("")
+        e.preventDefault();
+        setIsLoading(true);
+        setError("");
 
         try {
-            const resp = await login(email, password)
+            const resp = await login(email, password);
 
             if (resp) {
-                toast({
-                    title: "Login Successful",
-                    description: "Account login successfully!",
-                })
+                toast.success('Login Successful');
                 if (resp.role === "admin") {
-                    navigate("/admin")
+                    navigate("/admin");
                 } else {
-                    navigate("/")
+                    navigate("/");
                 }
-            } else {
-                setError("Login failed. Please try again.")
-                toast({
-                    variant: "destructive",
-                    title: "Login Failed",
-                    description: "Something went wrong. Please try again.",
-                })
             }
         } catch (err) {
-            setError("Invalid email or password. Please try again.")
-            toast({
-                variant: "destructive",
-                title: "Login Failed",
-                description: "Invalid email or password. Please try again.",
-            })
+            const msg = err?.message || "Login failed. Please try again.";
+            setError(msg);
+            toast.error(msg); // ✅ Show exact backend message here
         } finally {
-            setIsLoading(false)
+            setIsLoading(false);
         }
-    }
+    };
+
 
 
     return (

@@ -12,7 +12,7 @@ import { useCart } from "@/src/contexts/cart-context"
 import { SiStockx } from "react-icons/si"
 import { useAuth } from "@/src/contexts/auth-context"
 import { addToWishlist, removeFromWishlist, getWishlist, isGameInWishlist } from "@/src/hooks/useWishlist"
-
+import { toast } from 'sonner';
 export default function GamePage() {
     const { id } = useParams()
     const { addToCart } = useCart()
@@ -170,14 +170,13 @@ export default function GamePage() {
 
                 // Update local state
                 setIsInWishlist(true)
-                showNotification(`${game.name} has been added to your wishlist.`, "success")
-
+                toast.success("Added to wishlist!")
                 // Navigate to wishlist page after adding
                 navigate("/wishlist")
             }
         } catch (error) {
             console.error("Wishlist operation failed:", error)
-            showNotification("Failed to update wishlist. Please try again.", "error")
+            toast.error("Failed to update wishlist.")
         } finally {
             setWishlistLoading(false)
         }

@@ -45,7 +45,7 @@ export const fetchData = async (endpoint, options = {}) => {
 
 export const apiRequest = async (endpoint, bodyData = {}, method = "POST", customHeaders = {}) => {
   try {
-    const token = localStorage.getItem("gamevault_token")
+    const token = localStorage.getItem("gamevault_token");
 
     const config = {
       method,
@@ -55,28 +55,33 @@ export const apiRequest = async (endpoint, bodyData = {}, method = "POST", custo
         ...(token && { Authorization: `Bearer ${token}` }),
         ...customHeaders,
       },
-    }
+    };
 
     if (method.toUpperCase() === "GET") {
-      config.params = bodyData
+      config.params = bodyData;
     } else {
-      config.data = bodyData
+      config.data = bodyData;
     }
 
     console.log(`API Request (${endpoint}):`, {
       method,
       bodyData,
       hasToken: !!token,
-    })
+    });
 
-    const response = await api(config)
-    console.log(`API Response (${endpoint}):`, response.data)
-    return response.data
+    const response = await api(config);
+    console.log(`API Response (${endpoint}):`, response.data);
+    return response.data;
   } catch (error) {
-    console.error("API Request Error:", error?.response?.data || error.message)
-    throw error
+    const customMessage =
+      error.response?.data?.message || error.message || "Something went wrong";
+
+    console.error("API Request Error:", customMessage);
+
+    throw new Error(customMessage);
   }
-}
+};
+
 
 export const fetchDataDummy = async (endpoint) => {
   await new Promise((resolve) => setTimeout(resolve, 500))

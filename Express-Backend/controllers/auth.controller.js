@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const catchAsync = require("./../utils/catchAsync");
 const AppError = require("./../utils/appError");
 const bcrypt = require("bcryptjs");
+const mailController = require("./mail.controller")
 
 const signTokken = id => {
     console.log(process.env.JWT_SECRET);
@@ -15,32 +16,39 @@ const signTokken = id => {
 const authController = {
     register: catchAsync(async (req, res) => {
         try {
+            const { email, username, password, passwordConfirm, role } = req.body;
 
-            console.log("in reg");
-            const newUser = await user.create({
-                email: req.body.email,
-                username: req.body.username,
-                password: req.body.password,
-                passwordConfirm: req.body.passwordConfirm,
-                role: req.body.role
+            console.log("USER ROLE", role);
+
+            const existingUser = await user.findOne({ email });
+            if (existingUser) {
+                return res.status(400).json({ message: "User already exists" });
+            }
+
+            if (password !== passwordConfirm) {
+                return res.status(400).json({ message: "Passwords do not match" });
+            }
+
+            const hashedPassword = await bcrypt.hash(password, 12);
+
+            const token = jwt.sign(
+                { email, username, password, passwordConfirm, role },
+                process.env.JWT_SECRET,
+                { expiresIn: '1d' }
+            );
+
+            await mailController.sendVerificationEmail(email, token);
+
+            res.status(200).json({
+                status: "pending",
+                message: "Check your email to verify and complete registration"
             });
 
-            const token = signTokken(newUser._id)
-            console.log("success register", token);
-            res.status(201).json({
-                status: "success",
-                token,
-                data: {
-                    user: newUser,
-                },
-            });
         } catch (err) {
-            console.log(err.message);
+            console.error(err);
             res.status(400).json({
                 status: "fail",
-                data: {
-                    err,
-                },
+                message: err.message,
             });
         }
     }),
@@ -99,6 +107,36 @@ const authController = {
                 status: "fail",
                 message: "Something went wrong",
             });
+        }
+    }),
+    verifyEmail: catchAsync(async (req, res) => {
+        try {
+            console.log("verify email");
+            const { token } = req.params;
+
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            const { email, username, password, passwordConfirm } = decoded;
+            console.log("dec", decoded);
+            const role = "user";
+
+            const existing = await user.findOne({ email });
+            if (existing) {
+                return res.status(400).send('User already exists');
+            }
+
+            const newUser = await user.create({
+                email,
+                username,
+                password,
+                passwordConfirm,
+                role,
+                isVerified: true
+            });
+
+            res.status(201).send('Email verified! Your account is now active.');
+        } catch (err) {
+            console.error(err);
+            res.status(400).send('Invalid or expired verification link');
         }
     }),
 

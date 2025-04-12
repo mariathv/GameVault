@@ -75,38 +75,30 @@ export function AuthProvider({ children }) {
 
             return Promise.resolve(response.data.user);
         } else {
-            console.log('unsuccess context');
-            return Promise.resolve(null);
+            return Promise.reject(new Error(response.message || "Registration failed"));
         }
     };
 
 
     const register = async (username, email, password, passwordConfirm) => {
-
         const user = {
             id: "user123",
             username: username,
             email,
             password,
             passwordConfirm
-        }
+        };
+
         const response = await apiRequest("auth/register", user);
 
-        if (response.status === "success" && response.data?.user) {
-
-            setUser(response.data?.user)
-            setIsAuthenticated(true)
-            localStorage.setItem("gamevault_user", JSON.stringify(response.data?.user))
-            localStorage.setItem("gamevault_token", response.token);
-
-            return Promise.resolve(response.data?.user)
+        if (response.status === "success" || response.status === "pending") {
+            return Promise.resolve(response);
         } else {
-            return Promise.resolve(null);
-
+            return Promise.reject(new Error(response.message || "Registration failed"));
         }
+    };
 
 
-    }
 
     const logout = () => {
         setUser(null);
