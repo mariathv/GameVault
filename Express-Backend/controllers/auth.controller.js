@@ -111,18 +111,18 @@ const authController = {
         if (!token) {
             return next(new AppError("You are not logged in! Please login in to get access", 401));
         }
-
         const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
 
         const freshUser = await user.findById(decoded.id)
         if (!freshUser) {
+            console.log("The user belonging to this token no longer exist");
             return next(new AppError("The user belonging to this token no longer exist", 401));
         }
 
         if (freshUser.changedPasswordAfter(decoded.iat)) {
+            console.log("user recently changed password! please login again");
             return next(new AppError('user recently changed password! please login again', 401))
         }
-
         req.user = freshUser;
         next()
     }),

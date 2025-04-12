@@ -59,7 +59,7 @@ const App = () => {
                   <Route element={<BlockAdmin />}>
                     <Route path="/" element={<HomeGameStore />} />
                     <Route path="/cart" element={<CartPage />} />
-                    <Route path="/games/:id" element={<GamePage />} />
+                    <Route path="/games/:id/:slug" element={<GamePage />} />
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />
                     <Route path="/wishlist" element={<WishlistPage />} />

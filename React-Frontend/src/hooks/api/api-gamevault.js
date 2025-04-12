@@ -1,15 +1,8 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 import api from "../../api/index"
 
-/**
- * Base fetch function for API calls
- * @param {string} endpoint - API endpoint
- * @param {Object} options - Fetch options
- * @returns {Promise<Object>} - Response data
- */
 export const fetchData = async (endpoint, options = {}) => {
   try {
-    // Get token from localStorage
     const token = localStorage.getItem("gamevault_token")
 
     // Set up headers with authentication if token exists
@@ -19,7 +12,6 @@ export const fetchData = async (endpoint, options = {}) => {
       ...(options.headers || {}),
     }
 
-    // Create AbortController for timeout
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), 20000) // 20 second timeout
 
@@ -29,11 +21,9 @@ export const fetchData = async (endpoint, options = {}) => {
       signal: controller.signal,
     })
 
-    // Clear timeout
     clearTimeout(timeoutId)
 
     if (!response.ok) {
-      // Try to parse error message from response
       let errorData
       try {
         errorData = await response.json()
@@ -49,21 +39,12 @@ export const fetchData = async (endpoint, options = {}) => {
     return data
   } catch (error) {
     console.error(`API Error (${endpoint}):`, error)
-    throw error // Rethrow to let caller handle errors
+    throw error
   }
 }
 
-/**
- * Make API request using axios-like client
- * @param {string} endpoint - API endpoint
- * @param {Object} bodyData - Request body data
- * @param {string} method - HTTP method
- * @param {Object} customHeaders - Custom headers
- * @returns {Promise<Object>} - Response data
- */
 export const apiRequest = async (endpoint, bodyData = {}, method = "POST", customHeaders = {}) => {
   try {
-    // Get token from localStorage
     const token = localStorage.getItem("gamevault_token")
 
     const config = {
@@ -77,9 +58,9 @@ export const apiRequest = async (endpoint, bodyData = {}, method = "POST", custo
     }
 
     if (method.toUpperCase() === "GET") {
-      config.params = bodyData // For GET, use query params
+      config.params = bodyData
     } else {
-      config.data = bodyData // For POST, PUT, etc, use body
+      config.data = bodyData
     }
 
     console.log(`API Request (${endpoint}):`, {
@@ -93,15 +74,13 @@ export const apiRequest = async (endpoint, bodyData = {}, method = "POST", custo
     return response.data
   } catch (error) {
     console.error("API Request Error:", error?.response?.data || error.message)
-    throw error // Let caller handle errors
+    throw error
   }
 }
 
 export const fetchDataDummy = async (endpoint) => {
-  // Simulate API call with a delay
   await new Promise((resolve) => setTimeout(resolve, 500))
 
-  // Simulate different API responses based on the endpoint
   if (endpoint === "store/stats") {
     return {
       totalGames: 50,
@@ -137,5 +116,4 @@ export const fetchDataDummy = async (endpoint) => {
     return null
   }
 }
-
 

@@ -163,7 +163,7 @@ const Inventory = () => {
                             <div className="flex items-center text-sm">
                               <span className="text-(--color-foreground)/60">${game.price?.toFixed(2) || '0.00'}</span>
                               {game.gameKeys?.length > 0 && (
-                                <Badge className="ml-2 bg-(--color-accent-primary) text-xs">
+                                <Badge className="ml-2 bg-(--color-accent-primary) text-xs text-white">
                                   {game.gameKeys.length} {game.gameKeys.length === 1 ? 'Key' : 'Keys'}
                                 </Badge>
                               )}

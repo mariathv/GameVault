@@ -4,9 +4,11 @@
     :root {
         --color-test: #aab9ff;
         --color-background: hsl(0 0% 100%);
+        --color-background-secondary: #dcdcdc;
+        --color-background-t: #d0d2d6;
         --color-secondary-background: hsl(210 33% 13%);
         --color-foreground: hsl(210, 38%, 8%);
-        --color-alt-foreground: hsl(0 0% 93%);
+        --color-alt-foreground: hsl(0, 0%, 90%);
         --color-card: hsl(0 0% 96%);
         --color-card-foreground: hsl(240 10% 3.9%);
         --color-popover: hsl(0 0% 100%);
@@ -37,6 +39,8 @@
 
     .dark {
         --color-background: hsl(210 38% 8%);
+        --color-background-secondary: #080C10;
+        --color-background-t: #1D2127;
         --color-foreground: hsl(0 0% 93%);
         --color-alt-foreground: hsl(240 10% 3.9%);
         --color-card: hsl(210 33% 9%);

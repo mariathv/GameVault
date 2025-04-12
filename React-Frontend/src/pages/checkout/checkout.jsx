@@ -146,12 +146,11 @@ export default function CheckoutPage() {
 
     };
 
-
     if (isComplete) {
         return (
             <div className="min-h-screen bg-(--color-background)">
-                <main className=" container mx-auto px-4 py-16">
-                    <div className="max-w-5xl mx-auto gap-8 flex flex-row items-center">
+                <main className="container mx-auto px-4 py-25">
+                    <div className="max-w-5xl mx-auto gap-8 flex flex-col md:flex-row items-center">
 
                         <div className="w-full md:w-1/2 max-w-md mx-auto text-center">
                             <div className="mx-auto w-24 h-24 rounded-full bg-(--color-light-ed)/5 flex items-center justify-center mb-6">
@@ -165,12 +164,14 @@ export default function CheckoutPage() {
                                 Continue Shopping
                             </Button>
                         </div>
-                        <div className="flex flex-col items-center text-center">
-                            <div className="space-y-4">
+
+                        {/* Right Column (Games List) */}
+                        <div className="flex flex-col items-center text-center w-full">
+                            <div className="space-y-4 w-full max-w-3xl mx-auto">
                                 {processedData?.order?.games?.map((game, index) => (
                                     <div
                                         key={game.gameId}
-                                        className="bg-(--color-light-ed)/5 p-6 rounded-lg shadow-md w-full max-w-xs"
+                                        className="bg-(--color-light-ed)/5 p-6 rounded-lg shadow-md w-full max-w-xs mx-auto"
                                     >
                                         <h4 className="text-lg font-semibold text-(--color-light-ed)">{game.title}</h4>
                                         <p className="text-(--color-light-ed)/80 mt-2">
@@ -185,12 +186,12 @@ export default function CheckoutPage() {
                             </div>
                         </div>
 
-
                     </div>
                 </main>
-            </div >
+            </div>
         );
     }
+
 
     return (
         <div className="min-h-screen bg-(--color-background)">

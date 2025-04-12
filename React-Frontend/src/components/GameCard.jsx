@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge"
 import { getGameThemes } from '../api/game'
 import { Link } from 'react-router-dom';
 import { themes as allThemes } from "@/lib/game-themes"
+import { toSlug } from '../utils/slugconverter';
 
 export default function GameCard({ game }) {
     const [themes, setThemes] = useState(null);
@@ -25,7 +26,7 @@ export default function GameCard({ game }) {
 
 
     return (
-        <Link to={`/games/${game.id}`}>
+        <Link to={`/games/${game.id}/${toSlug(game.name)}`}>
             <div key={game.id} className="min-w-[240px] bg-(--color-light-ed)/5 rounded-lg overflow-hidden">
                 <div className="relative">
                     <img src={game.cover_url} alt={game.name} className="w-full h-[320px] object-cover" />
