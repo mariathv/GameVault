@@ -40,7 +40,7 @@ app.use((req, res, next) => {
 
 //------------------- routes -----------------------
 app.use("/api/v1/auth", authRouter);
-// app.use("/api/v1/users", usersRouter);
+app.use("/api/v1/users", usersRouter);
 app.use("/api/v1/games", gamesRouter);
 app.use("/api/v1/store", storeRouter);
 app.use("/api/v1/wishlist", wishlistRouter)

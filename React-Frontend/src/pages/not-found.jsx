@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 
 export function NotFound() {
     return (
-        <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] py-12 text-center">
+        <div className="flex flex-col items-center justify-center min-h-screen py-12 text-center text-(--color-foreground)">
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}

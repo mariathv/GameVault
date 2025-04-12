@@ -1,13 +1,15 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { Search, ChevronDown, ChevronRight } from "lucide-react"
+import { Search, ChevronDown, ChevronRight, Filter, X, Tag } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { fetchData } from "@/src/hooks/api/api-gamevault"
 import { getFeatured } from "@/src/api/store"
 import { Link, useParams, useNavigate, useLocation } from "react-router-dom"
 import { getGameArtworks } from "@/src/api/game"
 import GameCardWide from "@/src/components/wide-game-card"
+import { toSlug } from "@/src/utils/slugconverter"
+import { getDiscountedPrice } from "@/src/utils/funcs"
 
 export default function ExplorePage() {
     const { id, type } = useParams()
@@ -33,6 +35,7 @@ export default function ExplorePage() {
     const [totalPages, setTotalPages] = useState(1)
     const [gamesPerPage] = useState(16)
     const [totalGamesCount, setTotalGamesCount] = useState(0)
+    const [showMobileFilters, setShowMobileFilters] = useState(false)
 
     const genres = [
         { id: "all", label: "All" },
@@ -58,7 +61,7 @@ export default function ExplorePage() {
         { id: "34", label: "Visual Novel" },
         { id: "35", label: "Card & Board Game" },
         { id: "36", label: "MOBA" },
-    ];
+    ]
 
     const themes = [
         { id: "1", label: "Action" },
@@ -84,49 +87,49 @@ export default function ExplorePage() {
     ]
 
     const [selectedCategory, setSelectedCategory] = useState(() => {
-        const defaultCategory = { id: "all", type: "none", label: "All" };
+        const defaultCategory = { id: "all", type: "none", label: "All" }
 
-        const pathParts = location.pathname.split("/");
+        const pathParts = location.pathname.split("/")
 
         // If we have at least 4 parts and a valid filter type and id in the path
         if (pathParts.length >= 4 && pathParts[2] && pathParts[3]) {
-            const filterType = pathParts[2];
-            const filterId = pathParts[3];
+            const filterType = pathParts[2]
+            const filterId = pathParts[3]
 
             // If the filter type is "genres"
             if (filterType === "genres") {
-                const genre = genres.find((g) => g.id === filterId);
+                const genre = genres.find((g) => g.id === filterId)
                 if (genre) {
-                    return { id: genre.id, type: "genre", label: genre.label };
+                    return { id: genre.id, type: "genre", label: genre.label }
                 }
             }
             // If the filter type is "themes"
             else if (filterType === "themes") {
-                const theme = themes.find((t) => t.id === filterId);
+                const theme = themes.find((t) => t.id === filterId)
                 if (theme) {
-                    return { id: theme.id, type: "theme", label: theme.label };
+                    return { id: theme.id, type: "theme", label: theme.label }
                 }
             }
         }
 
-        return defaultCategory;
-    });
+        return defaultCategory
+    })
 
     // Debounce search input
     useEffect(() => {
         if (searchTimeoutRef.current) {
-            clearTimeout(searchTimeoutRef.current);
+            clearTimeout(searchTimeoutRef.current)
         }
         searchTimeoutRef.current = setTimeout(() => {
-            setDebouncedSearchQuery(searchQuery);
-        }, 500); // 500ms delay
+            setDebouncedSearchQuery(searchQuery)
+        }, 500) // 500ms delay
 
         return () => {
             if (searchTimeoutRef.current) {
-                clearTimeout(searchTimeoutRef.current);
+                clearTimeout(searchTimeoutRef.current)
             }
-        };
-    }, [searchQuery]);
+        }
+    }, [searchQuery])
 
     useEffect(() => {
         const pathParts = location.pathname.split("/")
@@ -141,7 +144,7 @@ export default function ExplorePage() {
                     setSelectedCategory({
                         id: genre.id,
                         type: "genre",
-                        label: genre.label
+                        label: genre.label,
                     })
                     setExpandedSection("genres")
                 }
@@ -151,7 +154,7 @@ export default function ExplorePage() {
                     setSelectedCategory({
                         id: theme.id,
                         type: "theme",
-                        label: theme.label
+                        label: theme.label,
                     })
                     setExpandedSection("themes")
                 }
@@ -166,67 +169,64 @@ export default function ExplorePage() {
     }
 
     const fetchGames = async () => {
-        setIsLoading(true);
+        setIsLoading(true)
 
         try {
             // --- Build query parameters ---
-            const queryParams = new URLSearchParams();
+            const queryParams = new URLSearchParams()
 
             // Category filter
             if (selectedCategory?.type === "genre" && selectedCategory.id !== "all") {
-                queryParams.append("genre", selectedCategory.id);
+                queryParams.append("genre", selectedCategory.id)
             } else if (selectedCategory?.type === "theme" && selectedCategory.id !== "all") {
-                queryParams.append("theme", selectedCategory.id);
+                queryParams.append("theme", selectedCategory.id)
             }
 
             if (debouncedSearchQuery) {
-                queryParams.append("limit", "100"); // Wide net for search
-                queryParams.append("page", "1"); // Start from first page
+                queryParams.append("limit", "100") // Wide net for search
+                queryParams.append("page", "1") // Start from first page
             } else {
-                queryParams.append("limit", gamesPerPage.toString());
-                queryParams.append("page", currentPage.toString());
+                queryParams.append("limit", gamesPerPage.toString())
+                queryParams.append("page", currentPage.toString())
             }
 
-            const queryString = queryParams.toString();
-            const endpoint = `store/games/get-all${queryString ? "?" + queryString : ""}`;
+            const queryString = queryParams.toString()
+            const endpoint = `store/games/get-all${queryString ? "?" + queryString : ""}`
 
             // --- Fetch data ---
-            const res = await fetchData(endpoint);
-            let filteredGames = res.games || [];
+            const res = await fetchData(endpoint)
+            let filteredGames = res.games || []
 
-            const totalCount = res.total || filteredGames.length;
+            const totalCount = res.total || filteredGames.length
 
             // --- Filter by price range ---
-            filteredGames = filteredGames.filter((game) => game.price <= priceRange);
+            filteredGames = filteredGames.filter((game) => game.price <= priceRange)
 
             // --- Filter by search query ---
             if (debouncedSearchQuery) {
-                const lowerSearch = debouncedSearchQuery.toLowerCase();
-                filteredGames = filteredGames.filter(game =>
-                    game.name.toLowerCase().includes(lowerSearch)
-                );
+                const lowerSearch = debouncedSearchQuery.toLowerCase()
+                filteredGames = filteredGames.filter((game) => game.name.toLowerCase().includes(lowerSearch))
 
-                setTotalGamesCount(filteredGames.length);
+                setTotalGamesCount(filteredGames.length)
 
-                const searchTotalPages = Math.ceil(filteredGames.length / gamesPerPage);
-                setTotalPages(searchTotalPages || 1);
+                const searchTotalPages = Math.ceil(filteredGames.length / gamesPerPage)
+                setTotalPages(searchTotalPages || 1)
 
-                const startIndex = (currentPage - 1) * gamesPerPage;
-                const endIndex = startIndex + gamesPerPage;
-                filteredGames = filteredGames.slice(startIndex, endIndex);
+                const startIndex = (currentPage - 1) * gamesPerPage
+                const endIndex = startIndex + gamesPerPage
+                filteredGames = filteredGames.slice(startIndex, endIndex)
             } else {
-                setTotalGamesCount(totalCount);
-                setTotalPages(Math.ceil(totalCount / gamesPerPage) || 1);
+                setTotalGamesCount(totalCount)
+                setTotalPages(Math.ceil(totalCount / gamesPerPage) || 1)
             }
 
-            setGames(filteredGames);
+            setGames(filteredGames)
         } catch (error) {
-            console.error("Error fetching games:", error);
+            console.error("Error fetching games:", error)
         } finally {
-            setIsLoading(false);
+            setIsLoading(false)
         }
-    };
-
+    }
 
     const fetchPromisedData = async () => {
         try {
@@ -261,13 +261,12 @@ export default function ExplorePage() {
     }, [])
 
     useEffect(() => {
-        setCurrentPage(1); // Reset to page 1 when filters or search changes
-    }, [selectedCategory, debouncedSearchQuery, priceRange]);
+        setCurrentPage(1) // Reset to page 1 when filters or search changes
+    }, [selectedCategory, debouncedSearchQuery, priceRange])
 
     useEffect(() => {
-        fetchGames();
-    }, [currentPage, debouncedSearchQuery, selectedCategory, priceRange]);
-
+        fetchGames()
+    }, [currentPage, debouncedSearchQuery, selectedCategory, priceRange])
 
     useEffect(() => {
         if (initialMount.current) {
@@ -286,53 +285,64 @@ export default function ExplorePage() {
         }
     }, [selectedCategory, navigate, location.pathname])
 
+    // Close mobile filters when route changes
+    useEffect(() => {
+        setShowMobileFilters(false)
+    }, [location.pathname])
+
     const getPaginationNumbers = () => {
-        const pageNumbers = [];
-        const maxVisiblePages = 5;
+        const pageNumbers = []
+        const maxVisiblePages = window.innerWidth < 640 ? 3 : 5
 
         if (totalPages <= maxVisiblePages) {
             // If we have less than maxVisiblePages, just show all pages
             for (let i = 1; i <= totalPages; i++) {
-                pageNumbers.push({ number: i, isEllipsis: false });
+                pageNumbers.push({ number: i, isEllipsis: false })
             }
         } else {
-            pageNumbers.push({ number: 1, isEllipsis: false });
+            pageNumbers.push({ number: 1, isEllipsis: false })
 
-            let startPage, endPage;
+            let startPage, endPage
             if (currentPage <= 3) {
-                startPage = 2;
-                endPage = 4;
-                pageNumbers.push({ number: 2, isEllipsis: false });
-                pageNumbers.push({ number: 3, isEllipsis: false });
-                pageNumbers.push({ number: 4, isEllipsis: false });
-                pageNumbers.push({ number: null, isEllipsis: true });
+                startPage = 2
+                endPage = 4
+                pageNumbers.push({ number: 2, isEllipsis: false })
+                pageNumbers.push({ number: 3, isEllipsis: false })
+                if (window.innerWidth >= 640) {
+                    pageNumbers.push({ number: 4, isEllipsis: false })
+                }
+                pageNumbers.push({ number: null, isEllipsis: true })
             } else if (currentPage >= totalPages - 2) {
-                pageNumbers.push({ number: null, isEllipsis: true });
-                pageNumbers.push({ number: totalPages - 3, isEllipsis: false });
-                pageNumbers.push({ number: totalPages - 2, isEllipsis: false });
-                pageNumbers.push({ number: totalPages - 1, isEllipsis: false });
+                pageNumbers.push({ number: null, isEllipsis: true })
+                if (window.innerWidth >= 640) {
+                    pageNumbers.push({ number: totalPages - 3, isEllipsis: false })
+                }
+                pageNumbers.push({ number: totalPages - 2, isEllipsis: false })
+                pageNumbers.push({ number: totalPages - 1, isEllipsis: false })
             } else {
-                pageNumbers.push({ number: null, isEllipsis: true });
-                pageNumbers.push({ number: currentPage - 1, isEllipsis: false });
-                pageNumbers.push({ number: currentPage, isEllipsis: false });
-                pageNumbers.push({ number: currentPage + 1, isEllipsis: false });
-                pageNumbers.push({ number: null, isEllipsis: true });
+                pageNumbers.push({ number: null, isEllipsis: true })
+                pageNumbers.push({ number: currentPage - 1, isEllipsis: false })
+                pageNumbers.push({ number: currentPage, isEllipsis: false })
+                if (window.innerWidth >= 640) {
+                    pageNumbers.push({ number: currentPage + 1, isEllipsis: false })
+                }
+                pageNumbers.push({ number: null, isEllipsis: true })
             }
 
-            pageNumbers.push({ number: totalPages, isEllipsis: false });
+            pageNumbers.push({ number: totalPages, isEllipsis: false })
         }
 
-        return pageNumbers;
-    };
+        return pageNumbers
+    }
 
     const handlePageChange = (page) => {
-        if (page === null || page === currentPage) return;
+        if (page === null || page === currentPage) return
 
         if (page >= 1 && page <= totalPages) {
-            setCurrentPage(page);
-            window.scrollTo(0, 0);
+            setCurrentPage(page)
+            window.scrollTo(0, 0)
         }
-    };
+    }
 
     if (initLoading) {
         return (
@@ -355,17 +365,160 @@ export default function ExplorePage() {
             setSelectedCategory({
                 id: "all",
                 type: "none",
-                label: "All"
+                label: "All",
             })
             navigate("/explore")
         } else {
             setSelectedCategory({
                 id: categoryId,
                 type: categoryType,
-                label: categoryLabel
+                label: categoryLabel,
             })
         }
+        if (window.innerWidth < 768) {
+            setShowMobileFilters(false)
+        }
     }
+
+    const FiltersSidebar = ({ isMobile = false }) => (
+        <div className={`${isMobile ? "w-full" : "w-64"} flex-shrink-0 pt-14`}>
+            {isMobile && (
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-bold text-white">Filters</h2>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setShowMobileFilters(false)}
+                        className="text-white hover:bg-white/10"
+                    >
+                        <X className="h-5 w-5" />
+                    </Button>
+                </div>
+            )}
+
+            {!isMobile && <h1 className="text-2xl sm:text-3xl font-bold text-white mb-6 sm:mb-8">CATALOG</h1>}
+
+            {selectedCategory.id !== "all" && (
+                <div className="mb-4 bg-(--color-background)/50 p-3 rounded-lg">
+                    <h3 className="text-(--color-foreground) text-sm mb-2">Active Filters:</h3>
+                    <div className="flex flex-wrap gap-2">
+                        {selectedCategory.type === "genre" && selectedCategory.id !== "all" && (
+                            <div className="bg-(--color-accent-primary) text-white text-xs px-2 py-1 rounded-md flex items-center">
+                                Genre: {selectedCategory.label}
+                                <button
+                                    className="ml-1.5 hover:text-white/80"
+                                    onClick={() => handleCategorySelect("all", "none", "All")}
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                        )}
+                        {selectedCategory.type === "theme" && selectedCategory.id !== "all" && (
+                            <div className="bg-(--color-accent-primary) text-white text-xs px-2 py-1 rounded-md flex items-center">
+                                Theme: {selectedCategory.label}
+                                <button
+                                    className="ml-1.5 hover:text-white/80"
+                                    onClick={() => handleCategorySelect("all", "none", "All")}
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            <div className="mb-6 bg-(--color-background)/50 p-4 rounded-lg">
+                <h3 className="text-(--color-foreground) mb-4">Price</h3>
+                <input
+                    type="range"
+                    min="0"
+                    max="200"
+                    value={priceRange}
+                    onChange={(e) => setPriceRange(e.target.value)}
+                    className="w-full accent-blue-500"
+                />
+                <div className="flex justify-between text-(--color-foreground)/80 mt-2">
+                    <span>0$</span>
+                    <span>{priceRange}$</span>
+                </div>
+            </div>
+
+            <div className="mb-4 bg-(--color-background) rounded-lg overflow-hidden">
+                <button
+                    onClick={toggleGenres}
+                    className="w-full flex items-center justify-between p-4 text-(--color-foreground) font-medium"
+                >
+                    <span>Genres</span>
+                    {expandedSection === "genres" ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+                </button>
+
+                {expandedSection === "genres" && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-2 gap-y-1 px-2 pb-3">
+                        {genres.map((genre) => (
+                            <button
+                                key={genre.id}
+                                onClick={() => handleCategorySelect(genre.id, "genre", genre.label)}
+                                className={`text-left px-3 py-1.5 rounded-md transition-colors text-sm ${selectedCategory.type === "genre" && selectedCategory.id === genre.id
+                                    ? "bg-(--color-accent-primary) text-white"
+                                    : "text-gray-400 hover:bg-[#1A1F2E]"
+                                    }`}
+                            >
+                                {genre.label}
+                            </button>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            <div className="mb-4 bg-(--color-background) rounded-lg overflow-hidden">
+                <button
+                    onClick={toggleThemes}
+                    className="w-full flex items-center justify-between p-4 text-(--color-foreground) font-medium"
+                >
+                    <span>Themes</span>
+                    {expandedSection === "themes" ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+                </button>
+
+                {expandedSection === "themes" && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-2 gap-y-1 px-2 pb-3 max-h-[300px] md:max-h-[500px] overflow-y-auto">
+                        <button
+                            key="theme-all"
+                            onClick={() => handleCategorySelect("all", "none", "All")}
+                            className={`text-left px-3 py-1.5 rounded-md transition-colors text-sm ${selectedCategory.id === "all"
+                                ? "bg-(--color-accent-primary) text-white"
+                                : "text-gray-400 hover:bg-[#1A1F2E]"
+                                }`}
+                        >
+                            All
+                        </button>
+                        {themes.map((theme) => (
+                            <button
+                                key={theme.id}
+                                onClick={() => handleCategorySelect(theme.id, "theme", theme.label)}
+                                className={`text-left px-3 py-1.5 rounded-md transition-colors text-sm ${selectedCategory.type === "theme" && selectedCategory.id === theme.id
+                                    ? "bg-(--color-accent-primary) text-white"
+                                    : "text-gray-400 hover:bg-[#1A1F2E]"
+                                    }`}
+                            >
+                                {theme.label}
+                            </button>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            <div className="bg-(--color-background)/50 rounded-xl mt-2 px-2">
+                <h1 className="text-white font-bold pl-4 pt-4"> Popular 🔥</h1>
+                {popularGames &&
+                    popularGames.slice(0, isMobile ? 4 : 8).map((game, ids) => (
+                        <Link to={`/games/${game.id}/${game.slug || toSlug(game.name)}`} key={game.id}>
+                            <GameCardWide id={ids + 1} game={game} />
+                        </Link>
+                    ))}
+            </div>
+        </div>
+    )
 
     return (
         <div
@@ -375,145 +528,36 @@ export default function ExplorePage() {
                 backgroundAttachment: "fixed",
             }}
         >
-            <div className="container mx-auto px-4 py-8">
-                <div className="flex gap-8">
-                    {/* Sidebar */}
-                    <div className="w-64 flex-shrink-0">
-                        <h1 className="text-3xl font-bold text-white mb-8">CATALOG</h1>
+            <div className="container mx-auto px-4 py-4 sm:py-8">
+                <div className="md:hidden flex justify-between items-center mb-4">
+                    <h1 className="text-2xl font-bold text-white">CATALOG</h1>
+                    <Button
+                        onClick={() => setShowMobileFilters(true)}
+                        className="bg-(--color-background) text-white hover:bg-(--color-background)/80"
+                    >
+                        <Filter className="h-4 w-4 mr-2" />
+                        Filters
+                    </Button>
+                </div>
 
-                        {/* Active Filters Display */}
-                        {(selectedCategory.id !== "all") && (
-                            <div className="mb-4 bg-(--color-background)/50 p-3 rounded-lg">
-                                <h3 className="text-(--color-foreground) text-sm mb-2">Active Filters:</h3>
-                                <div className="flex flex-wrap gap-2">
-                                    {selectedCategory.type === "genre" && selectedCategory.id !== "all" && (
-                                        <div className="bg-(--color-accent-primary) text-white text-xs px-2 py-1 rounded-md flex items-center">
-                                            Genre: {selectedCategory.label}
-                                            <button className="ml-1.5 hover:text-white/80" onClick={() =>
-                                                handleCategorySelect("all", "none", "All")}>
-                                                ✕
-                                            </button>
-                                        </div>
-                                    )}
-                                    {selectedCategory.type === "theme" && selectedCategory.id !== "all" && (
-                                        <div className="bg-(--color-accent-primary) text-white text-xs px-2 py-1 rounded-md flex items-center">
-                                            Theme: {selectedCategory.label}
-                                            <button className="ml-1.5 hover:text-white/80" onClick={() =>
-                                                handleCategorySelect("all", "none", "All")}>
-                                                ✕
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Price Range */}
-                        <div className="mb-6 bg-(--color-background)/50 p-4 rounded-lg">
-                            <h3 className="text-(--color-foreground) mb-4 ">Price</h3>
-                            <input
-                                type="range"
-                                min="0"
-                                max="200"
-                                value={priceRange}
-                                onChange={(e) => setPriceRange(e.target.value)}
-                                className="w-full accent-blue-500"
-                            />
-                            <div className="flex justify-between text-(--color-foreground)/80 mt-2">
-                                <span>0$</span>
-                                <span>{priceRange}$</span>
-                            </div>
+                {showMobileFilters && (
+                    <div className="fixed inset-0 z-50 bg-black/50 md:hidden">
+                        <div className="absolute right-0 top-0 h-full w-[80%] max-w-xs bg-(--color-background) p-4 overflow-y-auto">
+                            <FiltersSidebar isMobile={true} />
                         </div>
+                    </div>
+                )}
 
-                        {/* Genres Dropdown */}
-                        <div className="mb-4 bg-(--color-background) rounded-lg overflow-hidden">
-                            <button
-                                onClick={toggleGenres}
-                                className="w-full flex items-center justify-between p-4 text-(--color-foreground) font-medium"
-                            >
-                                <span>Genres</span>
-                                {expandedSection === "genres" ? (
-                                    <ChevronDown className="h-5 w-5" />
-                                ) : (
-                                    <ChevronRight className="h-5 w-5" />
-                                )}
-                            </button>
-
-                            {expandedSection === "genres" && (
-                                <div className="grid grid-cols-2 gap-x-2 gap-y-1 px-2 pb-3">
-                                    {genres.map((genre) => (
-                                        <button
-                                            key={genre.id}
-                                            onClick={() => handleCategorySelect(genre.id, "genre", genre.label)}
-                                            className={`text-left px-3 py-1.5 rounded-md transition-colors text-sm ${selectedCategory.type === "genre" && selectedCategory.id === genre.id
-                                                ? "bg-(--color-accent-primary) text-white"
-                                                : "text-gray-400 hover:bg-[#1A1F2E]"
-                                                }`}
-                                        >
-                                            {genre.label}
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Themes Dropdown */}
-                        <div className="mb-4 bg-(--color-background) rounded-lg overflow-hidden">
-                            <button
-                                onClick={toggleThemes}
-                                className="w-full flex items-center justify-between p-4 text-(--color-foreground) font-medium"
-                            >
-                                <span>Themes</span>
-                                {expandedSection === "themes" ? (
-                                    <ChevronDown className="h-5 w-5" />
-                                ) : (
-                                    <ChevronRight className="h-5 w-5" />
-                                )}
-                            </button>
-
-                            {expandedSection === "themes" && (
-                                <div className="grid grid-cols-2 gap-x-2 gap-y-1 px-2 pb-3 max-h-[500px] overflow-y-auto">
-                                    <button
-                                        key="theme-all"
-                                        onClick={() => handleCategorySelect("all", "none", "All")}
-                                        className={`text-left px-3 py-1.5 rounded-md transition-colors text-sm ${selectedCategory.id === "all"
-                                            ? "bg-(--color-accent-primary) text-white"
-                                            : "text-gray-400 hover:bg-[#1A1F2E]"
-                                            }`}
-                                    >
-                                        All
-                                    </button>
-                                    {themes.map((theme) => (
-                                        <button
-                                            key={theme.id}
-                                            onClick={() => handleCategorySelect(theme.id, "theme", theme.label)}
-                                            className={`text-left px-3 py-1.5 rounded-md transition-colors text-sm ${selectedCategory.type === "theme" && selectedCategory.id === theme.id
-                                                ? "bg-(--color-accent-primary) text-white"
-                                                : "text-gray-400 hover:bg-[#1A1F2E]"
-                                                }`}
-                                        >
-                                            {theme.label}
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="bg-(--color-background)/50 rounded-xl mt-2 px-2">
-                            <h1 className="text-white font-bold pl-4 pt-4"> Popular 🔥</h1>
-                            {popularGames &&
-                                popularGames.slice(0, 8).map((game, ids) => (
-                                    <Link to={`/games/${game.id}`} key={game.id}>
-                                        <GameCardWide id={ids + 1} game={game} />
-                                    </Link>
-                                ))}
-                        </div>
+                <div className="flex flex-col md:flex-row gap-4 md:gap-8">
+                    {/* Desktop Sidebar */}
+                    <div className="hidden md:block">
+                        <FiltersSidebar />
                     </div>
 
                     {/* Main Content */}
                     <div className="flex-1">
                         {/* Search Bar with visual feedback */}
-                        <div className="flex gap-4 mb-8">
+                        <div className="flex gap-4 mb-4 sm:mb-8">
                             <div className="flex-1 relative">
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                                 <input
@@ -540,64 +584,89 @@ export default function ExplorePage() {
 
                         {/* Featured Game */}
                         {!debouncedSearchQuery && featured && (
-                            <div className="mb-8 relative rounded-lg overflow-hidden">
+                            <div className="mb-6 sm:mb-8 relative rounded-lg overflow-hidden">
                                 <img
                                     src={featuredArtwork && featuredArtwork.length > 0 && createImageUrl(featuredArtwork[0]?.image_id)}
                                     alt={featured.name}
-                                    className="w-full h-[400px] object-cover"
+                                    className="w-full h-[200px] sm:h-[300px] md:h-[400px] object-cover"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
-                                <div className="absolute bottom-0 left-0 right-0 p-8">
-                                    <div className="flex justify-between items-center">
+                                <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 md:p-8">
+                                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end">
                                         <div>
-                                            <h2 className="text-4xl font-bold text-white mb-4">{featured.name}</h2>
-                                            <p className="text-2xl font-bold text-white">{featured.price}$</p>
+                                            <h2 className="text-xl sm:text-2xl md:text-4xl font-bold text-white mb-2 sm:mb-4">
+                                                {featured.name}
+                                            </h2>
+                                            <p className="text-lg sm:text-xl md:text-2xl font-bold text-white">{featured.isDiscount ? (getDiscountedPrice(featured.price, featured.discountPercentage)) : (featured.price)}$</p>
                                         </div>
-                                        <div className="flex gap-4">
-                                            <Link to={`/games/${featured.id}`}>
-                                                <Button className="bg-[#2563EB] hover:bg-[#1E40AF] text-white px-8">Buy now</Button>
+                                        <div className="mt-4 sm:mt-0">
+                                            <Link to={`/games/${featured.id}/${featured.slug || toSlug(featured.name)}`}>
+                                                <Button className="bg-[#2563EB] hover:bg-[#1E40AF] text-white px-4 sm:px-8 w-full sm:w-auto">
+                                                    Buy now
+                                                </Button>
                                             </Link>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="absolute top-4 right-4 flex gap-2">
-                                    <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm">FEATURED</span>
+                                <div className="absolute top-2 sm:top-4 right-2 sm:right-4 flex gap-2">
+                                    <span className="bg-red-500 text-white px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs">
+                                        FEATURED
+                                    </span>
+                                    {featured.isDiscount &&
+                                        <span className="bg-green-600 text-white px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs">
+                                            FEATURED
+                                        </span>
+                                    }
                                 </div>
                             </div>
                         )}
+
                         {/* Games Grid */}
                         {isLoading ? (
                             <div className="flex justify-center items-center h-64">
                                 <div className="loader border-t-4 border-(--color-foreground)"></div> {/* Loader */}
                             </div>
                         ) : games && games.length > 0 ? (
-                            <div className="grid grid-cols-4 gap-6">
+                            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
                                 {games.map((game) => (
-                                    <Link to={`/games/${game.id}`} key={game.id}>
+                                    <Link to={`/games/${game.id}/${game.slug || toSlug(game.name)}`} key={game.id}>
                                         <div className="group cursor-pointer">
                                             <div className="relative">
                                                 <img
                                                     src={game.image || game.cover_url}
                                                     alt={game.title}
-                                                    className="w-full h-full object-cover rounded-lg"
+                                                    className="w-full aspect-[3/4] object-cover rounded-lg"
                                                 />
                                                 <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
                                                 <div className="absolute bottom-0 left-0 right-0 pb-4 flex flex-col gap-2">
                                                     <div className="flex items-center">
-                                                        <span className="bg-[#1A1F2E] text-white px-4 py-1 rounded-r-full">{game.price}$</span>
+                                                        <span className={`bg-[#1A1F2E] px-4 py-1 rounded-r-full text-sm`}>
+                                                            <span className={` ${game.isDiscount ? "line-through text-gray-500" : "text-white"}`}>
+
+                                                                {game.price}$
+                                                            </span>
+                                                            {game.isDiscount &&
+                                                                <span className=" text-sm sm:text-sm md:text-sm font-bold ml-2 pr-2 sm:pr-4 text-white">
+                                                                    ${getDiscountedPrice(game.price, game.discountPercentage)}
+                                                                </span>
+                                                            }
+                                                        </span>
+
                                                     </div>
-                                                    <h3 className="text-white font-bold pl-2">{game.name}</h3>
+                                                    <h3 className="text-white font-bold pl-2 text-sm sm:text-base line-clamp-1">{game.name}</h3>
                                                 </div>
                                                 {game.isNew && (
                                                     <span className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs">
                                                         NEW
                                                     </span>
                                                 )}
-                                                {game.onSale && (
-                                                    <span className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs">
-                                                        SALE
+                                                {game.isDiscount && (
+                                                    <span className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs flex items-center">
+                                                        ON SALE
+                                                        <Tag className="ml-1 w-3 h-3" />
                                                     </span>
+
                                                 )}
                                             </div>
                                         </div>
@@ -610,9 +679,11 @@ export default function ExplorePage() {
                                 <p className="mt-2">Try adjusting your filters or search query.</p>
                             </div>
                         )}
+
                         {/* Pagination */}
+
                         {totalPages > 1 && (
-                            <div className="flex justify-center mt-8 gap-2 items-center">
+                            <div className="flex justify-center mt-6 sm:mt-8 gap-1 sm:gap-2 items-center">
                                 {/* Previous page button */}
                                 <button
                                     onClick={() => handlePageChange(currentPage - 1)}
@@ -626,12 +697,9 @@ export default function ExplorePage() {
                                 </button>
 
                                 {/* Page numbers with ellipsis */}
-                                {getPaginationNumbers().map((page, index) => (
+                                {getPaginationNumbers().map((page, index) =>
                                     page.isEllipsis ? (
-                                        <span
-                                            key={`ellipsis-${index}`}
-                                            className="text-gray-400 w-8 flex justify-center items-center"
-                                        >
+                                        <span key={`ellipsis-${index}`} className="text-gray-400 w-8 flex justify-center items-center">
                                             ...
                                         </span>
                                     ) : (
@@ -645,8 +713,9 @@ export default function ExplorePage() {
                                         >
                                             {page.number}
                                         </button>
-                                    )
-                                ))}
+                                    ),
+                                )}
+
                                 {/* Next page button */}
                                 <button
                                     onClick={() => handlePageChange(currentPage + 1)}
@@ -665,9 +734,7 @@ export default function ExplorePage() {
                         {games && games.length > 0 && totalPages > 1 && (
                             <div className="text-center mt-4 text-(--color-foreground)/60 text-sm">
                                 Showing page {currentPage} of {totalPages}
-                                {totalGamesCount > 0 && (
-                                    <span> ({totalGamesCount} total results)</span>
-                                )}
+                                {totalGamesCount > 0 && <span> ({totalGamesCount} total results)</span>}
                             </div>
                         )}
                     </div>

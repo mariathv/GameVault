@@ -8,6 +8,7 @@ import { useAuth } from "@/src/contexts/auth-context"
 import { getWishlist, removeFromWishlist } from "@/src/hooks/useWishlist"
 import { useCart } from "@/src/contexts/cart-context"
 import { genres } from "@/lib/game-genres"
+import { toSlug } from "@/src/utils/slugconverter"
 
 export default function WishlistPage() {
   const navigate = useNavigate()
@@ -180,7 +181,7 @@ export default function WishlistPage() {
                       src={game.cover_url || "/placeholder.svg"}
                       alt={game.name}
                       className="w-full h-full object-cover"
-                      onClick={() => navigate(`/games/${game.id}`)}
+                      onClick={() => navigate(`/games/${game.id}/${game.slug || toSlug(game.name)}`)}
                       style={{ cursor: "pointer" }}
                     />
                     <div className="absolute top-2 right-2 bg-black/60 rounded-full p-1">
@@ -195,7 +196,7 @@ export default function WishlistPage() {
                   <div className="w-2/3 p-5 flex flex-col">
                     <h2
                       className="text-xl font-bold text-white hover:text-gray-300 cursor-pointer mb-3"
-                      onClick={() => navigate(`/games/${game.id}`)}
+                      onClick={() => navigate(`/games/${game.id}/${game.slug || toSlug(game.name)}`)}
                     >
                       {game.name}
                     </h2>

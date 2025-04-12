@@ -134,7 +134,7 @@ function AddGame() {
                 </div>
             ) : (
                 <>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                         {
                             gamesList && gamesList.map((game, index) => (
                                 <div key={game.id} className="bg-[#1D2127] border-[#2D3237] p-4 rounded-lg shadow flex flex-col">

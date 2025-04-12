@@ -1,7 +1,7 @@
 // @ts-nocheck
 
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { useAuth } from "@/src/contexts/auth-context"
 import Header from "@/src/components/Header"
-import { useToast } from "@/components/ui/use-toast"
+import { toast } from 'sonner';
 
 export default function RegisterPage() {
     const [name, setName] = useState("")
@@ -20,55 +20,37 @@ export default function RegisterPage() {
     const [error, setError] = useState("")
     const { register } = useAuth()
     const navigate = useNavigate()
-    const { toast } = useToast()
 
     const handleSubmit = async (e) => {
-        e.preventDefault()
-        setIsLoading(true)
-        setError("")
+        e.preventDefault();
+        setIsLoading(true);
+        setError("");
 
         if (password !== confirmPassword) {
-            setError("Passwords do not match")
-            toast({
-                variant: "destructive",
-                title: "Registration Failed",
-                description: "Passwords do not match. Please try again.",
-            })
-            setIsLoading(false)
-            return
+            const msg = "Passwords do not match";
+            setError(msg);
+            toast.error(msg);
+            setIsLoading(false);
+            return;
         }
 
         try {
-            console.log("main, registering");
-            const result = await register(name, email, password, confirmPassword)
-
-            if (result) {
-                toast({
-                    title: "Registration Successful",
-                    description: "Account created successfully!",
-                })
-                navigate("/")
-            } else {
-                setError("Registration failed. Please try again.")
-                toast({
-                    variant: "destructive",
-                    title: "Registration Failed",
-                    description: "Something went wrong. Please try again.",
-                })
+            const result = await register(name, email, password, confirmPassword);
+            if (result.status === "pending") {
+                toast.success("Verification email sent! Please check your inbox.");
             }
-
-
         } catch (err) {
-            setError("Registration failed. Please try again.")
-            toast({
-                variant: "destructive",
-                title: "Registration Failed",
-                description: "Registration failed. Please try again.",
-            })
+            const msg = err?.message || "Registration failed. Please try again.";
+            setError(msg);
+            toast.error(msg);
         } finally {
-            setIsLoading(false)
+            setIsLoading(false);
         }
-    }
+    };
+
+
+
+
 
     return (
         <div
