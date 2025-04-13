@@ -39,6 +39,7 @@ import ScrollToTop from './utils/scrollToTop';
 import VerifyEmail from './pages/auth/verify';
 
 import { Toaster } from "@/components/ui/sonner"
+import PromoCodes from './pages/admin/promo-codes';
 
 console.log("-------> in main");
 
@@ -100,6 +101,7 @@ const App = () => {
                     <Route path="users" element={<Users />} />
                     <Route path="settings" element={<Settings />} />
                     <Route path="help" element={<Help />} />
+                    <Route path="promo-codes" element={<PromoCodes />} />
                   </Route>
 
                   {/* Fallback Route */}
