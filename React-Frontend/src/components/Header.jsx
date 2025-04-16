@@ -269,7 +269,10 @@ export default function Header() {
 
                                     <DropdownMenuSeparator />
 
-                                    <DropdownMenuItem className="cursor-pointer focus:bg-(--color-foreground)/5">
+                                    <DropdownMenuItem 
+                                        className="cursor-pointer focus:bg-(--color-foreground)/5"
+                                        onClick={() => navigate("/account-settings")}
+                                    >
                                         <Settings className="mr-2 h-4 w-4" />
                                         <span>Account settings</span>
                                     </DropdownMenuItem>

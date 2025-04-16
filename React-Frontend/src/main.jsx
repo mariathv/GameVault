@@ -40,6 +40,8 @@ import VerifyEmail from './pages/auth/verify';
 
 import { Toaster } from "@/components/ui/sonner"
 import PromoCodes from './pages/admin/promo-codes';
+import AccountSettingsPage from "./pages/account-settings/index"
+
 
 console.log("-------> in main");
 
@@ -91,6 +93,8 @@ const App = () => {
                   <Route path="/checkout" element={<RequireClient><CheckoutPage /></RequireClient>} />
                   <Route path="/wishlist" element={<RequireClient><WishlistPage /></RequireClient>} />
                   <Route path="/inventory" element={<RequireClient><Inventory /></RequireClient>} />
+                  <Route path="/account-settings" element={<RequireClient><AccountSettingsPage /></RequireClient>} />
+
 
                   {/* Admin Routes (Require Admin) */}
                   <Route path="/admin" element={<RequireAdmin><AdminApp /></RequireAdmin>}>
