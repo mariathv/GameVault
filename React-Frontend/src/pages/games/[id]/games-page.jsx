@@ -155,23 +155,18 @@ export default function GamePage() {
         setWishlistLoading(true)
         try {
             if (isInWishlist) {
-                // Remove from wishlist
                 console.log("Removing game from wishlist:", game._id)
                 await removeFromWishlist(user._id, game._id)
 
-                // Update local state
                 setIsInWishlist(false)
                 showNotification(`${game.name} has been removed from your wishlist.`, "success")
             } else {
-                // Add to wishlist
                 console.log("Adding game to wishlist:", game._id)
                 const response = await addToWishlist(user._id, game._id)
                 console.log("Add to wishlist response:", response)
 
-                // Update local state
                 setIsInWishlist(true)
                 toast.success("Added to wishlist!")
-                // Navigate to wishlist page after adding
                 navigate("/wishlist")
             }
         } catch (error) {

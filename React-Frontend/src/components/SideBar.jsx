@@ -16,6 +16,7 @@ import {
     Gift,
     Menu,
 } from "lucide-react"
+import { ThemeToggle } from "./theme-toggle"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"

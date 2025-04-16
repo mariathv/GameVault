@@ -1,20 +1,37 @@
 import { useEffect, useState } from "react";
 import { getAllOrders } from "../api/order";
 import { ArrowRight, Search, Calendar } from "lucide-react";
-
+import { Input } from "@/components/ui/input";
 function Purchases() {
     const [purchases, setPurchases] = useState(null);
     const [email, setEmail] = useState("");
     const [date, setDate] = useState("");
     const [loading, isLoading] = useState(true);
 
-    const fetchData = async (email, date) => {
+    const fetchData = async (email = "", date = "") => {
         isLoading(true);
-        const fetched = await getAllOrders(email, date);
+
+        let formattedDate = null;
+
+        if (date) {
+            const parsed = new Date(date);
+            if (!isNaN(parsed)) {
+                formattedDate = parsed.toLocaleDateString('en-US', {
+                    year: '2-digit',
+                    month: '2-digit',
+                    day: '2-digit',
+                });
+            }
+        }
+
+        console.log("Formatted date for API:", formattedDate);
+
+        const fetched = await getAllOrders(email, formattedDate);
+        console.log("fetched", fetched);
+
         setPurchases(fetched.orders);
         isLoading(false);
     };
-
     const filteredSearch = () => {
         isLoading(true);
         fetchData(email, date);
@@ -36,11 +53,11 @@ function Purchases() {
                                 Recent Purchases
                             </h1>
                             <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                                <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-(--color-foreground)/80 h-5 w-5" />
-                                    <input
+                                <div className="relative w-full sm:w-48">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-(--color-foreground)/80 h-5 w-5 pointer-events-none" />
+                                    <Input
                                         type="text"
-                                        className="pl-10 pr-4 py-2 w-full sm:w-48 border-2 border-gray-200 rounded-lg text-(--color-foreground) focus:outline-none focus:border-(--color-accent-primary) transition-colors "
+                                        className="pl-10 pr-4 py-2 border-2 border-gray-200 rounded-lg text-(--color-foreground) focus-visible:ring-0 focus:border-[--color-accent-primary] transition-colors w-full h-full"
                                         placeholder="Search by user"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
@@ -48,9 +65,9 @@ function Purchases() {
                                 </div>
                                 <div className="relative">
                                     <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-(--color-foreground)/80 h-5 w-5" />
-                                    <input
-                                        type="text"
-                                        className="pl-10 pr-4 py-2 w-full sm:w-48 border-2 border-gray-200 rounded-lg text-(--color-foreground) focus:outline-none focus:border-(--color-accent-primary) transition-colors"
+                                    <Input
+                                        type="date"
+                                        className="pl-10 pr-4 py-2 w-full sm:w-48 border-2 border-gray-200 rounded-lg text-(--color-foreground) focus:outline-none focus:border-(--color-accent-primary) transition-colors h-full"
                                         placeholder="Date (MM/DD/YY)"
                                         value={date}
                                         onChange={(e) => setDate(e.target.value)}
@@ -71,58 +88,76 @@ function Purchases() {
                     <div className="overflow-x-auto">
                         {loading ? (
                             <div className="flex justify-center items-center min-h-[400px]">
-                                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+                                <div className="loader border-t-4 border-(--color-foreground)"></div> {/* Loader */}
                             </div>
                         ) : (
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-(--color-background-secondary) ">
-                                    <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-(--color-foreground)/50 uppercase tracking-wider">Game</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-(--color-foreground)/50 uppercase tracking-wider">Customer</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-(--color-foreground)/50 uppercase tracking-wider">Date</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-(--color-foreground)/50 uppercase tracking-wider">Price</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-(--color-background) divide-y divide-(--color-light-ed)/20">
-                                    {purchases && purchases.slice(0, 10).map((purchase, purchaseIndex) => (
-                                        <>
-                                            {purchase.games.map((game, index) => (
-                                                <tr key={`${purchase.id}-${index}`}
-                                                    className=" transition-colors">
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-(--color-foreground)/80">
-                                                        {game.title}
-                                                    </td>
-                                                    {index === 0 && (
-                                                        <>
-                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-(--color-foreground)/50" rowSpan={purchase.games.length}>
-                                                                {purchase.user.email}
-                                                            </td>
-                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-(--color-foreground)/50" rowSpan={purchase.games.length}>
-                                                                {new Date(purchase.createdAt).toLocaleDateString()}
-                                                            </td>
-                                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-(--color-accent-primary)" rowSpan={purchase.games.length}>
-                                                                ${purchase.totalAmount.toFixed(2)}
-                                                            </td>
-                                                        </>
-                                                    )}
-                                                </tr>
-                                            ))}
-                                            {purchaseIndex < purchases.length - 1 && (
-                                                <tr>
-                                                    <td colSpan="4" className="px-6 py-2">
-                                                        <div className="border-t border-(--color-light-ed)/60"></div>
-                                                    </td>
-                                                </tr>
-                                            )}
-                                        </>
-                                    ))}
-                                </tbody>
-                            </table>
+                            <>
+
+                                <table className="min-w-full divide-y divide-gray-200">
+                                    <thead className="bg-(--color-background-secondary) ">
+                                        <tr>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-(--color-foreground)/50 uppercase tracking-wider">Game</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-(--color-foreground)/50 uppercase tracking-wider">Customer</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-(--color-foreground)/50 uppercase tracking-wider">Date</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-(--color-foreground)/50 uppercase tracking-wider">Price</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody className="bg-(--color-background) divide-y divide-(--color-light-ed)/20">
+
+
+                                        {purchases && purchases.slice(0, 10).map((purchase, purchaseIndex) => (
+                                            <>
+                                                {purchase.games.map((game, index) => (
+                                                    <tr key={`${purchase.id}-${index}`}
+                                                        className=" transition-colors">
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-(--color-foreground)/80">
+                                                            {game.title}
+                                                        </td>
+                                                        {index === 0 && (
+                                                            <>
+                                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-(--color-foreground)/50" rowSpan={purchase.games.length}>
+                                                                    {purchase.user.email}
+                                                                </td>
+                                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-(--color-foreground)/50" rowSpan={purchase.games.length}>
+                                                                    {new Date(purchase.createdAt).toLocaleDateString('en-US', {
+                                                                        year: '2-digit',
+                                                                        month: '2-digit',
+                                                                        day: '2-digit'
+                                                                    })}
+
+                                                                </td>
+                                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-500/70" rowSpan={purchase.games.length}>
+                                                                    ${purchase.totalAmount.toFixed(2)}
+                                                                </td>
+                                                            </>
+                                                        )}
+                                                    </tr>
+                                                ))}
+                                                {purchaseIndex < purchases.length - 1 && (
+                                                    <tr>
+                                                    </tr>
+                                                )}
+                                            </>
+                                        ))}
+                                    </tbody>
+
+                                </table>
+                                {purchases && purchases.length === 0 && (
+                                    <div className="flex flex-col items-center justify-center py-12 text-center text-(--color-foreground)/70 ">
+
+                                        <p className="text-lg font-medium">No purchases found</p>
+                                        <p className="text-sm text-(--color-foreground)/50 mt-1">Try adjusting your filters or check back later.</p>
+                                    </div>
+                                )}
+                            </>
                         )}
+
                     </div>
+
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
 

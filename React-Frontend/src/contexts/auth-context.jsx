@@ -105,7 +105,6 @@ export function AuthProvider({ children }) {
         setIsAuthenticated(false);
         localStorage.removeItem("gamevault_user");
         localStorage.removeItem("gamevault_token");
-        window.location.href = "/";
     }
 
 
