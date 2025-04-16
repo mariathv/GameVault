@@ -133,7 +133,7 @@ export default function Dashboard() {
 
             {/* Stats Overview */}
             <div className="grid grid-cols-2 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
-                <Card className="bg-(--color-background-t) border-[#2D3237] text-(--color-foreground)">
+                <Card className="bg-(--color-background) border-[#2D3237] text-(--color-foreground)">
                     <CardHeader className="flex flex-row items-center justify-between pb-2 px-4 pt-4">
                         <CardTitle className="text-sm font-medium">Total Games</CardTitle>
                         <Package className="h-4 w-4 text-[#668389]" />
@@ -144,7 +144,7 @@ export default function Dashboard() {
                     </CardContent>
                 </Card>
 
-                <Card className="bg-(--color-background-t) border-[#2D3237] text-(--color-foreground)">
+                <Card className="bg-(--color-background) border-[#2D3237] text-(--color-foreground)">
                     <CardHeader className="flex flex-row items-center justify-between pb-2 px-4 pt-4">
                         <CardTitle className="text-sm font-medium">Total Sales</CardTitle>
                         <ShoppingCart className="h-4 w-4 text-[#668389]" />
@@ -155,18 +155,18 @@ export default function Dashboard() {
                     </CardContent>
                 </Card>
 
-                <Card className="bg-(--color-background-t) border-[#2D3237] text-(--color-foreground)">
+                <Card className="bg-(--color-background) border-[#2D3237] text-(--color-foreground)">
                     <CardHeader className="flex flex-row items-center justify-between pb-2 px-4 pt-4">
                         <CardTitle className="text-sm font-medium">Revenue</CardTitle>
                         <DollarSign className="h-4 w-4 text-[#668389]" />
                     </CardHeader>
                     <CardContent className="px-4 pb-4 pt-0">
                         <div className="text-xl sm:text-2xl font-bold">${stats.totalRevenue.toLocaleString()}</div>
-                        <p className="text-xs  text-(--color-foreground)/70">+{statChanges.revenueChange}% from last month</p>
+                        <p className="text-xs  text-(--color-foreground)/70">+{statChanges.revenueChange.toFixed(2)}% from last month</p>
                     </CardContent>
                 </Card>
 
-                <Card className="bg-(--color-background-t) border-[#2D3237] text-(--color-foreground)">
+                <Card className="bg-(--color-background) border-[#2D3237] text-(--color-foreground)">
                     <CardHeader className="flex flex-row items-center justify-between pb-2 px-4 pt-4">
                         <CardTitle className="text-sm font-medium">Active Users</CardTitle>
                         <Users className="h-4 w-4 text-[#668389]" />
@@ -181,7 +181,7 @@ export default function Dashboard() {
             {/* Main Content */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
                 {/* Recent Activity Chart */}
-                <Card className="bg-(--color-background-t) border-[#2D3237]  text-(--color-foreground) lg:col-span-2">
+                <Card className="bg-(--color-background) border-[#2D3237]  text-(--color-foreground) lg:col-span-2">
                     <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                         <CardTitle>Sales Overview</CardTitle>
                         <div className="flex items-center text-xs  text-(--color-foreground)/70">
@@ -225,9 +225,9 @@ export default function Dashboard() {
                 </Card>
 
                 {/* Recent Activity */}
-                <Card className="bg-(--color-background-t) border-[#2D3237]  text-(--color-foreground)">
+                <Card classNa="bg-(--color-background-t) border-[#2D3237] text-(--color-foreground)">
                     <CardHeader>
-                        <CardTitle>Recent Activity</CardTitle>
+                        <CardTitle className="text-(--color-foreground)">Recent Activity</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4 max-h-[250px] md:max-h-[300px] overflow-y-auto pr-1">
@@ -237,14 +237,14 @@ export default function Dashboard() {
                                         <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 text-[#668389]" />
                                     </div>
                                     <div className="flex-1 space-y-1 min-w-0">
-                                        <p className="text-sm font-medium leading-none truncate">{purchase.games[0].title}</p>
+                                        <p className="text-sm font-medium leading-none truncate text-(--color-foreground)">{purchase.games[0].title}</p>
                                         <p className="text-xs  text-(--color-foreground)/70 truncate">by {purchase.user.email}</p>
                                         <div className="flex items-center pt-1 justify-between">
                                             <div className="flex items-center">
                                                 <Clock className="h-3 w-3 text-(--color-foreground)/70 mr-1" />
                                                 <span className="text-xs text-(--color-foreground)/70">{new Date(purchase.createdAt).toLocaleDateString()}</span>
                                             </div>
-                                            <span className="text-xs font-medium">${purchase.totalAmount.toFixed(2)}</span>
+                                            <span className="text-xs font-medium text-(--color-foreground)/80">${purchase.totalAmount.toFixed(2)}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -299,21 +299,21 @@ export default function Dashboard() {
                 <h2 className="text-lg sm:text-xl font-bold text-(--color-foreground) mb-3 sm:mb-4">Quick Actions</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                     <Button
-                        className="h-auto py-4 sm:py-6 bg-(--color-background-t) border border-[#2D3237] hover:bg-(--color-background-t)/50 text-(--color-foreground) flex flex-col items-center"
+                        className="h-auto py-4 sm:py-6 bg-(--color-background) border border-[#2D3237] hover:bg-(--color-background)/50 text-(--color-foreground) flex flex-col items-center"
                         onClick={() => navigateTo("add-a-game")}
                     >
                         <Plus className="h-5 w-5 sm:h-6 sm:w-6 mb-1 sm:mb-2" />
                         <span className="text-xs sm:text-sm">Add New Game</span>
                     </Button>
                     <Button
-                        className="h-auto py-4 sm:py-6 bg-(--color-background-t) border border-[#2D3237] hover:bg-(--color-background-t)/50 text-(--color-foreground) flex flex-col items-center"
+                        className="h-auto py-4 sm:py-6 bg-(--color-background) border border-[#2D3237] hover:bg-(--color-background)/50 text-(--color-foreground) flex flex-col items-center"
                         onClick={() => navigateTo("view-games")}
                     >
                         <Edit className="h-5 w-5 sm:h-6 sm:w-6 mb-1 sm:mb-2" />
                         <span className="text-xs sm:text-sm">Manage Games</span>
                     </Button>
                     <Button
-                        className="h-auto py-4 sm:py-6 bg-(--color-background-t) border border-[#2D3237] hover:bg-(--color-background-t)/50 text-(--color-foreground) flex flex-col items-center"
+                        className="h-auto py-4 sm:py-6 bg-(--color-background) border border-[#2D3237] hover:bg-(--color-background)/50 text-(--color-foreground) flex flex-col items-center"
                         onClick={() => navigateTo("help")}
                     >
                         <HelpCircle className="h-5 w-5 sm:h-6 sm:w-6 mb-1 sm:mb-2" />

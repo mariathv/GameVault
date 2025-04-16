@@ -21,7 +21,7 @@ export default function CheckoutPage() {
     const navigate = useNavigate()
 
     const { user } = useAuth();
-    const { cart, clearCart } = useCart()
+    const { cart, clearCart, promoCode } = useCart()
     const [paymentMethod, setPaymentMethod] = useState("credit-card")
     const [processedData, setProcessedData] = useState(null);
     const [formState, setFormState] = useState({
@@ -401,6 +401,17 @@ export default function CheckoutPage() {
                                     <span className="text-(--color-light-ed)/80">Tax</span>
                                     <span>${cart.tax.toFixed(2)}</span>
                                 </div>
+                                {promoCode && (
+                                    <div className="text-sm text-(--color-foreground)/50 italic">Promo Applied: {promoCode}</div>
+                                )}
+
+                                {cart.discount > 0 && (
+                                    <div className="flex justify-between text-green-400">
+                                        <span>Promo Discount</span>
+                                        <span>- ${cart.discount.toFixed(2)}</span>
+                                    </div>
+                                )}
+
                                 <Separator className="bg-(--color-light-ed)/10" />
                                 <div className="flex justify-between text-lg font-bold">
                                     <span>Total</span>

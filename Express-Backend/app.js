@@ -14,6 +14,7 @@ const emailRouter = require("./routes/email.router");
 const orderRouter = require("./routes/order.router");
 const inventoryRoutes = require('./routes/inventory.router');
 const ticketRouter = require("./routes/ticket.router");
+const promoRouter = require("./routes/promo.router");
 
 const app = express();
 
@@ -49,6 +50,7 @@ app.use("/api/v1/mail", emailRouter)
 app.use("/api/v1/order", orderRouter);
 app.use('/api/v1/inventory', inventoryRoutes);
 app.use("/api/v1/ticket", ticketRouter);
+app.use("/api/v1/promo", promoRouter);
 
 app.get("/", (req, res) => {
     res.send("Server Running");

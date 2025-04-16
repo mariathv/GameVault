@@ -7,16 +7,34 @@ import { Separator } from "@/components/ui/separator";
 import Header from "@/src/components/Header";
 import { useCart } from "@/src/contexts/cart-context";
 import { Input } from "@/components/ui/input"
+import { applyPromoCode } from "@/src/api/promos";
+import { toast } from 'sonner'
 
 export default function CartPage() {
     const navigate = useNavigate();
-    const { cart, updateQuantity, removeFromCart, clearCart } = useCart();
+    const { cart, updateQuantity, removeFromCart, clearCart, applyPromo } = useCart();
     const [promoCode, setPromoCode] = useState("");
 
     const handleQuantityChange = (gameId, newQuantity) => {
         const quantity = parseInt(newQuantity, 10);
         if (!isNaN(quantity) && quantity >= 1) {
             updateQuantity(gameId, quantity);
+        }
+    };
+
+    const applyPromoCodeHandler = async () => {
+        if (!promoCode) return;
+
+        const reqApply = await applyPromoCode(promoCode, cart.total);
+        if (reqApply.status === true) {
+            toast.success(`Promo Code "${promoCode}" Applied Successfully. Discount: $${reqApply.discount}.`);
+            applyPromo({
+                promoCode: reqApply.promoCode,
+                discount: reqApply.discount,
+                newTotal: reqApply.newTotal
+            });
+        } else {
+            toast.error(reqApply.error);
         }
     };
 
@@ -101,9 +119,16 @@ export default function CartPage() {
                                 <CardContent className="space-y-4">
                                     <div className="flex justify-between"><span className="text-(--color-light-ed)/80">Subtotal</span><span>${cart.subtotal.toFixed(2)}</span></div>
                                     <div className="flex justify-between"><span className="text-(--color-light-ed)/80">Tax</span><span>${cart.tax.toFixed(2)}</span></div>
+                                    {cart.discount > 0 && (
+                                        <div className="flex justify-between text-green-400">
+                                            <span>Promo Discount</span>
+                                            <span>- ${cart.discount.toFixed(2)}</span>
+                                        </div>
+                                    )}
+
                                     <div className="flex gap-2">
-                                        <Input placeholder="Promo code" value={promoCode} onChange={(e) => setPromoCode(e.target.value)} className="bg-(--color-light-ed)/5 border-(--color-light-ed)]/10 text-(--color-light-ed)" />
-                                        <Button variant="outline" className="border-(--color-light-ed)/10 text-(--color-light-ed) hover:bg-(--color-light-ed)/10">Apply</Button>
+                                        <Input placeholder="Promo code" value={promoCode} onChange={(e) => setPromoCode(e.target.value)} className="bg-(--color-light-ed)/5 border-(--color-light-ed)]/10 text-(--color-light-ed) focus-visible:ring-0" />
+                                        <Button variant="outline" className="border-(--color-light-ed)/10 text-(--color-light-ed) hover:bg-(--color-light-ed)/10" onClick={() => applyPromoCodeHandler()}>Apply</Button>
                                     </div>
                                     <Separator className="bg-(--color-light-ed)/10" />
                                     <div className="flex justify-between text-lg font-bold"><span>Total</span><span>${cart.total.toFixed(2)}</span></div>

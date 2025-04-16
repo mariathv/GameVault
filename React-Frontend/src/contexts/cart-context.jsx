@@ -6,28 +6,52 @@ import { Navigate, useNavigate } from "react-router-dom";
 
 const CartContext = createContext(undefined);
 
-const calculateCartTotals = (items) => {
+const calculateCartTotals = (items, promo = null) => {
     const subtotal = items.reduce((total, item) => {
-        const game = item.game; // No need to look up game, it's already in the cart
+        const game = item.game;
         if (!game) return total;
 
         const price = game.isDiscount ? game.price * (1 - game.discountPercentage / 100) : game.price;
         return total + price * item.quantity;
     }, 0);
 
-    const tax = subtotal * 0.08; // 8% tax
-    const total = subtotal + tax;
+    const tax = subtotal * 0.08;
+    let discount = 0;
+
+    if (promo) {
+        discount = promo.discountType === 'percentage'
+            ? (promo.discountValue / 100) * subtotal
+            : promo.discountValue;
+    }
+
+    const total = subtotal + tax - discount;
 
     return {
-        subtotal: Number.parseFloat(subtotal.toFixed(2)),
-        tax: Number.parseFloat(tax.toFixed(2)),
-        total: Number.parseFloat(total.toFixed(2)),
+        subtotal: +subtotal.toFixed(2),
+        tax: +tax.toFixed(2),
+        discount: +discount.toFixed(2),
+        total: +Math.max(total, 0).toFixed(2)
     };
 };
+
 
 export function CartProvider({ children }) {
     const [cart, setCart] = useState(initialCart);
     const navigate = useNavigate();
+
+    const [promoCode, setPromoCode] = useState(null);
+
+
+    const applyPromo = ({ promoCode, discount, newTotal }) => {
+        setCart((prevCart) => ({
+            ...prevCart,
+            total: +newTotal.toFixed(2),
+            discount: +discount.toFixed(2)
+        }));
+        setPromoCode(promoCode);
+    };
+
+
 
     useEffect(() => {
         const savedCart = localStorage.getItem("gameVaultCart");
@@ -100,7 +124,9 @@ export function CartProvider({ children }) {
     };
 
     return (
-        <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart }}>
+        <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, applyPromo, promoCode }}>
+
+
             {children}
         </CartContext.Provider>
     );
