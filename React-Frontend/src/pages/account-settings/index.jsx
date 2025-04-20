@@ -3,7 +3,6 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Shield, Lock, User, Bell, Eye, CreditCard, HardDrive, LogOut, Check, Save } from "lucide-react"
-import Header from "@/src/components/Header"
 import { useAuth } from "@/src/contexts/auth-context"
 import { Switch } from "@/components/ui/switch"
 import { Button } from "@/components/ui/button"
@@ -137,7 +136,7 @@ export default function AccountSettingsPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-[#0f1623]">
+      <div className="min-h-screen bg-(--color-background)">
         <main className="max-w-7xl mx-auto px-4 py-8">
           <h1 className="text-3xl font-bold text-white mb-8">Account Settings</h1>
           <div className="flex flex-col items-center justify-center py-20 text-center">
@@ -157,22 +156,21 @@ export default function AccountSettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0f1623]">
-      <Header />
+    <div className="min-h-screen bg-(--color-background)">
+
 
       {/* Notification component */}
       {notification && (
         <div
-          className={`fixed top-4 right-4 z-50 p-4 rounded-md shadow-md ${
-            notification.type === "error" ? "bg-red-500" : "bg-green-500"
-          } text-white`}
+          className={`fixed top-4 right-4 z-50 p-4 rounded-md shadow-md ${notification.type === "error" ? "bg-red-500" : "bg-green-500"
+            } text-white`}
         >
           {notification.message}
         </div>
       )}
 
       <main className="max-w-7xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-white mb-8">Account Settings</h1>
+        <h1 className="text-3xl font-bold text-(--color-foreground) mb-8">Account Settings</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Sidebar */}
@@ -191,11 +189,10 @@ export default function AccountSettingsPage() {
               <nav className="space-y-1">
                 <button
                   onClick={() => setActiveTab("profile")}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-md transition ${
-                    activeTab === "profile"
-                      ? "bg-[#2a3349] text-white"
-                      : "text-gray-400 hover:bg-[#2a3349]/50 hover:text-white"
-                  }`}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-md transition ${activeTab === "profile"
+                    ? "bg-[#2a3349] text-white"
+                    : "text-gray-400 hover:bg-[#2a3349]/50 hover:text-white"
+                    }`}
                 >
                   <User className="h-5 w-5" />
                   <span>Profile</span>
@@ -203,35 +200,32 @@ export default function AccountSettingsPage() {
 
                 <button
                   onClick={() => setActiveTab("security")}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-md transition ${
-                    activeTab === "security"
-                      ? "bg-[#2a3349] text-white"
-                      : "text-gray-400 hover:bg-[#2a3349]/50 hover:text-white"
-                  }`}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-md transition ${activeTab === "security"
+                    ? "bg-[#2a3349] text-white"
+                    : "text-gray-400 hover:bg-[#2a3349]/50 hover:text-white"
+                    }`}
                 >
                   <Shield className="h-5 w-5" />
                   <span>Security</span>
                 </button>
 
-                <button
+                {/* <button
                   onClick={() => setActiveTab("privacy")}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-md transition ${
-                    activeTab === "privacy"
-                      ? "bg-[#2a3349] text-white"
-                      : "text-gray-400 hover:bg-[#2a3349]/50 hover:text-white"
-                  }`}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-md transition ${activeTab === "privacy"
+                    ? "bg-[#2a3349] text-white"
+                    : "text-gray-400 hover:bg-[#2a3349]/50 hover:text-white"
+                    }`}
                 >
                   <Eye className="h-5 w-5" />
                   <span>Privacy</span>
-                </button>
+                </button> */}
 
                 <button
                   onClick={() => setActiveTab("notifications")}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-md transition ${
-                    activeTab === "notifications"
-                      ? "bg-[#2a3349] text-white"
-                      : "text-gray-400 hover:bg-[#2a3349]/50 hover:text-white"
-                  }`}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-md transition ${activeTab === "notifications"
+                    ? "bg-[#2a3349] text-white"
+                    : "text-gray-400 hover:bg-[#2a3349]/50 hover:text-white"
+                    }`}
                 >
                   <Bell className="h-5 w-5" />
                   <span>Notifications</span>
@@ -239,27 +233,16 @@ export default function AccountSettingsPage() {
 
                 <button
                   onClick={() => setActiveTab("payment")}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-md transition ${
-                    activeTab === "payment"
-                      ? "bg-[#2a3349] text-white"
-                      : "text-gray-400 hover:bg-[#2a3349]/50 hover:text-white"
-                  }`}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-md transition ${activeTab === "payment"
+                    ? "bg-[#2a3349] text-white"
+                    : "text-gray-400 hover:bg-[#2a3349]/50 hover:text-white"
+                    }`}
                 >
                   <CreditCard className="h-5 w-5" />
                   <span>Payment Methods</span>
                 </button>
 
-                <button
-                  onClick={() => setActiveTab("data")}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-md transition ${
-                    activeTab === "data"
-                      ? "bg-[#2a3349] text-white"
-                      : "text-gray-400 hover:bg-[#2a3349]/50 hover:text-white"
-                  }`}
-                >
-                  <HardDrive className="h-5 w-5" />
-                  <span>Data & Storage</span>
-                </button>
+
 
                 <button
                   onClick={logout}
@@ -359,13 +342,10 @@ export default function AccountSettingsPage() {
                         <p className="text-2xl font-bold text-white">{user.wishlistCount || 0}</p>
                       </div>
                       <div className="bg-[#2a3349] p-4 rounded-lg">
-                        <p className="text-gray-400 text-sm">Reviews</p>
-                        <p className="text-2xl font-bold text-white">{user.reviewsCount || 0}</p>
+                        <p className="text-gray-400 text-sm">Total Spending</p>
+                        <p className="text-2xl font-bold text-white">{user.wishlistCount || 0}</p>
                       </div>
-                      <div className="bg-[#2a3349] p-4 rounded-lg">
-                        <p className="text-gray-400 text-sm">Total Playtime</p>
-                        <p className="text-2xl font-bold text-white">{user.totalPlaytime || 0} hrs</p>
-                      </div>
+
                     </div>
                   </div>
                 </div>
@@ -534,7 +514,7 @@ export default function AccountSettingsPage() {
               )}
 
               {/* Privacy Tab */}
-              {activeTab === "privacy" && (
+              {/* {activeTab === "privacy" && (
                 <div className="p-6">
                   <h2 className="text-2xl font-bold text-white mb-6">Privacy Settings</h2>
 
@@ -641,7 +621,7 @@ export default function AccountSettingsPage() {
                     </div>
                   </div>
                 </div>
-              )}
+              )} */}
 
               {/* Notifications Tab */}
               {activeTab === "notifications" && (
@@ -665,17 +645,7 @@ export default function AccountSettingsPage() {
                           />
                         </div>
 
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-white">Push Notifications</p>
-                            <p className="text-gray-400 text-sm">Receive notifications on your device</p>
-                          </div>
-                          <Switch
-                            checked={notificationSettings.pushNotifications}
-                            onCheckedChange={() => handleNotificationToggle("pushNotifications")}
-                            className="data-[state=checked]:bg-white"
-                          />
-                        </div>
+
                       </div>
                     </div>
 
@@ -683,29 +653,6 @@ export default function AccountSettingsPage() {
                       <h3 className="text-xl font-bold text-white mb-4">Notification Types</h3>
 
                       <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-white">Game Updates</p>
-                            <p className="text-gray-400 text-sm">Updates for games in your library</p>
-                          </div>
-                          <Switch
-                            checked={notificationSettings.gameUpdates}
-                            onCheckedChange={() => handleNotificationToggle("gameUpdates")}
-                            className="data-[state=checked]:bg-white"
-                          />
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-white">Friend Activity</p>
-                            <p className="text-gray-400 text-sm">When friends purchase games or come online</p>
-                          </div>
-                          <Switch
-                            checked={notificationSettings.friendActivity}
-                            onCheckedChange={() => handleNotificationToggle("friendActivity")}
-                            className="data-[state=checked]:bg-white"
-                          />
-                        </div>
 
                         <div className="flex items-center justify-between">
                           <div>
@@ -792,149 +739,12 @@ export default function AccountSettingsPage() {
                       </Button>
                     </div>
 
-                    <div className="bg-[#0f1623] p-6 rounded-lg">
-                      <h3 className="text-xl font-bold text-white mb-4">Purchase History</h3>
 
-                      <div className="space-y-4">
-                        <div className="p-4 bg-[#2a3349] rounded-lg">
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <p className="text-white font-medium">Cyberpunk 2077</p>
-                              <p className="text-gray-400 text-sm">April 15, 2023</p>
-                            </div>
-                            <p className="text-white font-bold">$38.00</p>
-                          </div>
-                        </div>
-
-                        <div className="p-4 bg-[#2a3349] rounded-lg">
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <p className="text-white font-medium">No Man's Sky</p>
-                              <p className="text-gray-400 text-sm">March 22, 2023</p>
-                            </div>
-                            <p className="text-white font-bold">$24.00</p>
-                          </div>
-                        </div>
-
-                        <Button variant="outline" className="border-[#2a3349] text-white hover:bg-[#2a3349]">
-                          View All Purchases
-                        </Button>
-                      </div>
-                    </div>
                   </div>
                 </div>
               )}
 
-              {/* Data & Storage Tab */}
-              {activeTab === "data" && (
-                <div className="p-6">
-                  <h2 className="text-2xl font-bold text-white mb-6">Data & Storage</h2>
 
-                  <div className="space-y-6">
-                    <div className="bg-[#0f1623] p-6 rounded-lg">
-                      <h3 className="text-xl font-bold text-white mb-4">Game Installation Location</h3>
-
-                      <div className="p-4 bg-[#2a3349] rounded-lg mb-4">
-                        <p className="text-white font-medium">Default Installation Directory</p>
-                        <p className="text-gray-400">C:\Program Files\GameVault\Games</p>
-                      </div>
-
-                      <Button variant="outline" className="border-[#2a3349] text-white hover:bg-[#2a3349]">
-                        Change Installation Directory
-                      </Button>
-                    </div>
-
-                    <div className="bg-[#0f1623] p-6 rounded-lg">
-                      <h3 className="text-xl font-bold text-white mb-4">Storage Usage</h3>
-
-                      <div className="mb-4">
-                        <div className="flex justify-between items-center mb-2">
-                          <p className="text-white">Used Space</p>
-                          <p className="text-white">245.8 GB / 500 GB</p>
-                        </div>
-                        <div className="w-full bg-[#2a3349] rounded-full h-2.5">
-                          <div className="bg-white h-2.5 rounded-full" style={{ width: "49%" }}></div>
-                        </div>
-                      </div>
-
-                      <div className="space-y-4">
-                        <div className="p-4 bg-[#2a3349] rounded-lg">
-                          <div className="flex justify-between items-center">
-                            <div className="flex items-center">
-                              <div className="w-10 h-10 bg-[#1a2234] rounded-md mr-3 flex items-center justify-center">
-                                <HardDrive className="h-6 w-6 text-white" />
-                              </div>
-                              <div>
-                                <p className="text-white">Game Files</p>
-                                <p className="text-gray-400 text-sm">Installed games and applications</p>
-                              </div>
-                            </div>
-                            <p className="text-white font-bold">235.2 GB</p>
-                          </div>
-                        </div>
-
-                        <div className="p-4 bg-[#2a3349] rounded-lg">
-                          <div className="flex justify-between items-center">
-                            <div className="flex items-center">
-                              <div className="w-10 h-10 bg-[#1a2234] rounded-md mr-3 flex items-center justify-center">
-                                <HardDrive className="h-6 w-6 text-white" />
-                              </div>
-                              <div>
-                                <p className="text-white">Cache</p>
-                                <p className="text-gray-400 text-sm">Temporary files and cache data</p>
-                              </div>
-                            </div>
-                            <p className="text-white font-bold">10.6 GB</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="mt-4">
-                        <Button variant="outline" className="border-[#2a3349] text-white hover:bg-[#2a3349]">
-                          Clear Cache
-                        </Button>
-                      </div>
-                    </div>
-
-                    <div className="bg-[#0f1623] p-6 rounded-lg">
-                      <h3 className="text-xl font-bold text-white mb-4">Download Settings</h3>
-
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-white">Download Speed Limit</p>
-                            <p className="text-gray-400 text-sm">Limit download bandwidth</p>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <Input
-                              type="number"
-                              className="w-20 bg-[#1a2234] border-[#2a3349] text-white"
-                              defaultValue="0"
-                            />
-                            <span className="text-white">MB/s</span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-white">Auto-Update Games</p>
-                            <p className="text-gray-400 text-sm">Automatically update games when available</p>
-                          </div>
-                          <Switch defaultChecked={true} className="data-[state=checked]:bg-white" />
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-white">Background Downloads</p>
-                            <p className="text-gray-400 text-sm">Allow downloads while playing games</p>
-                          </div>
-                          <Switch defaultChecked={true} className="data-[state=checked]:bg-white" />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </div>

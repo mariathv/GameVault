@@ -41,6 +41,7 @@ import VerifyEmail from './pages/auth/verify';
 import { Toaster } from "@/components/ui/sonner"
 import PromoCodes from './pages/admin/promo-codes';
 import AccountSettingsPage from "./pages/account-settings/index"
+import TwoFactorAuthPage from './pages/auth/two-factor';
 
 
 console.log("-------> in main");
@@ -86,7 +87,10 @@ const App = () => {
                     <Route path="/explore/genres/:id/:type" element={<ExplorePage />} />
                     <Route path="/explore/themes/:id/:type" element={<ExplorePage />} />
                     <Route path="/auth/verify-email/:token" element={<VerifyEmail />} />
+
                   </Route>
+
+
 
                   {/* Protected Client Routes (Require Login & Block Admins) */}
                   <Route path="/profile" element={<RequireClient><Profile /></RequireClient>} />
@@ -109,6 +113,8 @@ const App = () => {
                   </Route>
 
                   {/* Fallback Route */}
+
+                  <Route path="/two-factor-auth" element={<TwoFactorAuthPage />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
 

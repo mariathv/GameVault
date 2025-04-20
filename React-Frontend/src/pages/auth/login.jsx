@@ -28,8 +28,11 @@ export default function LoginPage() {
 
         try {
             const resp = await login(email, password);
-
-            if (resp) {
+            if (resp?.require2FA) {
+                toast.message("Complete 2FA to Login")
+                return;
+            }
+            if (!resp.twoFactorEnabled) {
                 toast.success('Login Successful');
                 if (resp.role === "admin") {
                     navigate("/admin");
