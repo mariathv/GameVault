@@ -17,6 +17,7 @@ import {
 import { Bell, Settings, ClipboardList, Key, ThumbsUp } from 'lucide-react'
 import { themes } from "@/lib/game-themes"
 import { genres } from "@/lib/game-genres"
+import { useCurrency } from "../contexts/currency-context"
 
 const gameGenres = [
     ["Shooter", "RPG", "Simulator", "Sport", "Strategy", "Turn-based strategy", "Tactical", "MOBA"],
@@ -30,8 +31,11 @@ const gameThemes = [
     ["Kids", "Open-World", "Warfare", "Party", "4X", "Mystery"],
 ]
 
+
+
 export default function Header() {
     const { cart } = useCart()
+    const { currency, setCurrency, availableCurrencies } = useCurrency()
     const navigate = useNavigate()
     const location = useLocation()
     const { user, isAuthenticated, logout } = useAuth()
@@ -89,6 +93,9 @@ export default function Header() {
         location.pathname === path
             ? "text-(--color-accent-secondary) underline underline-offset-4 decoration-2"
             : "hover:text-(--color-foreground)"
+
+
+
 
     return (
         <header className="sticky top-0 z-50 bg-(--color-background)/50 backdrop-blur-sm border-b border-border">
@@ -268,8 +275,28 @@ export default function Header() {
                                     <ThemeToggle />
 
                                     <DropdownMenuSeparator />
+                                    <DropdownMenuItem className="text-xs opacity-60" disabled>
+                                        Currency: <span className="ml-1 font-semibold">{currency}</span>
+                                    </DropdownMenuItem>
 
-                                    <DropdownMenuItem 
+                                    {availableCurrencies.map((curr) => (
+                                        <DropdownMenuItem
+                                            key={curr}
+                                            onSelect={(e) => {
+                                                setCurrency(curr)
+                                                e.preventDefault()
+                                            }}
+                                            className={`cursor-pointer ${curr === currency ? "font-bold text-(--color-accent-secondary)" : ""
+                                                }`}
+                                        >
+                                            {curr}
+                                        </DropdownMenuItem>
+                                    ))}
+
+
+                                    <DropdownMenuSeparator />
+
+                                    <DropdownMenuItem
                                         className="cursor-pointer focus:bg-(--color-foreground)/5"
                                         onClick={() => navigate("/account-settings")}
                                     >
@@ -304,6 +331,25 @@ export default function Header() {
                                     </DropdownMenuItem>
 
                                     <ThemeToggle />
+
+                                    <DropdownMenuItem className="text-xs opacity-60" disabled>
+                                        Currency: <span className="ml-1 font-semibold">{currency}</span>
+                                    </DropdownMenuItem>
+                                    {availableCurrencies.map((curr) => (
+                                        <DropdownMenuItem
+                                            key={curr}
+                                            onSelect={(e) => {
+                                                e.preventDefault()
+                                                setCurrency(curr)
+                                            }}
+                                            className={`cursor-pointer ${curr === currency ? "font-bold text-(--color-accent-secondary)" : ""
+                                                }`}
+                                        >
+                                            {curr}
+                                        </DropdownMenuItem>
+                                    ))}
+
+
 
                                     <DropdownMenuSeparator />
 

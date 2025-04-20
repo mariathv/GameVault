@@ -10,7 +10,7 @@ import { getFeatured, getGamesByGenre } from "../api/store"
 import CarouselSlider from "../components/CarouselSlider"
 import GameCardExtended from "../components/GameCardExtended"
 import { getGameArtworks } from "../api/game"
-
+import GameCarousel from "../components/GameCarousel"
 export default function HomePage() {
     const [selectedGenre, setSelectedGenre] = useState("Shooter")
     const [searchQuery, setSearchQuery] = useState("")
@@ -63,6 +63,7 @@ export default function HomePage() {
                     )
 
                     setRecentlyAdded(gamesWithArtworks)
+                    console.log("recently ", gamesWithArtworks);
                     success = true
                 }
             }
@@ -132,9 +133,7 @@ export default function HomePage() {
         fetchGenreGames()
     }, [selectedGenre])
 
-    function createImageUrl(id) {
-        return `https://images.igdb.com/igdb/image/upload/t_1080p/${id}.jpg`
-    }
+
 
     return (
         <div className="min-h-screen bg-(--color-background)">
@@ -184,6 +183,7 @@ export default function HomePage() {
             </section>
 
             <main className="container mx-auto px-4 py-4 sm:py-6 md:py-8">
+
                 {topRated ? (
                     <div className="mb-6 md:mb-8">
                         <CarouselSlider mapItems={topRated} />
@@ -193,6 +193,8 @@ export default function HomePage() {
                         <div className="loader-dots text-(--color-light-ed)"></div>
                     </div>
                 )}
+
+
 
                 {featuredGame && featuredArtwork ? (
                     <div className="mb-6 md:mb-8">
@@ -213,11 +215,21 @@ export default function HomePage() {
                     </div>
                 )}
 
+
+
                 <h1 className="text-(--color-foreground) text-2xl sm:text-3xl md:text-4xl font-bold mb-4 md:mb-6 mt-8 md:mt-12">
                     Recently Added
                 </h1>
-                {recentlyAdded ? (
+                {/* {recentlyAdded ? (
                     <GamesGrid filteredGames={recentlyAdded} gridCol={4} limit={3} variant={"wide"} />
+                ) : (
+                    <div className="flex justify-center items-center w-full py-4 sm:py-6 md:py-8">
+                        <div className="loader-dots text-(--color-foreground)"></div>
+                    </div>
+                )} */}
+
+                {recentlyAdded ? (
+                    <GameCarousel games={recentlyAdded} />
                 ) : (
                     <div className="flex justify-center items-center w-full py-4 sm:py-6 md:py-8">
                         <div className="loader-dots text-(--color-foreground)"></div>

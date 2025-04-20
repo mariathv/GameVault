@@ -16,10 +16,11 @@ import { FaCreditCard } from "react-icons/fa"
 import { SiVisa, SiMastercard, SiPaypal, SiAmericanexpress, SiDiscover } from "react-icons/si";
 import { placeOrder } from "@/src/api/order"
 import { useAuth } from "@/src/contexts/auth-context"
+import { useCurrency } from "@/src/contexts/currency-context"
 
 export default function CheckoutPage() {
     const navigate = useNavigate()
-
+    const { currency, convertPrice } = useCurrency()
     const { user } = useAuth();
     const { cart, clearCart, promoCode } = useCart()
     const [paymentMethod, setPaymentMethod] = useState("credit-card")
@@ -384,10 +385,10 @@ export default function CheckoutPage() {
                                         <div className="text-right">
                                             {game.onSale ? (
                                                 <span className="text-green-400 font-bold">
-                                                    ${(game.price * (1 - game.discount / 100) * quantity).toFixed(2)}
+                                                    {convertPrice((game.price * (1 - game.discount / 100) * quantity))}
                                                 </span>
                                             ) : (
-                                                <span className="font-bold">${(game.price * quantity).toFixed(2)}</span>
+                                                <span className="font-bold">{convertPrice(game.price * quantity)}</span>
                                             )}
                                         </div>
                                     </div>
@@ -395,11 +396,11 @@ export default function CheckoutPage() {
                                 <Separator className="bg-(--color-light-ed)/10" />
                                 <div className="flex justify-between">
                                     <span className="text-(--color-light-ed)/80">Subtotal</span>
-                                    <span>${cart.subtotal.toFixed(2)}</span>
+                                    <span>{convertPrice(cart.subtotal)}</span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-(--color-light-ed)/80">Tax</span>
-                                    <span>${cart.tax.toFixed(2)}</span>
+                                    <span>{convertPrice(cart.tax)}</span>
                                 </div>
                                 {promoCode && (
                                     <div className="text-sm text-(--color-foreground)/50 italic">Promo Applied: {promoCode}</div>
@@ -408,14 +409,14 @@ export default function CheckoutPage() {
                                 {cart.discount > 0 && (
                                     <div className="flex justify-between text-green-400">
                                         <span>Promo Discount</span>
-                                        <span>- ${cart.discount.toFixed(2)}</span>
+                                        <span>- {convertPrice(cart.discount)}</span>
                                     </div>
                                 )}
 
                                 <Separator className="bg-(--color-light-ed)/10" />
                                 <div className="flex justify-between text-lg font-bold">
                                     <span>Total</span>
-                                    <span>${cart.total.toFixed(2)}</span>
+                                    <span>{convertPrice(cart.total)}</span>
                                 </div>
                             </CardContent>
                             <CardFooter className="flex flex-col space-y-4">

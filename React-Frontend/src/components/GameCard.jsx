@@ -4,10 +4,11 @@ import { getGameThemes } from '../api/game'
 import { Link } from 'react-router-dom';
 import { themes as allThemes } from "@/lib/game-themes"
 import { toSlug } from '../utils/slugconverter';
+import { useCurrency } from '../contexts/currency-context';
 
 export default function GameCard({ game }) {
     const [themes, setThemes] = useState(null);
-
+    const { currency, convertPrice } = useCurrency()
 
     const fetchThemes = () => {
         if (!themes) {
@@ -18,6 +19,8 @@ export default function GameCard({ game }) {
             setThemes(filteredThemes);
         }
     };
+
+
 
 
     useEffect(() => {
@@ -40,7 +43,7 @@ export default function GameCard({ game }) {
                         ))}
                     </div>
                     <div className=" absolute bottom-3 left-3 rounded text-white font-bold">
-                        ${game.price}
+                        {convertPrice(game.price)}
                     </div>
                     <div className=" absolute bottom-3 bg-blue-500/50 px-2 right-3 rounded text-white font-bold">
                         {game.rating.toFixed(1)}

@@ -3,11 +3,13 @@ import { getGameThemes } from "../api/game";
 import { Link } from "react-router-dom";
 import { themes as allThemes } from "@/lib/game-themes";
 import { toSlug } from "../utils/slugconverter";
+import { useCurrency } from "../contexts/currency-context";
 
 function GameCardExtended({
     featuredGame, featuredArtwork
 }) {
     const [themes, setThemes] = useState(null);
+    const { currency, convertPrice } = useCurrency()
 
     const fetchThemes = () => {
         console.log("fetching themes", themes);
@@ -61,10 +63,13 @@ function GameCardExtended({
     }
 
     return (
-        <div className="flex flex-col md:flex-row bg-gray-900 rounded-xl overflow-hidden w-full shadow-lg mb-8 md:mb-20 bg-image-card" style={{
-            backgroundImage: ` url(${featuredArtwork && featuredArtwork.length > 0
-                && createImageUrl(featuredArtwork[0]?.image_id)})`
-        }}>
+        <div
+            className="flex items-center justify-center flex-col md:flex-row bg-gray-900 rounded-xl overflow-hidden w-full shadow-lg mb-8 md:mb-20 bg-image-card"
+            style={{
+                backgroundImage: `url(${featuredArtwork && featuredArtwork.length > 0
+                    && createImageUrl(featuredArtwork[0]?.image_id)})`
+            }}
+        >
             {/* Left side with image and price */}
             <div className="relative w-full md:w-1/3 h-48 sm:h-64 md:h-auto">
                 <img
@@ -72,10 +77,10 @@ function GameCardExtended({
                     alt="featured"
                     className="w-full h-full object-cover"
                 />
-                <div className="absolute bottom-2 left-2 bg-yellow-400 px-2 py-1 rounded">
-                    <span className="font-bold text-black text-xs sm:text-sm">${featuredGame.price}</span>
-                </div>
                 <div className="absolute bottom-0 left-0 right-0 h-25 bg-gradient-to-t from-black to-transparent"></div>
+                <div className="absolute bottom-2 left-2 bg-yellow-400 px-2 py-1 rounded">
+                    <span className="font-bold text-black text-xs sm:text-sm">{convertPrice(featuredGame.price)}</span>
+                </div>
                 <div className="absolute bottom-12 left-2">
                     <span className="text-yellow-400 text-base sm:text-lg md:text-xl font-bold italic">{featuredGame.name}</span>
                 </div>
@@ -83,7 +88,7 @@ function GameCardExtended({
 
             {/* Right side with details */}
             <div className="w-full md:w-2/3 p-4">
-                <div className="w-full md:w-2/3">
+                <div className="w-full md:w-2/3 px-0 sm:px-4 md:px-8">
                     {/* Rating */}
                     <div className="flex items-center mb-4">
                         <span className="text-white/80 mr-2 font-bold text-xs sm:text-sm">RATING</span>
@@ -119,6 +124,7 @@ function GameCardExtended({
                 </div>
             </div>
         </div>
+
     )
 }
 
