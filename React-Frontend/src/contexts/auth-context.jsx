@@ -64,6 +64,14 @@ export function AuthProvider({ children }) {
         const response = await apiRequest("auth/login", user);
         console.log(response);
 
+        if (response.require2FA) {
+            console.log("requireeeee");
+            localStorage.setItem("gamevault_token", response.tempToken);
+            localStorage.setItem("tfa_mail", user.email)
+            navigate("/two-factor-auth")
+            return Promise.resolve({ require2FA: true });
+        }
+
         if (response.status === "success" && response.data?.user) {
             console.log('success context');
 
@@ -98,6 +106,24 @@ export function AuthProvider({ children }) {
         }
     };
 
+    const verify2FA = async (code) => {
+        const response = await apiRequest("auth/verify-2fa", { code });
+
+        if (response.status === "success" && response.data?.user) {
+            console.log('success context');
+
+            localStorage.setItem("gamevault_user", JSON.stringify(response.data.user));
+            localStorage.setItem("gamevault_token", response.token);
+
+            setUser(response.data.user);
+            setIsAuthenticated(true);
+
+            return Promise.resolve(response.data.user);
+        }
+        return response;
+    }
+
+
 
 
     const logout = () => {
@@ -109,7 +135,7 @@ export function AuthProvider({ children }) {
 
 
     return (
-        <AuthContext.Provider value={{ user, isAuthenticated, login, register, logout }}>{children}</AuthContext.Provider>
+        <AuthContext.Provider value={{ user, isAuthenticated, login, register, logout, verify2FA }}>{children}</AuthContext.Provider>
     )
 }
 

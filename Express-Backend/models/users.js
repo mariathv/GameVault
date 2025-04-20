@@ -28,13 +28,21 @@ const userSchema = new mongoose.Schema({
     },
     passwordConfirm: {
         type: String,
-        required: [true, "Please confirm your password"],
+        required: [function () { return this.isNew; }, "Please confirm your password"],
         validate: {
             validator: function (el) {
                 return el === this.password;
             },
             message: "Passwords are not the same"
         }
+    },
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
+    twoFactorEnabled: {
+        type: Boolean,
+        default: false
     },
     passwordChangedAt: Date
 });
@@ -59,3 +67,5 @@ userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
 
 const user = mongoose.model("user", userSchema, "user");
 module.exports = user;
+
+

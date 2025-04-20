@@ -5,6 +5,7 @@ const catchAsync = require("./../utils/catchAsync");
 const AppError = require("./../utils/appError");
 const bcrypt = require("bcryptjs");
 const mailController = require("./mail.controller")
+const TwoFactorCode = require("../models/twofactorcode")
 
 const signTokken = id => {
     console.log(process.env.JWT_SECRET);
@@ -12,6 +13,10 @@ const signTokken = id => {
         expiresIn: process.env.JWT_EXPIRES_IN,
     });
 }
+
+const generateVerificationCode = () => {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+};
 
 const authController = {
     register: catchAsync(async (req, res) => {
@@ -87,9 +92,50 @@ const authController = {
                 });
             }
 
+            console.log(existingUser);
+            console.log(existingUser.twoFactorEnabled);
+
+            if (existingUser.twoFactorEnabled) {
+                try {
+                    console.log("2fa checkk")
+                    const code = generateVerificationCode();
+
+                    await TwoFactorCode.deleteMany({ userId: existingUser._id });
+
+                    await TwoFactorCode.create({
+                        userId: existingUser._id,
+                        code
+                    });
+
+                    await mailController.send2FACode(existingUser.email, code);
+
+                    // Create a temporary token that only contains the user ID
+                    // This token will be used to identify the user during 2FA verification
+                    const tempToken = jwt.sign(
+                        { id: existingUser._id, require2FA: true },
+                        process.env.JWT_SECRET,
+                        { expiresIn: '30m' }
+                    );
+
+                    return res.status(200).json({
+                        message: 'Two-factor authentication required',
+                        tempToken,
+                        require2FA: true
+                    });
+                } catch (err) {
+                    console.log(err.message);
+                    if (!res.headersSent) {
+                        return res.status(500).json({
+                            status: "fail",
+                            message: "Something went wrong",
+                        });
+                    }
+                }
+            }
+
+
             const token = signTokken(existingUser._id);
 
-            // Clean user object for response
             const userObj = existingUser.toObject();
             delete userObj.password;
 
@@ -109,6 +155,142 @@ const authController = {
             });
         }
     }),
+    send2FAuthCode: async (req, res) => {
+        try {
+            // Get user ID from the temporary token
+            const authHeader = req.headers.authorization;
+            if (!authHeader || !authHeader.startsWith('Bearer ')) {
+                return res.status(401).json({ message: 'Unauthorized' });
+            }
+
+            const token = authHeader.split(' ')[1];
+            let decoded;
+
+            try {
+                decoded = jwt.verify(token, process.env.JWT_SECRET);
+            } catch (err) {
+                return res.status(401).json({ message: 'Invalid or expired token' });
+            }
+
+            if (!decoded.require2FA) {
+                return res.status(400).json({ message: 'Two-factor authentication not required' });
+            }
+
+            const user = await User.findById(decoded.id);
+            if (!user) {
+                return res.status(404).json({ message: 'User not found' });
+            }
+
+            // Generate and store new 2FA code
+            const code = generateVerificationCode();
+
+            // Delete any existing codes for this user
+            await TwoFactorCode.deleteMany({ userId: user._id });
+
+            await TwoFactorCode.create({
+                userId: user._id,
+                code
+            });
+
+            // Send code via email
+            const emailSent = await mailController.send2FACode(user.email, code);
+
+            if (!emailSent) {
+                return res.status(500).json({ message: 'Failed to send verification code' });
+            }
+
+            res.status(200).json({ message: 'Verification code sent successfully' });
+        } catch (error) {
+            console.error('Send 2FA code error:', error);
+            res.status(500).json({ message: 'Server error' });
+        }
+    },
+    verify2FA: async (req, res) => {
+        try {
+            const { code } = req.body;
+
+            console.log("code", code);
+            const codeStr = String(code);
+
+            const authHeader = req.headers.authorization;
+            if (!authHeader || !authHeader.startsWith('Bearer ')) {
+                return res.status(401).json({ message: 'Unauthorized' });
+            }
+
+
+            const token = authHeader.split(' ')[1];
+            console.log(token)
+            let decoded;
+
+            try {
+                decoded = jwt.verify(token, process.env.JWT_SECRET);
+            } catch (err) {
+                return res.status(401).json({ message: 'Invalid or expired token' });
+            }
+
+            if (!decoded.require2FA) {
+                return res.status(400).json({ message: 'Two-factor authentication not required' });
+            }
+
+            const userfound = await user.findById(decoded.id);
+            if (!userfound) {
+                return res.status(404).json({ message: 'User not found' });
+            }
+
+            const storedCode = await TwoFactorCode.findOne({ userId: userfound._id });
+            if (!storedCode) {
+                return res.status(400).json({ message: 'Verification code expired or not found' });
+            }
+
+            console.log(storedCode.code, codeStr, code)
+            if (storedCode.code !== codeStr) {
+                return res.status(401).json({ message: 'Invalid verification code' });
+            }
+            await TwoFactorCode.deleteOne({ _id: storedCode._id });
+
+            const fullToken = jwt.sign(
+                { id: userfound._id, email: userfound.email, role: userfound.role },
+                process.env.JWT_SECRET,
+                { expiresIn: '1d' }
+            );
+
+            const userObj = userfound.toObject();
+            delete userObj.password;
+
+            res.status(200).json({
+                message: 'Two-factor authentication successful',
+                status: "success",
+                token: fullToken,
+                data: {
+                    user: userObj,
+                },
+            });
+        } catch (error) {
+            console.error('Verify 2FA code error:', error);
+            res.status(500).json({ message: 'Server error' });
+        }
+    },
+    toggle2FA: async (req, res) => {
+        try {
+            const userId = req.user.id;
+
+            const userfound = await user.findById(userId);
+            if (!userfound) {
+                return res.status(404).json({ message: 'User not found' });
+            }
+
+            userfound.twoFactorEnabled = !userfound.twoFactorEnabled;
+            await userfound.save();
+
+            res.status(200).json({
+                message: `Two-factor authentication ${userfound.twoFactorEnabled ? 'enabled' : 'disabled'}`,
+                twoFactorEnabled: user.twoFactorEnabled
+            });
+        } catch (error) {
+            console.error('Toggle 2FA error:', error);
+            res.status(500).json({ message: 'Server error' });
+        }
+    },
     verifyEmail: catchAsync(async (req, res) => {
         try {
             console.log("verify email");

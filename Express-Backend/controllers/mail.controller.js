@@ -61,6 +61,23 @@ const mailController = {
             throw error;
         }
     },
+    send2FACode: async (email, code) => {
+        try {
+            const templatePath = path.join(__dirname, '../templates/2fa-code.html');
+            const templateContent = await fs.readFile(templatePath, 'utf8');
+            const template = handlebars.compile(templateContent);
+
+            const htmlContent = template({ code });
+
+            await sendMail(email, 'Your Verification Code', htmlContent, true);
+
+            console.log('2FA code email sent!');
+            return true;
+        } catch (error) {
+            console.error('Failed to send 2FA email:', error?.response?.data || error.message);
+            return false;
+        }
+    }
 
 
 
