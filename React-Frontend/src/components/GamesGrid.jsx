@@ -9,10 +9,12 @@ import { truncateTextWords } from "../utils/truncateText"
 import { useCart } from "@/src/contexts/cart-context"
 import { getDiscountedPrice } from "../utils/funcs"
 import { toSlug } from "../utils/slugconverter"
+import { useCurrency } from "../contexts/currency-context"
 
 const GamesGrid = ({ filteredGames, gridCol = 4, variant = "default", start = 0, end, limit }) => {
     const navigate = useNavigate()
     const { addToCart } = useCart()
+    const { currency, convertPrice } = useCurrency()
 
     const getGridClass = () => {
         if (variant === "wide") {
@@ -131,18 +133,19 @@ const GamesGrid = ({ filteredGames, gridCol = 4, variant = "default", start = 0,
                     <div className="flex-grow" />
 
                     <CardFooter className="flex items-center justify-between px-4 sm:px-4 md:px-6">
-                        <div className="flex items-center">
+                        <div className="flex items-center flex-wrap">
                             <span
-                                className={`text-sm sm:text-base md:text-lg font-bold ${game.isDiscount ? "line-through text-gray-500" : ""}`}
+                                className={`text-sm sm:text-base md:text-[16px] font-bold ${game.isDiscount ? "line-through text-gray-500" : ""}`}
                             >
-                                ${game.price}
+                                {convertPrice(game.price, 1)}
                             </span>
                             {game.isDiscount && (
-                                <span className="flex-1 text-sm sm:text-base md:text-lg font-bold ml-2 pr-2 sm:pr-4">
-                                    ${getDiscountedPrice(game.price, game.discountPercentage)}
+                                <span className="flex-1 text-sm sm:text-base md:text-[16px] font-bold ml-2 pr-2 sm:pr-4">
+                                    {convertPrice(getDiscountedPrice(game.price, game.discountPercentage), 1)}
                                 </span>
                             )}
                         </div>
+
 
                         <Button
                             className="bg-(--color-light-ed) text-(--color-alt-foreground) hover:bg-(--color-light-ed)/90 text-xs sm:text-sm"

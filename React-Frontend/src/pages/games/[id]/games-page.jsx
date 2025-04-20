@@ -9,13 +9,17 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useCart } from "@/src/contexts/cart-context"
+import { useCurrency } from "@/src/contexts/currency-context"
 import { SiStockx } from "react-icons/si"
 import { useAuth } from "@/src/contexts/auth-context"
 import { addToWishlist, removeFromWishlist, getWishlist, isGameInWishlist } from "@/src/hooks/useWishlist"
 import { toast } from 'sonner';
+
+
 export default function GamePage() {
     const { id } = useParams()
     const { addToCart } = useCart()
+    const { currency, convertPrice } = useCurrency()
     const { user } = useAuth()
     const [activeTab, setActiveTab] = useState("overview")
     const [activeScreenshot, setActiveScreenshot] = useState(0)
@@ -224,7 +228,6 @@ export default function GamePage() {
         )
     }
 
-    const discountedPrice = game.onSale ? game.price * (1 - game.discount / 100) : game.price
 
     return (
         <div className="min-h-screen bg-(--color-background)">
@@ -284,10 +287,10 @@ export default function GamePage() {
                                             <>
                                                 <div className="flex items-center gap-3">
                                                     <span className="text-white font-bold text-3xl sm:text-4xl">
-                                                        ${(game.price * (1 - game.discountPercentage / 100)).toFixed(2)}
+                                                        {convertPrice((game.price * (1 - game.discountPercentage / 100)), 2)}
                                                     </span>
                                                     <div className="flex flex-col">
-                                                        <span className="text-gray-400 line-through text-lg">${game.price.toFixed(2)}</span>
+                                                        <span className="text-gray-400 line-through text-lg">{convertPrice(game.price, 2)}</span>
                                                         <span className="text-green-400 font-bold">-{game.discountPercentage}%</span>
                                                     </div>
                                                 </div>
@@ -297,7 +300,7 @@ export default function GamePage() {
                                                 </div>
                                             </>
                                         ) : (
-                                            <span className="text-white font-bold text-3xl sm:text-4xl">${game.price.toFixed(2)}</span>
+                                            <span className="text-white font-bold text-3xl sm:text-4xl">{convertPrice(game.price, 2)}</span>
                                         )}
                                     </div>
                                 </div>
@@ -401,11 +404,11 @@ export default function GamePage() {
                                     <div className="flex flex-col gap-2">
                                         <div className="flex items-center gap-3">
                                             <span className="text-xl sm:text-2xl font-bold text-green-400">
-                                                ${(game.price * (1 - game.discountPercentage / 100)).toFixed(2)}
+                                                {convertPrice((game.price * (1 - game.discountPercentage / 100)), 2)}
                                             </span>
                                             <div className="flex flex-col">
                                                 <span className="text-md sm:text-lg line-through text-[#EDEDED]/60">
-                                                    ${game.price.toFixed(2)}
+                                                    {convertPrice(game.price, 2)}
                                                 </span>
                                                 <Badge className="bg-green-500">{game.discountPercentage}% OFF</Badge>
                                             </div>
@@ -417,7 +420,7 @@ export default function GamePage() {
                                     </div>
                                 ) : (
                                     <span className="text-xl sm:text-2xl font-bold text-(--color-light-ed)">
-                                        ${game.price.toFixed(2)}
+                                        {convertPrice(game.price, 2)}
                                     </span>
                                 )}
                             </div>

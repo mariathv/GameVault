@@ -9,11 +9,15 @@ import { useCart } from "@/src/contexts/cart-context";
 import { Input } from "@/components/ui/input"
 import { applyPromoCode } from "@/src/api/promos";
 import { toast } from 'sonner'
+import { useCurrency } from "@/src/contexts/currency-context";
+import { useAuth } from "@/src/contexts/auth-context";
 
 export default function CartPage() {
     const navigate = useNavigate();
     const { cart, updateQuantity, removeFromCart, clearCart, applyPromo } = useCart();
     const [promoCode, setPromoCode] = useState("");
+    const { currency, convertPrice } = useCurrency()
+    const { isAuthenticated } = useAuth();
 
     const handleQuantityChange = (gameId, newQuantity) => {
         const quantity = parseInt(newQuantity, 10);
@@ -23,11 +27,15 @@ export default function CartPage() {
     };
 
     const applyPromoCodeHandler = async () => {
+        if (!isAuthenticated) {
+            toast.error("Login to use Promo Code!")
+            return
+        }
         if (!promoCode) return;
 
         const reqApply = await applyPromoCode(promoCode, cart.total);
         if (reqApply.status === true) {
-            toast.success(`Promo Code "${promoCode}" Applied Successfully. Discount: $${reqApply.discount}.`);
+            toast.success(`Promo Code "${promoCode}" Applied Successfully. Discount: ${convertPrice(reqApply.discount)}.`);
             applyPromo({
                 promoCode: reqApply.promoCode,
                 discount: reqApply.discount,
@@ -76,17 +84,17 @@ export default function CartPage() {
                                                 <div className="mt-2 sm:mt-0 text-right">
                                                     {game.isDiscount ? (
                                                         <div>
-                                                            <span className="line-through text-[#EDEDED]/60 text-sm mr-2">${game.price.toFixed(2)}</span>
-                                                            <span className="text-green-400 font-bold">${(game.price * (1 - game.discountPercentage / 100)).toFixed(2)}</span>
+                                                            <span className="line-through text-[#EDEDED]/60 text-sm mr-2">{convertPrice(game.price)}</span>
+                                                            <span className="text-green-400 font-bold">{convertPrice((game.price * (1 - game.discountPercentage / 100)))}</span>
                                                         </div>
                                                     ) : (
-                                                        <span className="font-bold">${game.price?.toFixed(2)}</span>
+                                                        <span className="font-bold">{convertPrice(game.price)}</span>
                                                     )}
                                                 </div>
                                             </div>
                                             <div className="flex items-center justify-between mt-4">
                                                 <div className="flex items-center">
-                                                    <span className="text-sm mr-2">Qty:</span>
+                                                    <span className="text-sm mr-2">Quantity:</span>
                                                     <Input
                                                         type="number"
                                                         min="1"
@@ -117,12 +125,12 @@ export default function CartPage() {
                             <Card className="border-(--color-light-ed)/10 bg-(--color-light-ed)/5 text-(--color-light-ed) sticky top-24">
                                 <CardHeader><CardTitle>Order Summary</CardTitle></CardHeader>
                                 <CardContent className="space-y-4">
-                                    <div className="flex justify-between"><span className="text-(--color-light-ed)/80">Subtotal</span><span>${cart.subtotal.toFixed(2)}</span></div>
-                                    <div className="flex justify-between"><span className="text-(--color-light-ed)/80">Tax</span><span>${cart.tax.toFixed(2)}</span></div>
+                                    <div className="flex justify-between"><span className="text-(--color-light-ed)/80">Subtotal</span><span>{convertPrice(cart.subtotal)}</span></div>
+                                    <div className="flex justify-between"><span className="text-(--color-light-ed)/80">Tax</span><span>{convertPrice(cart.tax)}</span></div>
                                     {cart.discount > 0 && (
                                         <div className="flex justify-between text-green-400">
                                             <span>Promo Discount</span>
-                                            <span>- ${cart.discount.toFixed(2)}</span>
+                                            <span>- {convertPrice(cart.discount)}</span>
                                         </div>
                                     )}
 
@@ -131,7 +139,7 @@ export default function CartPage() {
                                         <Button variant="outline" className="border-(--color-light-ed)/10 text-(--color-light-ed) hover:bg-(--color-light-ed)/10" onClick={() => applyPromoCodeHandler()}>Apply</Button>
                                     </div>
                                     <Separator className="bg-(--color-light-ed)/10" />
-                                    <div className="flex justify-between text-lg font-bold"><span>Total</span><span>${cart.total.toFixed(2)}</span></div>
+                                    <div className="flex justify-between text-lg font-bold"><span>Total</span><span>{convertPrice(cart.total)}</span></div>
                                 </CardContent>
                                 <CardFooter>
                                     <Button className="w-full bg-(--color-light-ed) text-(--color-alt-foreground) hover:bg-(--color-light-ed)/90" onClick={handleCheckout}>Checkout <ArrowRight className="ml-2 h-4 w-4" /></Button>

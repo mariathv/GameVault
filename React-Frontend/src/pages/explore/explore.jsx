@@ -10,10 +10,13 @@ import { getGameArtworks } from "@/src/api/game"
 import GameCardWide from "@/src/components/wide-game-card"
 import { toSlug } from "@/src/utils/slugconverter"
 import { getDiscountedPrice } from "@/src/utils/funcs"
+import { useCurrency } from "@/src/contexts/currency-context"
+import ExploreGameCard from "@/src/components/exploreGameCard"
 
 export default function ExplorePage() {
     const { id, type } = useParams()
     const navigate = useNavigate()
+    const { currency, convertPrice } = useCurrency()
     const location = useLocation()
     const initialMount = useRef(true)
     const searchTimeoutRef = useRef(null)
@@ -439,10 +442,11 @@ export default function ExplorePage() {
                     className="w-full accent-blue-500"
                 />
                 <div className="flex justify-between text-(--color-foreground)/80 mt-2">
-                    <span>0$</span>
-                    <span>{priceRange}$</span>
+                    <span>{convertPrice(0)}</span>
+                    <span>{convertPrice(priceRange)}</span>
                 </div>
             </div>
+
 
             <div className="mb-4 bg-(--color-background) rounded-lg overflow-hidden">
                 <button
@@ -598,7 +602,7 @@ export default function ExplorePage() {
                                             <h2 className="text-xl sm:text-2xl md:text-4xl font-bold text-white mb-2 sm:mb-4">
                                                 {featured.name}
                                             </h2>
-                                            <p className="text-lg sm:text-xl md:text-2xl font-bold text-white">{featured.isDiscount ? (getDiscountedPrice(featured.price, featured.discountPercentage)) : (featured.price)}$</p>
+                                            <p className="text-lg sm:text-xl md:text-2xl font-bold text-white">{featured.isDiscount ? (convertPrice(getDiscountedPrice(featured.price, featured.discountPercentage), 2)) : (convertPrice(featured.price))}</p>
                                         </div>
                                         <div className="mt-4 sm:mt-0">
                                             <Link to={`/games/${featured.id}/${featured.slug || toSlug(featured.name)}`}>
@@ -631,45 +635,7 @@ export default function ExplorePage() {
                             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
                                 {games.map((game) => (
                                     <Link to={`/games/${game.id}/${game.slug || toSlug(game.name)}`} key={game.id}>
-                                        <div className="group cursor-pointer">
-                                            <div className="relative">
-                                                <img
-                                                    src={game.image || game.cover_url}
-                                                    alt={game.title}
-                                                    className="w-full aspect-[3/4] object-cover rounded-lg"
-                                                />
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
-                                                <div className="absolute bottom-0 left-0 right-0 pb-4 flex flex-col gap-2">
-                                                    <div className="flex items-center">
-                                                        <span className={`bg-[#1A1F2E] px-4 py-1 rounded-r-full text-sm`}>
-                                                            <span className={` ${game.isDiscount ? "line-through text-gray-500" : "text-white"}`}>
-
-                                                                {game.price}$
-                                                            </span>
-                                                            {game.isDiscount &&
-                                                                <span className=" text-sm sm:text-sm md:text-sm font-bold ml-2 pr-2 sm:pr-4 text-white">
-                                                                    ${getDiscountedPrice(game.price, game.discountPercentage)}
-                                                                </span>
-                                                            }
-                                                        </span>
-
-                                                    </div>
-                                                    <h3 className="text-white font-bold pl-2 text-sm sm:text-base line-clamp-1">{game.name}</h3>
-                                                </div>
-                                                {game.isNew && (
-                                                    <span className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs">
-                                                        NEW
-                                                    </span>
-                                                )}
-                                                {game.isDiscount && (
-                                                    <span className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs flex items-center">
-                                                        ON SALE
-                                                        <Tag className="ml-1 w-3 h-3" />
-                                                    </span>
-
-                                                )}
-                                            </div>
-                                        </div>
+                                        <ExploreGameCard game={game} />
                                     </Link>
                                 ))}
                             </div>
