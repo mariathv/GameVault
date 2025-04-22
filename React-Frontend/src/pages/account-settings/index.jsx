@@ -1,17 +1,100 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { Shield, Lock, User, Bell, Eye, CreditCard, HardDrive, LogOut, Check, Save } from "lucide-react"
+import { Shield, Lock, User, Bell, CreditCard, LogOut, Check, Save } from "lucide-react"
 import { useAuth } from "@/src/contexts/auth-context"
 import { Switch } from "@/components/ui/switch"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
+// Replace fetchData with apiRequest
+import { apiRequest } from "@/src/hooks/api/api-gamevault"
+
+// Add these imports at the top of the file
+import { getUserInventory } from "@/src/api/inventory"
+import { getWishlist } from "@/src/hooks/useWishlist"
+
+// Account Statistics Component
+const AccountStatistics = ({ userId }) => {
+  const [stats, setStats] = useState({
+    gamesOwned: 0,
+    wishlistItems: 0,
+    totalSpending: 0,
+    isLoading: true,
+  })
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        // Fetch inventory data
+        const inventoryData = await getUserInventory(userId)
+
+        // Fetch wishlist data
+        const wishlistData = await getWishlist(userId)
+
+        // Calculate statistics
+        const gamesOwned =
+          inventoryData?.inventory?.reduce((total, order) => total + (order.games?.length || 0), 0) || 0
+
+        const wishlistItems = wishlistData?.wishlist?.games?.length || 0
+
+        // Calculate total spending from all orders
+        const totalSpending =
+          inventoryData?.inventory?.reduce((total, order) => total + (order.totalAmount || 0), 0) || 0
+
+        setStats({
+          gamesOwned,
+          wishlistItems,
+          totalSpending,
+          isLoading: false,
+        })
+      } catch (error) {
+        console.error("Error fetching account statistics:", error)
+        setStats((prev) => ({ ...prev, isLoading: false }))
+      }
+    }
+
+    if (userId) {
+      fetchStats()
+    }
+  }, [userId])
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="bg-[#2a3349] p-4 rounded-lg">
+        <p className="text-gray-400 text-sm">Games Owned</p>
+        {stats.isLoading ? (
+          <div className="h-8 w-16 bg-[#3a4359] animate-pulse rounded mt-1"></div>
+        ) : (
+          <p className="text-2xl font-bold text-white">{stats.gamesOwned}</p>
+        )}
+      </div>
+      <div className="bg-[#2a3349] p-4 rounded-lg">
+        <p className="text-gray-400 text-sm">Wishlist Items</p>
+        {stats.isLoading ? (
+          <div className="h-8 w-16 bg-[#3a4359] animate-pulse rounded mt-1"></div>
+        ) : (
+          <p className="text-2xl font-bold text-white">{stats.wishlistItems}</p>
+        )}
+      </div>
+      <div className="bg-[#2a3349] p-4 rounded-lg">
+        <p className="text-gray-400 text-sm">Total Spending</p>
+        {stats.isLoading ? (
+          <div className="h-8 w-16 bg-[#3a4359] animate-pulse rounded mt-1"></div>
+        ) : (
+          <p className="text-2xl font-bold text-white">${stats.totalSpending.toFixed(2)}</p>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default function AccountSettingsPage() {
   const navigate = useNavigate()
-  const { user, logout } = useAuth()
+  // Make sure to destructure updateUser from useAuth
+  const { user, logout, updateUser } = useAuth()
   const [activeTab, setActiveTab] = useState("profile")
   const [notification, setNotification] = useState(null)
   const [isEditing, setIsEditing] = useState(false)
@@ -79,31 +162,103 @@ export default function AccountSettingsPage() {
     showNotification("Notification setting updated", "success")
   }
 
-  const handleSaveProfile = () => {
-    // Here you would implement the API call to update the user profile
-    showNotification("Profile updated successfully", "success")
-    setIsEditing(false)
+  // Update the handleSaveProfile function to use apiRequest
+  const handleSaveProfile = async () => {
+    try {
+      setNotification(null)
+
+      // Validate input
+      if (!formData.username.trim()) {
+        showNotification("Username cannot be empty", "error")
+        return
+      }
+
+      if (!formData.email.trim() || !/\S+@\S+\.\S+/.test(formData.email)) {
+        showNotification("Please enter a valid email address", "error")
+        return
+      }
+
+      // Make API call to update profile
+      const response = await apiRequest(
+        "auth/update-profile",
+        {
+          username: formData.username,
+          email: formData.email,
+        },
+        "PATCH",
+      )
+
+      if (response.status === "success") {
+        // Update user context with new data
+        if (response.data && response.data.user) {
+          updateUser(response.data.user)
+        }
+
+        showNotification("Profile updated successfully", "success")
+        setIsEditing(false)
+      } else {
+        showNotification(response.message || "Failed to update profile", "error")
+      }
+    } catch (error) {
+      console.error("Profile update error:", error)
+      showNotification("An error occurred while updating your profile", "error")
+    }
   }
 
-  const handleChangePassword = () => {
-    if (formData.newPassword !== formData.confirmPassword) {
-      showNotification("New passwords don't match", "error")
-      return
-    }
+  // Update the handleChangePassword function to use apiRequest
+  const handleChangePassword = async () => {
+    try {
+      setNotification(null)
 
-    if (formData.newPassword.length < 8) {
-      showNotification("Password must be at least 8 characters", "error")
-      return
-    }
+      // Validate input
+      if (!formData.currentPassword) {
+        showNotification("Current password is required", "error")
+        return
+      }
 
-    // Here you would implement the API call to change the password
-    showNotification("Password changed successfully", "success")
-    setFormData({
-      ...formData,
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    })
+      if (formData.newPassword !== formData.confirmPassword) {
+        showNotification("New passwords don't match", "error")
+        return
+      }
+
+      if (formData.newPassword.length < 8) {
+        showNotification("Password must be at least 8 characters", "error")
+        return
+      }
+
+      // Make API call to change password
+      const response = await apiRequest(
+        "auth/change-password",
+        {
+          currentPassword: formData.currentPassword,
+          newPassword: formData.newPassword,
+          confirmPassword: formData.confirmPassword,
+        },
+        "PATCH",
+      )
+
+      if (response.status === "success") {
+        // Update token if a new one is provided - use the correct key
+        if (response.token) {
+          localStorage.setItem("gamevault_token", response.token)
+        }
+
+        showNotification("Password changed successfully", "success")
+
+        // Clear password fields
+        setFormData({
+          ...formData,
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+        })
+      } else {
+        showNotification(response.message || "Failed to change password", "error")
+      }
+    } catch (error) {
+      console.error("Password change error:", error)
+      showNotification("An error occurred while changing your password", "error")
+    }
   }
 
   const handle2FASetup = () => {
@@ -157,13 +312,12 @@ export default function AccountSettingsPage() {
 
   return (
     <div className="min-h-screen bg-(--color-background)">
-
-
       {/* Notification component */}
       {notification && (
         <div
-          className={`fixed top-4 right-4 z-50 p-4 rounded-md shadow-md ${notification.type === "error" ? "bg-red-500" : "bg-green-500"
-            } text-white`}
+          className={`fixed top-4 right-4 z-50 p-4 rounded-md shadow-md ${
+            notification.type === "error" ? "bg-red-500" : "bg-green-500"
+          } text-white`}
         >
           {notification.message}
         </div>
@@ -189,10 +343,11 @@ export default function AccountSettingsPage() {
               <nav className="space-y-1">
                 <button
                   onClick={() => setActiveTab("profile")}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-md transition ${activeTab === "profile"
-                    ? "bg-[#2a3349] text-white"
-                    : "text-gray-400 hover:bg-[#2a3349]/50 hover:text-white"
-                    }`}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-md transition ${
+                    activeTab === "profile"
+                      ? "bg-[#2a3349] text-white"
+                      : "text-gray-400 hover:bg-[#2a3349]/50 hover:text-white"
+                  }`}
                 >
                   <User className="h-5 w-5" />
                   <span>Profile</span>
@@ -200,10 +355,11 @@ export default function AccountSettingsPage() {
 
                 <button
                   onClick={() => setActiveTab("security")}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-md transition ${activeTab === "security"
-                    ? "bg-[#2a3349] text-white"
-                    : "text-gray-400 hover:bg-[#2a3349]/50 hover:text-white"
-                    }`}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-md transition ${
+                    activeTab === "security"
+                      ? "bg-[#2a3349] text-white"
+                      : "text-gray-400 hover:bg-[#2a3349]/50 hover:text-white"
+                  }`}
                 >
                   <Shield className="h-5 w-5" />
                   <span>Security</span>
@@ -222,10 +378,11 @@ export default function AccountSettingsPage() {
 
                 <button
                   onClick={() => setActiveTab("notifications")}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-md transition ${activeTab === "notifications"
-                    ? "bg-[#2a3349] text-white"
-                    : "text-gray-400 hover:bg-[#2a3349]/50 hover:text-white"
-                    }`}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-md transition ${
+                    activeTab === "notifications"
+                      ? "bg-[#2a3349] text-white"
+                      : "text-gray-400 hover:bg-[#2a3349]/50 hover:text-white"
+                  }`}
                 >
                   <Bell className="h-5 w-5" />
                   <span>Notifications</span>
@@ -233,16 +390,15 @@ export default function AccountSettingsPage() {
 
                 <button
                   onClick={() => setActiveTab("payment")}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-md transition ${activeTab === "payment"
-                    ? "bg-[#2a3349] text-white"
-                    : "text-gray-400 hover:bg-[#2a3349]/50 hover:text-white"
-                    }`}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-md transition ${
+                    activeTab === "payment"
+                      ? "bg-[#2a3349] text-white"
+                      : "text-gray-400 hover:bg-[#2a3349]/50 hover:text-white"
+                  }`}
                 >
                   <CreditCard className="h-5 w-5" />
                   <span>Payment Methods</span>
                 </button>
-
-
 
                 <button
                   onClick={logout}
@@ -332,21 +488,7 @@ export default function AccountSettingsPage() {
 
                   <div className="mt-8 pt-8 border-t border-[#2a3349]">
                     <h3 className="text-xl font-bold text-white mb-4">Account Statistics</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                      <div className="bg-[#2a3349] p-4 rounded-lg">
-                        <p className="text-gray-400 text-sm">Games Owned</p>
-                        <p className="text-2xl font-bold text-white">{user.gamesCount || 0}</p>
-                      </div>
-                      <div className="bg-[#2a3349] p-4 rounded-lg">
-                        <p className="text-gray-400 text-sm">Wishlist Items</p>
-                        <p className="text-2xl font-bold text-white">{user.wishlistCount || 0}</p>
-                      </div>
-                      <div className="bg-[#2a3349] p-4 rounded-lg">
-                        <p className="text-gray-400 text-sm">Total Spending</p>
-                        <p className="text-2xl font-bold text-white">{user.wishlistCount || 0}</p>
-                      </div>
-
-                    </div>
+                    <AccountStatistics userId={user._id} />
                   </div>
                 </div>
               )}
@@ -513,116 +655,6 @@ export default function AccountSettingsPage() {
                 </div>
               )}
 
-              {/* Privacy Tab */}
-              {/* {activeTab === "privacy" && (
-                <div className="p-6">
-                  <h2 className="text-2xl font-bold text-white mb-6">Privacy Settings</h2>
-
-                  <div className="space-y-6">
-                    <div className="bg-[#0f1623] p-6 rounded-lg">
-                      <h3 className="text-xl font-bold text-white mb-4">Profile Privacy</h3>
-
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-white">Show Online Status</p>
-                            <p className="text-gray-400 text-sm">Allow others to see when you're online</p>
-                          </div>
-                          <Switch
-                            checked={privacySettings.showOnlineStatus}
-                            onCheckedChange={() => handlePrivacyToggle("showOnlineStatus")}
-                            className="data-[state=checked]:bg-white"
-                          />
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-white">Show Game Playtime</p>
-                            <p className="text-gray-400 text-sm">Allow others to see how long you've played games</p>
-                          </div>
-                          <Switch
-                            checked={privacySettings.showPlaytime}
-                            onCheckedChange={() => handlePrivacyToggle("showPlaytime")}
-                            className="data-[state=checked]:bg-white"
-                          />
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-white">Public Wishlist</p>
-                            <p className="text-gray-400 text-sm">Allow others to see games in your wishlist</p>
-                          </div>
-                          <Switch
-                            checked={privacySettings.showWishlist}
-                            onCheckedChange={() => handlePrivacyToggle("showWishlist")}
-                            className="data-[state=checked]:bg-white"
-                          />
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-white">Public Game Library</p>
-                            <p className="text-gray-400 text-sm">Allow others to see games you own</p>
-                          </div>
-                          <Switch
-                            checked={privacySettings.showLibrary}
-                            onCheckedChange={() => handlePrivacyToggle("showLibrary")}
-                            className="data-[state=checked]:bg-white"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="bg-[#0f1623] p-6 rounded-lg">
-                      <h3 className="text-xl font-bold text-white mb-4">Social Privacy</h3>
-
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-white">Allow Friend Requests</p>
-                            <p className="text-gray-400 text-sm">Allow other users to send you friend requests</p>
-                          </div>
-                          <Switch
-                            checked={privacySettings.allowFriendRequests}
-                            onCheckedChange={() => handlePrivacyToggle("allowFriendRequests")}
-                            className="data-[state=checked]:bg-white"
-                          />
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-white">Share Activity Feed</p>
-                            <p className="text-gray-400 text-sm">Share your gaming activity with friends</p>
-                          </div>
-                          <Switch
-                            checked={privacySettings.shareActivityFeed}
-                            onCheckedChange={() => handlePrivacyToggle("shareActivityFeed")}
-                            className="data-[state=checked]:bg-white"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="bg-[#0f1623] p-6 rounded-lg">
-                      <h3 className="text-xl font-bold text-white mb-4">Data Privacy</h3>
-
-                      <div className="space-y-4">
-                        <Button variant="outline" className="border-[#2a3349] text-white hover:bg-[#2a3349]">
-                          Download My Data
-                        </Button>
-
-                        <Button
-                          variant="outline"
-                          className="border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300"
-                        >
-                          Delete Account
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )} */}
-
               {/* Notifications Tab */}
               {activeTab === "notifications" && (
                 <div className="p-6">
@@ -644,8 +676,6 @@ export default function AccountSettingsPage() {
                             className="data-[state=checked]:bg-white"
                           />
                         </div>
-
-
                       </div>
                     </div>
 
@@ -653,7 +683,6 @@ export default function AccountSettingsPage() {
                       <h3 className="text-xl font-bold text-white mb-4">Notification Types</h3>
 
                       <div className="space-y-4">
-
                         <div className="flex items-center justify-between">
                           <div>
                             <p className="text-white">Special Offers</p>
@@ -738,13 +767,9 @@ export default function AccountSettingsPage() {
                         Edit Billing Address
                       </Button>
                     </div>
-
-
                   </div>
                 </div>
               )}
-
-
             </div>
           </div>
         </div>
