@@ -1,0 +1,73 @@
+@import "tailwindcss";
+
+@layer base {
+    :root {
+        --color-test: #aab9ff;
+        --color-background: hsl(0 0% 100%);
+        --color-background-secondary: #dcdcdc;
+        --color-background-t: #d0d2d6;
+        --color-secondary-background: hsl(210 33% 13%);
+        --color-foreground: hsl(210, 38%, 8%);
+        --color-alt-foreground: hsl(0, 0%, 90%);
+        --color-card: hsl(0 0% 96%);
+        --color-card-foreground: hsl(240 10% 3.9%);
+        --color-popover: hsl(0 0% 100%);
+        --color-popover-foreground: hsl(240 10% 3.9%);
+        --color-primary: hsl(210 33% 13%);
+        --color-primary-foreground: hsl(0 0% 93%);
+        --color-secondary: hsl(240 4.8% 95.9%);
+        --color-secondary-foreground: hsl(240 5.9% 10%);
+        --color-muted: hsl(240 4.8% 90%);
+        --color-muted-foreground: hsl(240 3.8% 46.1%);
+        --color-accent: hsl(240 4.8% 95.9%);
+        --color-accent-alt: hsl(191 29% 25%);
+        --color-accent-foreground: hsl(240 5.9% 10%);
+        --color-destructive: hsl(0 84.2% 60.2%);
+        --color-destructive-foreground: hsl(0 0% 98%);
+        --color-border: hsl(240 5.9% 90%);
+        --color-input: hsl(240 5.9% 90%);
+        --color-ring: hsl(240 5.9% 10%);
+        --radius-base: 0.5rem;
+        --color-light-ed: hsl(210, 22%, 19%);
+        --card: 240 10% 3.9%;
+        --card-foreground: 0 0% 98%;
+        --popover: 240 10% 3.9%;
+        --popover-foreground: 0 0% 98%;
+        --color-accent-primary: #546885;
+        --color-accent-secondary: #33BCFA;
+    }
+
+    .dark {
+        --color-background: hsl(210 38% 8%);
+        --color-background-secondary: #080C10;
+        --color-background-t: #1D2127;
+        --color-foreground: hsl(0 0% 93%);
+        --color-alt-foreground: hsl(240 10% 3.9%);
+        --color-card: hsl(210 33% 9%);
+        --color-card-foreground: hsl(0 0% 93%);
+        --color-popover: hsl(210 33% 13%);
+        --color-popover-foreground: hsl(0 0% 93%);
+        --color-primary: hsl(210 33% 13%);
+        --color-primary-foreground: hsl(0 0% 93%);
+        --color-secondary: hsl(240 3.7% 15.9%);
+        --color-secondary-foreground: hsl(0 0% 98%);
+        --color-secondary-background: hsl(0 0% 100%);
+        --color-muted: hsl(210 33% 16%);
+        --color-muted-foreground: hsl(240 5% 64.9%);
+        --color-accent: hsl(225 40% 22%);
+        --color-accent-alt: hsl(191 29% 25%);
+        --color-accent-foreground: hsl(0 0% 98%);
+        --color-destructive: hsl(0 62.8% 30.6%);
+        --color-destructive-foreground: hsl(0 0% 98%);
+        --color-border: hsl(0 0% 93% / 0.1);
+        --color-input: hsl(240 3.7% 15.9%);
+        --color-ring: hsl(240 4.9% 83.9%);
+        --color-light-ed: hsl(0, 0%, 93%);
+        --card: 240 10% 3.9%;
+        --card-foreground: 0 0% 98%;
+        --popover: 240 10% 3.9%;
+        --popover-foreground: 0 0% 98%;
+        --color-accent-primary: #546885;
+        --color-accent-secondary: #33BCFA;
+    }
+}

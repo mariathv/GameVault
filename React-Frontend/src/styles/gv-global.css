@@ -1,0 +1,176 @@
+.bg-image-dark {
+    background-image: url('https://i.ibb.co/pjW3NFLz/pxfuel.jpg');
+    /* Replace with your image path */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.bg-image-dark::after {
+    content: '';
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    /* Adjust the opacity as needed */
+    z-index: 1;
+}
+
+/* Optional: Content inside stays above the overlay */
+.bg-image-dark>* {
+    position: relative;
+    z-index: 2;
+}
+
+.bg-image-card {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: scroll;
+    /* ✅ Moves with scroll */
+    position: relative;
+}
+
+.bg-image-card::after {
+    position: absolute;
+    content: '';
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1;
+}
+
+.bg-image-card>* {
+    position: relative;
+    z-index: 2;
+}
+
+
+.bg-image-dark-blend {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+        url('https://i.ibb.co/pjW3NFLz/pxfuel.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-blend-mode: darken;
+}
+
+.gradient-border {
+    position: relative;
+    border-radius: 0.5rem;
+}
+
+.gradient-border::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 0.5rem;
+    padding: 2px;
+    background: linear-gradient(to right, #343c5f, #1a1e98);
+    -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+}
+
+.loader-dots,
+.loader-dots:before,
+.loader-dots:after {
+    border-radius: 50%;
+    width: 2.5em;
+    height: 2.5em;
+    animation-fill-mode: both;
+    animation: bblFadInOut 1.8s infinite ease-in-out;
+}
+
+.loader-dots {
+    font-size: 3px;
+    position: relative;
+    text-indent: -9999em;
+    transform: translateZ(0);
+    animation-delay: -0.16s;
+}
+
+.loader-dots:before,
+.loader-dots:after {
+    content: '';
+    position: absolute;
+    top: 0;
+}
+
+.loader-dots:before {
+    left: -3.5em;
+    animation-delay: -0.32s;
+}
+
+.loader-dots:after {
+    left: 3.5em;
+}
+
+@keyframes bblFadInOut {
+
+    0%,
+    80%,
+    100% {
+        box-shadow: 0 2.5em 0 -1.3em
+    }
+
+    40% {
+        box-shadow: 0 2.5em 0 0
+    }
+}
+
+/* HTML: <div class="loader"></div> */
+.loader-box {
+    width: 85px;
+    height: 25px;
+    --g1: conic-gradient(from 90deg at left 3px top 3px, #0000 90deg, #fff 0);
+    --g2: conic-gradient(from -90deg at bottom 3px right 3px, #0000 90deg, #fff 0);
+    background: var(--g1), var(--g1), var(--g1), var(--g2), var(--g2), var(--g2);
+    background-position: left, center, right;
+    background-repeat: no-repeat;
+    animation: l8 1s infinite;
+}
+
+@keyframes l8 {
+    0% {
+        background-size: 25px 100%, 25px 100%, 25px 100%
+    }
+
+    20% {
+        background-size: 25px 50%, 25px 100%, 25px 100%
+    }
+
+    40% {
+        background-size: 25px 50%, 25px 50%, 25px 100%
+    }
+
+    60% {
+        background-size: 25px 100%, 25px 50%, 25px 50%
+    }
+
+    80% {
+        background-size: 25px 100%, 25px 100%, 25px 50%
+    }
+
+    100% {
+        background-size: 25px 100%, 25px 100%, 25px 100%
+    }
+}
+
+
+.fade-img::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 100%);
+    z-index: 1;
+}
