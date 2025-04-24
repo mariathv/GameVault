@@ -209,6 +209,10 @@ const authController = {
         try {
             const { code } = req.body;
 
+            if(!code){
+                return res.status(401).json({ message: 'Error Verifying Token' });
+            }
+
             console.log("code", code);
             const codeStr = String(code);
 
@@ -439,10 +443,19 @@ const authController = {
             token = req.headers.authorization.split(" ")[1];
         }
 
+        
+
         if (!token) {
             return next(new AppError("You are not logged in! Please login in to get access", 401));
         }
         const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+        if (decoded.require2FA) {
+            return res.status(200).json({
+                status: "pending",
+                require2FA: true,
+                message: "Two-factor authentication required"
+            });
+        }
 
         const freshUser = await user.findById(decoded.id)
         if (!freshUser) {

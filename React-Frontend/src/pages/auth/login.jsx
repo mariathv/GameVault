@@ -33,6 +33,7 @@ export default function LoginPage() {
                 return;
             }
             if (!resp.twoFactorEnabled) {
+                console.log("reererererer --------------------");
                 toast.success('Login Successful');
                 if (resp.role === "admin") {
                     navigate("/admin");

@@ -29,16 +29,28 @@ export function AuthProvider({ children }) {
                 setLoading(false);
                 return;
             }
-
+    
             try {
                 const response = await apiRequest("auth/token-verify", {});
-
+                
+                // Check if this is a 2FA token
+                if (response.require2FA) {
+                    // Only redirect to 2FA page if not already there
+                    if (location.pathname !== "/two-factor-auth") {
+                        navigate("/two-factor-auth");
+                    }
+                    setLoading(false);
+                    return;
+                }
+    
                 if (response.status === "success" && response.data?.user) {
                     setUser(response.data.user);
                     setIsAuthenticated(true);
                     localStorage.setItem("gamevault_user", JSON.stringify(response.data.user));
                     
                     const authPages = ['/login', '/register', '/two-factor-auth'];
+                    
+                    // Only redirect if on an auth page
                     if (authPages.includes(location.pathname)) {
                         if (response.data.user.role === "admin") {
                             navigate("/admin");
@@ -46,6 +58,7 @@ export function AuthProvider({ children }) {
                             navigate("/");
                         }
                     }
+                    // Otherwise, stay on the current page
                 } else {
                     setUser(null);
                     setIsAuthenticated(false);
@@ -62,7 +75,7 @@ export function AuthProvider({ children }) {
                 setLoading(false);
             }
         };
-
+    
         initializeAuth();
     }, [location.pathname, navigate]);
 
