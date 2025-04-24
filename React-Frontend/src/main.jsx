@@ -34,7 +34,7 @@ import CheckoutPage from './pages/checkout/checkout';
 import Inventory from './pages/inventory/inventory';
 import Help from './pages/admin/Help';
 import BlockAdmin from './components/BlockAdmin';
-import CustomerSupport from './pages/customer-support/customersupport';
+import CustomerSupport from './pages/customer-support/CustomerSupport';
 
 import ScrollToTop from './utils/scrollToTop';
 import VerifyEmail from './pages/auth/verify';
