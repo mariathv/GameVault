@@ -104,7 +104,7 @@ export default function Header() {
                     {/* Logo */}
                     <Link to="/" className="text-xl sm:text-2xl font-bold text-(--color-foreground) mr-4 sm:mr-10 flex-shrink-0">
                         <div className="flex items-center">
-                            <img src="https://pixeldrain.com/api/file/DktQMdhr" className="w-8 sm:w-10" alt="GameVault Logo" />
+                            <img src="https://i.ibb.co/JWDSdNGH/1.png" className="w-8 sm:w-10" alt="GameVault Logo" />
                             <h1 className="text-(--color-accent-secondary)">Game</h1>Vault
                         </div>
                     </Link>
