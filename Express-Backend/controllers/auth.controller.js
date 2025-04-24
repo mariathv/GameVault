@@ -270,6 +270,117 @@ const authController = {
             res.status(500).json({ message: 'Server error' });
         }
     },
+    updateProfile: catchAsync(async (req, res) => {
+        try {
+          const userId = req.user.id
+          const { username, email } = req.body
+    
+          if (!username && !email) {
+            return res.status(400).json({
+              status: "fail",
+              message: "Please provide at least one field to update",
+            })
+          }
+    
+          if (email && email !== req.user.email) {
+            const existingUser = await user.findOne({ email, _id: { $ne: userId } })
+            if (existingUser) {
+              return res.status(400).json({
+                status: "fail",
+                message: "Email is already in use",
+              })
+            }
+          }
+    
+          const updatedUser = await user.findByIdAndUpdate(
+            userId,
+            {
+              ...(username && { username }),
+              ...(email && { email }),
+            },
+            { new: true, runValidators: true },
+          )
+    
+          if (!updatedUser) {
+            return res.status(404).json({
+              status: "fail",
+              message: "User not found",
+            })
+          }
+    
+          const userObj = updatedUser.toObject()
+          delete userObj.password
+    
+          res.status(200).json({
+            status: "success",
+            data: {
+              user: userObj,
+            },
+          })
+        } catch (err) {
+          console.error("Update profile error:", err)
+          res.status(500).json({
+            status: "fail",
+            message: "Something went wrong",
+          })
+        }
+      }),
+    
+      changePassword: catchAsync(async (req, res) => {
+        try {
+          const userId = req.user.id
+          const { currentPassword, newPassword, confirmPassword } = req.body
+    
+          if (!currentPassword || !newPassword || !confirmPassword) {
+            return res.status(400).json({
+              status: "fail",
+              message: "Please provide current password, new password, and confirm password",
+            })
+          }
+    
+          if (newPassword !== confirmPassword) {
+            return res.status(400).json({
+              status: "fail",
+              message: "New password and confirm password do not match",
+            })
+          }
+    
+          const currentUser = await user.findById(userId).select("+password")
+          if (!currentUser) {
+            return res.status(404).json({
+              status: "fail",
+              message: "User not found",
+            })
+          }
+    
+          const isPasswordCorrect = await bcrypt.compare(currentPassword, currentUser.password)
+          if (!isPasswordCorrect) {
+            return res.status(401).json({
+              status: "fail",
+              message: "Current password is incorrect",
+            })
+          }
+    
+          currentUser.password = newPassword
+          currentUser.passwordConfirm = confirmPassword
+          currentUser.passwordChangedAt = Date.now() - 1000 
+          await currentUser.save()
+    
+          const token = signTokken(currentUser._id)
+    
+          res.status(200).json({
+            status: "success",
+            message: "Password changed successfully",
+            token,
+          })
+        } catch (err) {
+          console.error("Change password error:", err)
+          res.status(500).json({
+            status: "fail",
+            message: "Something went wrong",
+          })
+        }
+      }),
     toggle2FA: async (req, res) => {
         try {
             const userId = req.user.id;

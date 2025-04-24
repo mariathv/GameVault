@@ -13,6 +13,7 @@ router.get("/get/videos/", gamesController.getGameVideos)
 router.get("/get/companies/", gamesController.getInvolvedCompanies)
 router.get("/get/devpubs/", gamesController.getDeveloperAndPublisher)
 router.get("/get/themes", gamesController.getGameThemes);
-
+router.get("/get/platforms", gamesController.getPlatformsByIds);
+router.get("/get/release-dates", gamesController.getReleaseDatesByIds);
 
 module.exports = router;

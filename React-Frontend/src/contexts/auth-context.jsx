@@ -9,6 +9,7 @@ const AuthContext = createContext({
     login: () => { },
     register: () => { },
     logout: () => { },
+    updateUser: () => {}
 })
 
 export function AuthProvider({ children }) {
@@ -135,6 +136,16 @@ export function AuthProvider({ children }) {
         return response;
     }
 
+    const updateUser = (userData) => {
+        setUser((prevUser) => {
+          const updatedUser = { ...prevUser, ...userData }
+    
+          localStorage.setItem("gamevault_user", JSON.stringify(updatedUser))
+    
+          return updatedUser
+        })
+      }
+
 
 
 
@@ -149,7 +160,7 @@ export function AuthProvider({ children }) {
 
 
     return (
-        <AuthContext.Provider value={{ user, isAuthenticated, loading, login, register, logout, verify2FA }}>{children}</AuthContext.Provider>
+        <AuthContext.Provider value={{ user, isAuthenticated, loading, login, register, logout, verify2FA, updateUser }}>{children}</AuthContext.Provider>
     )
 }
 

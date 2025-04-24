@@ -302,7 +302,43 @@ const gamesController = {
             console.error("Error in getDeveloperAndPublisher:", error);
             return res.status(500).json({ error: "Failed to fetch developer/publisher data" });
         }
-    }
+    },
+    getPlatformsByIds: async (req, res) => {
+        const { ids } = req.query;
+        const platformIds = Array.isArray(ids) ? ids : ids.split(",");
+
+        const body = `fields *; where id = (${platformIds});`;
+
+        if (platformIds.length === 0) {
+            return res.status(400).json({ error: "At least one ID is required!" });
+        }
+
+        const platforms = await fetchIGDB("platforms", body);
+
+        if (!platforms) {
+            return res.status(400).json({ error: "platform info not found" });
+        }
+
+        return res.status(200).json({ success: true, queryResult: platforms });
+    },
+    getReleaseDatesByIds: async (req, res) => {
+        const { ids } = req.query;
+        const releaseDateIds = Array.isArray(ids) ? ids : ids.split(",");
+
+        const body = `fields *; where id = (${releaseDateIds});`;
+
+        if (releaseDateIds.length === 0) {
+            return res.status(400).json({ error: "At least one ID is required!" });
+        }
+
+        const releaseDates = await fetchIGDB("release_dates", body);
+
+        if (!releaseDates) {
+            return res.status(400).json({ error: "release date info not found" });
+        }
+
+        return res.status(200).json({ success: true, queryResult: releaseDates });
+    },
 
 };
 

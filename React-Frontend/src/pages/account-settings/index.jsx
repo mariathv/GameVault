@@ -1,17 +1,100 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { Shield, Lock, User, Bell, Eye, CreditCard, HardDrive, LogOut, Check, Save } from "lucide-react"
+import { Shield, Lock, User, Bell, CreditCard, LogOut, Check, Save } from "lucide-react"
 import { useAuth } from "@/src/contexts/auth-context"
 import { Switch } from "@/components/ui/switch"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
+// Replace fetchData with apiRequest
+import { apiRequest } from "@/src/hooks/api/api-gamevault"
+
+// Add these imports at the top of the file
+import { getUserInventory } from "@/src/api/inventory"
+import { getWishlist } from "@/src/hooks/useWishlist"
+
+// Account Statistics Component
+const AccountStatistics = ({ userId }) => {
+  const [stats, setStats] = useState({
+    gamesOwned: 0,
+    wishlistItems: 0,
+    totalSpending: 0,
+    isLoading: true,
+  })
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        // Fetch inventory data
+        const inventoryData = await getUserInventory(userId)
+
+        // Fetch wishlist data
+        const wishlistData = await getWishlist(userId)
+
+        // Calculate statistics
+        const gamesOwned =
+          inventoryData?.inventory?.reduce((total, order) => total + (order.games?.length || 0), 0) || 0
+
+        const wishlistItems = wishlistData?.wishlist?.games?.length || 0
+
+        // Calculate total spending from all orders
+        const totalSpending =
+          inventoryData?.inventory?.reduce((total, order) => total + (order.totalAmount || 0), 0) || 0
+
+        setStats({
+          gamesOwned,
+          wishlistItems,
+          totalSpending,
+          isLoading: false,
+        })
+      } catch (error) {
+        console.error("Error fetching account statistics:", error)
+        setStats((prev) => ({ ...prev, isLoading: false }))
+      }
+    }
+
+    if (userId) {
+      fetchStats()
+    }
+  }, [userId])
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="bg-(--color-background)/60 p-4 rounded-lg">
+        <p className="text-(--color-foreground) text-sm">Games Owned</p>
+        {stats.isLoading ? (
+          <div className="h-8 w-16 bg-(--color-background)/80 animate-pulse rounded mt-1"></div>
+        ) : (
+          <p className="text-2xl font-bold text-(--color-foreground)/80">{stats.gamesOwned}</p>
+        )}
+      </div>
+      <div className="bg-(--color-background)/60 p-4 rounded-lg">
+        <p className="text-(--color-foreground) text-sm">Wishlist Items</p>
+        {stats.isLoading ? (
+          <div className="h-8 w-16 bg-(--color-background)/80  animate-pulse rounded mt-1"></div>
+        ) : (
+          <p className="text-2xl font-bold text-(--color-foreground)/80">{stats.wishlistItems}</p>
+        )}
+      </div>
+      <div className="bg-(--color-background)/60 p-4 rounded-lg">
+        <p className="text-(--color-foreground) text-sm">Total Spending</p>
+        {stats.isLoading ? (
+          <div className="h-8 w-16 bg-(--color-background)/80  animate-pulse rounded mt-1"></div>
+        ) : (
+          <p className="text-2xl font-bold text-(--color-foreground)/80">${stats.totalSpending.toFixed(2)}</p>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default function AccountSettingsPage() {
   const navigate = useNavigate()
-  const { user, logout } = useAuth()
+  // Make sure to destructure updateUser from useAuth
+  const { user, logout, updateUser } = useAuth()
   const [activeTab, setActiveTab] = useState("profile")
   const [notification, setNotification] = useState(null)
   const [isEditing, setIsEditing] = useState(false)
@@ -63,47 +146,105 @@ export default function AccountSettingsPage() {
     })
   }
 
-  const handlePrivacyToggle = (setting) => {
-    setPrivacySettings({
-      ...privacySettings,
-      [setting]: !privacySettings[setting],
-    })
-    showNotification("Privacy setting updated", "success")
-  }
 
-  const handleNotificationToggle = (setting) => {
-    setNotificationSettings({
-      ...notificationSettings,
-      [setting]: !notificationSettings[setting],
-    })
-    showNotification("Notification setting updated", "success")
-  }
 
-  const handleSaveProfile = () => {
-    // Here you would implement the API call to update the user profile
-    showNotification("Profile updated successfully", "success")
-    setIsEditing(false)
-  }
+  // Update the handleSaveProfile function to use apiRequest
+  const handleSaveProfile = async () => {
+    try {
+      setNotification(null)
 
-  const handleChangePassword = () => {
-    if (formData.newPassword !== formData.confirmPassword) {
-      showNotification("New passwords don't match", "error")
-      return
+      // Validate input
+      if (!formData.username.trim()) {
+        showNotification("Username cannot be empty", "error")
+        return
+      }
+
+      if (!formData.email.trim() || !/\S+@\S+\.\S+/.test(formData.email)) {
+        showNotification("Please enter a valid email address", "error")
+        return
+      }
+
+      // Make API call to update profile
+      const response = await apiRequest(
+        "auth/update-profile",
+        {
+          username: formData.username,
+          email: formData.email,
+        },
+        "PATCH",
+      )
+
+      if (response.status === "success") {
+        // Update user context with new data
+        if (response.data && response.data.user) {
+          updateUser(response.data.user)
+        }
+
+        showNotification("Profile updated successfully", "success")
+        setIsEditing(false)
+      } else {
+        showNotification(response.message || "Failed to update profile", "error")
+      }
+    } catch (error) {
+      console.error("Profile update error:", error)
+      showNotification("An error occurred while updating your profile", "error")
     }
+  }
 
-    if (formData.newPassword.length < 8) {
-      showNotification("Password must be at least 8 characters", "error")
-      return
+  // Update the handleChangePassword function to use apiRequest
+  const handleChangePassword = async () => {
+    try {
+      setNotification(null)
+
+      // Validate input
+      if (!formData.currentPassword) {
+        showNotification("Current password is required", "error")
+        return
+      }
+
+      if (formData.newPassword !== formData.confirmPassword) {
+        showNotification("New passwords don't match", "error")
+        return
+      }
+
+      if (formData.newPassword.length < 8) {
+        showNotification("Password must be at least 8 characters", "error")
+        return
+      }
+
+      // Make API call to change password
+      const response = await apiRequest(
+        "auth/change-password",
+        {
+          currentPassword: formData.currentPassword,
+          newPassword: formData.newPassword,
+          confirmPassword: formData.confirmPassword,
+        },
+        "PATCH",
+      )
+
+      if (response.status === "success") {
+        // Update token if a new one is provided - use the correct key
+        if (response.token) {
+          localStorage.setItem("gamevault_token", response.token)
+        }
+
+        showNotification("Password changed successfully", "success")
+
+        // Clear password fields
+        setFormData({
+          ...formData,
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+        })
+      } else {
+        showNotification(response.message || "Failed to change password", "error")
+      }
+    } catch (error) {
+      console.error("Password change error:", error)
+      showNotification("An error occurred while changing your password", "error")
     }
-
-    // Here you would implement the API call to change the password
-    showNotification("Password changed successfully", "success")
-    setFormData({
-      ...formData,
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    })
   }
 
   const handle2FASetup = () => {
@@ -157,13 +298,12 @@ export default function AccountSettingsPage() {
 
   return (
     <div className="min-h-screen bg-(--color-background)">
-
-
       {/* Notification component */}
       {notification && (
         <div
-          className={`fixed top-4 right-4 z-50 p-4 rounded-md shadow-md ${notification.type === "error" ? "bg-red-500" : "bg-green-500"
-            } text-white`}
+          className={`fixed top-4 right-4 z-50 p-4 rounded-md shadow-md ${
+            notification.type === "error" ? "bg-red-500" : "bg-green-500"
+          } text-white`}
         >
           {notification.message}
         </div>
@@ -175,24 +315,25 @@ export default function AccountSettingsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Sidebar */}
           <div className="lg:col-span-1">
-            <div className="bg-[#1a2234] rounded-lg p-4 shadow-lg">
+            <div className="bg-(--color-background) rounded-lg p-4 shadow-lg">
               <div className="flex items-center space-x-3 mb-6 p-2">
                 <div className="w-12 h-12 rounded-full bg-[#2a3349] flex items-center justify-center text-white text-xl font-bold">
                   {user.username ? user.username.charAt(0).toUpperCase() : "U"}
                 </div>
                 <div>
-                  <h3 className="text-white font-medium">{user.username || "User"}</h3>
-                  <p className="text-gray-400 text-sm">{user.email || "user@example.com"}</p>
+                  <h3 className="text-(--color-foreground) font-medium">{user.username || "User"}</h3>
+                  <p className="text-(--color-foreground) text-sm">{user.email || "user@example.com"}</p>
                 </div>
               </div>
 
               <nav className="space-y-1">
                 <button
                   onClick={() => setActiveTab("profile")}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-md transition ${activeTab === "profile"
-                    ? "bg-[#2a3349] text-white"
-                    : "text-gray-400 hover:bg-[#2a3349]/50 hover:text-white"
-                    }`}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-md transition ${
+                    activeTab === "profile"
+                      ? "bg-(--color-foreground)/20 text-(--color-foreground)"
+                      : "text-(--color-foreground) bg-(--color-background) hover:text-(--color-foreground)"
+                  }`}
                 >
                   <User className="h-5 w-5" />
                   <span>Profile</span>
@@ -200,10 +341,11 @@ export default function AccountSettingsPage() {
 
                 <button
                   onClick={() => setActiveTab("security")}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-md transition ${activeTab === "security"
-                    ? "bg-[#2a3349] text-white"
-                    : "text-gray-400 hover:bg-[#2a3349]/50 hover:text-white"
-                    }`}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-md transition ${
+                    activeTab === "security"
+                      ? "bg-(--color-foreground)/20 text-(--color-foreground)"
+                      : "text-(--color-foreground) bg-(--color-background) hover:text-(--color-foreground)"
+                  }`}
                 >
                   <Shield className="h-5 w-5" />
                   <span>Security</span>
@@ -220,29 +362,18 @@ export default function AccountSettingsPage() {
                   <span>Privacy</span>
                 </button> */}
 
-                <button
-                  onClick={() => setActiveTab("notifications")}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-md transition ${activeTab === "notifications"
-                    ? "bg-[#2a3349] text-white"
-                    : "text-gray-400 hover:bg-[#2a3349]/50 hover:text-white"
-                    }`}
-                >
-                  <Bell className="h-5 w-5" />
-                  <span>Notifications</span>
-                </button>
 
                 <button
                   onClick={() => setActiveTab("payment")}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-md transition ${activeTab === "payment"
-                    ? "bg-[#2a3349] text-white"
-                    : "text-gray-400 hover:bg-[#2a3349]/50 hover:text-white"
-                    }`}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-md transition ${
+                    activeTab === "payment"
+                      ? "bg-(--color-foreground)/20 text-(--color-foreground)"
+                      : "text-(--color-foreground) bg-(--color-background) hover:text-(--color-foreground)"
+                  }`}
                 >
                   <CreditCard className="h-5 w-5" />
                   <span>Payment Methods</span>
                 </button>
-
-
 
                 <button
                   onClick={logout}
@@ -257,16 +388,16 @@ export default function AccountSettingsPage() {
 
           {/* Main content */}
           <div className="lg:col-span-3">
-            <div className="bg-[#1a2234] rounded-lg shadow-lg overflow-hidden">
+            <div className="bg-(--color-background) rounded-lg shadow-lg overflow-hidden">
               {/* Profile Tab */}
               {activeTab === "profile" && (
                 <div className="p-6">
                   <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-2xl font-bold text-white">Profile Information</h2>
+                    <h2 className="text-2xl font-bold text-(--color-foreground)">Profile Information</h2>
                     <Button
                       variant="outline"
                       onClick={() => setIsEditing(!isEditing)}
-                      className="border-[#2a3349] text-white hover:bg-[#2a3349]"
+                      className="border-[#2a3349] text-(--color-foreground) hover:bg-[#2a3349]"
                     >
                       {isEditing ? "Cancel" : "Edit Profile"}
                     </Button>
@@ -276,7 +407,7 @@ export default function AccountSettingsPage() {
                     <div className="space-y-6">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                          <Label htmlFor="username" className="text-white">
+                          <Label htmlFor="username" className="text-(--color-foreground)">
                             Username
                           </Label>
                           <Input
@@ -284,11 +415,11 @@ export default function AccountSettingsPage() {
                             name="username"
                             value={formData.username}
                             onChange={handleInputChange}
-                            className="bg-[#0f1623] border-[#2a3349] text-white"
+                            className="bg-(--color-background)/60 border-[#2a3349] text-(--color-foreground)"
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="email" className="text-white">
+                          <Label htmlFor="email" className="text-(--color-foreground)">
                             Email
                           </Label>
                           <Input
@@ -297,7 +428,7 @@ export default function AccountSettingsPage() {
                             type="email"
                             value={formData.email}
                             onChange={handleInputChange}
-                            className="bg-[#0f1623] border-[#2a3349] text-white"
+                            className="bg-(--color-background)/60 border-[#2a3349] text-(--color-foreground)"
                           />
                         </div>
                       </div>
@@ -314,39 +445,20 @@ export default function AccountSettingsPage() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                           <h3 className="text-gray-400 text-sm mb-1">Username</h3>
-                          <p className="text-white">{user.username || "Username not set"}</p>
+                          <p className="text-(--color-foreground)">{user.username || "Username not set"}</p>
                         </div>
                         <div>
                           <h3 className="text-gray-400 text-sm mb-1">Email</h3>
-                          <p className="text-white">{user.email || "Email not set"}</p>
+                          <p className="text-(--color-foreground)">{user.email || "Email not set"}</p>
                         </div>
                       </div>
-                      <div>
-                        <h3 className="text-gray-400 text-sm mb-1">Account Created</h3>
-                        <p className="text-white">
-                          {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "Unknown"}
-                        </p>
-                      </div>
+                      
                     </div>
                   )}
 
                   <div className="mt-8 pt-8 border-t border-[#2a3349]">
                     <h3 className="text-xl font-bold text-white mb-4">Account Statistics</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                      <div className="bg-[#2a3349] p-4 rounded-lg">
-                        <p className="text-gray-400 text-sm">Games Owned</p>
-                        <p className="text-2xl font-bold text-white">{user.gamesCount || 0}</p>
-                      </div>
-                      <div className="bg-[#2a3349] p-4 rounded-lg">
-                        <p className="text-gray-400 text-sm">Wishlist Items</p>
-                        <p className="text-2xl font-bold text-white">{user.wishlistCount || 0}</p>
-                      </div>
-                      <div className="bg-[#2a3349] p-4 rounded-lg">
-                        <p className="text-gray-400 text-sm">Total Spending</p>
-                        <p className="text-2xl font-bold text-white">{user.wishlistCount || 0}</p>
-                      </div>
-
-                    </div>
+                    <AccountStatistics userId={user._id} />
                   </div>
                 </div>
               )}
@@ -354,15 +466,15 @@ export default function AccountSettingsPage() {
               {/* Security Tab */}
               {activeTab === "security" && (
                 <div className="p-6">
-                  <h2 className="text-2xl font-bold text-white mb-6">Security Settings</h2>
+                  <h2 className="text-2xl font-bold text-(--color-foreground)/90 mb-6">Security Settings</h2>
 
                   <div className="space-y-8">
                     {/* Password Change Section */}
-                    <div className="bg-[#0f1623] p-6 rounded-lg">
-                      <h3 className="text-xl font-bold text-white mb-4">Change Password</h3>
+                    <div className="bg-(--color-background)/60 p-6 rounded-lg">
+                      <h3 className="text-xl font-bold text-(--color-foreground)/90 mb-4">Change Password</h3>
                       <div className="space-y-4">
                         <div className="space-y-2">
-                          <Label htmlFor="currentPassword" className="text-white">
+                          <Label htmlFor="currentPassword" className="text-(--color-foreground)">
                             Current Password
                           </Label>
                           <Input
@@ -371,11 +483,11 @@ export default function AccountSettingsPage() {
                             type="password"
                             value={formData.currentPassword}
                             onChange={handleInputChange}
-                            className="bg-[#1a2234] border-[#2a3349] text-white"
+                            className="bg-(--color-background) border-[#2a3349] text-(--color-foreground)"
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="newPassword" className="text-white">
+                          <Label htmlFor="newPassword" className="text-(--color-foreground)">
                             New Password
                           </Label>
                           <Input
@@ -384,11 +496,11 @@ export default function AccountSettingsPage() {
                             type="password"
                             value={formData.newPassword}
                             onChange={handleInputChange}
-                            className="bg-[#1a2234] border-[#2a3349] text-white"
+                            className="bg-(--color-background) border-[#2a3349] text-(--color-foreground)"
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="confirmPassword" className="text-white">
+                          <Label htmlFor="confirmPassword" className="text-(--color-foreground)">
                             Confirm New Password
                           </Label>
                           <Input
@@ -397,7 +509,7 @@ export default function AccountSettingsPage() {
                             type="password"
                             value={formData.confirmPassword}
                             onChange={handleInputChange}
-                            className="bg-[#1a2234] border-[#2a3349] text-white"
+                            className="bg-(--color-background) border-[#2a3349] text-(--color-foreground)"
                           />
                         </div>
                         <Button onClick={handleChangePassword} className="bg-white text-black hover:bg-gray-200 mt-2">
@@ -408,9 +520,9 @@ export default function AccountSettingsPage() {
                     </div>
 
                     {/* 2FA Section */}
-                    <div className="bg-[#0f1623] p-6 rounded-lg">
+                    <div className="bg-(--color-background) p-6 rounded-lg">
                       <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-xl font-bold text-white">Two-Factor Authentication</h3>
+                        <h3 className="text-xl font-bold text-(--color-foreground)">Two-Factor Authentication</h3>
                         <div className="flex items-center">
                           <span className={`mr-2 text-sm ${is2FAEnabled ? "text-green-400" : "text-gray-400"}`}>
                             {is2FAEnabled ? "Enabled" : "Disabled"}
@@ -418,7 +530,7 @@ export default function AccountSettingsPage() {
                           <Button
                             variant="outline"
                             onClick={handle2FASetup}
-                            className={`border-[#2a3349] ${is2FAEnabled ? "text-red-400 hover:bg-red-500/10 hover:text-red-300" : "text-white hover:bg-[#2a3349]"}`}
+                            className={`border-[#2a3349] ${is2FAEnabled ? "text-red-400 hover:bg-red-500/10 hover:text-red-300" : "text-(--color-foreground) hover:bg-(--color-background)/80"}`}
                           >
                             {is2FAEnabled ? "Disable 2FA" : "Enable 2FA"}
                           </Button>
@@ -483,232 +595,39 @@ export default function AccountSettingsPage() {
                       )}
                     </div>
 
-                    {/* Login Sessions */}
-                    <div className="bg-[#0f1623] p-6 rounded-lg">
-                      <h3 className="text-xl font-bold text-white mb-4">Active Sessions</h3>
-                      <div className="space-y-4">
-                        <div className="p-4 bg-[#2a3349] rounded-lg">
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <p className="text-white font-medium">Current Session</p>
-                              <p className="text-gray-400 text-sm">Windows • Chrome • Last active now</p>
-                            </div>
-                            <div className="flex items-center text-green-400">
-                              <div className="h-2 w-2 rounded-full bg-green-400 mr-2"></div>
-                              <span className="text-sm">Active</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        <Button
-                          variant="outline"
-                          className="border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300"
-                        >
-                          <LogOut className="h-4 w-4 mr-2" />
-                          Sign Out All Other Devices
-                        </Button>
-                      </div>
-                    </div>
+                   
                   </div>
                 </div>
               )}
 
-              {/* Privacy Tab */}
-              {/* {activeTab === "privacy" && (
-                <div className="p-6">
-                  <h2 className="text-2xl font-bold text-white mb-6">Privacy Settings</h2>
-
-                  <div className="space-y-6">
-                    <div className="bg-[#0f1623] p-6 rounded-lg">
-                      <h3 className="text-xl font-bold text-white mb-4">Profile Privacy</h3>
-
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-white">Show Online Status</p>
-                            <p className="text-gray-400 text-sm">Allow others to see when you're online</p>
-                          </div>
-                          <Switch
-                            checked={privacySettings.showOnlineStatus}
-                            onCheckedChange={() => handlePrivacyToggle("showOnlineStatus")}
-                            className="data-[state=checked]:bg-white"
-                          />
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-white">Show Game Playtime</p>
-                            <p className="text-gray-400 text-sm">Allow others to see how long you've played games</p>
-                          </div>
-                          <Switch
-                            checked={privacySettings.showPlaytime}
-                            onCheckedChange={() => handlePrivacyToggle("showPlaytime")}
-                            className="data-[state=checked]:bg-white"
-                          />
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-white">Public Wishlist</p>
-                            <p className="text-gray-400 text-sm">Allow others to see games in your wishlist</p>
-                          </div>
-                          <Switch
-                            checked={privacySettings.showWishlist}
-                            onCheckedChange={() => handlePrivacyToggle("showWishlist")}
-                            className="data-[state=checked]:bg-white"
-                          />
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-white">Public Game Library</p>
-                            <p className="text-gray-400 text-sm">Allow others to see games you own</p>
-                          </div>
-                          <Switch
-                            checked={privacySettings.showLibrary}
-                            onCheckedChange={() => handlePrivacyToggle("showLibrary")}
-                            className="data-[state=checked]:bg-white"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="bg-[#0f1623] p-6 rounded-lg">
-                      <h3 className="text-xl font-bold text-white mb-4">Social Privacy</h3>
-
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-white">Allow Friend Requests</p>
-                            <p className="text-gray-400 text-sm">Allow other users to send you friend requests</p>
-                          </div>
-                          <Switch
-                            checked={privacySettings.allowFriendRequests}
-                            onCheckedChange={() => handlePrivacyToggle("allowFriendRequests")}
-                            className="data-[state=checked]:bg-white"
-                          />
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-white">Share Activity Feed</p>
-                            <p className="text-gray-400 text-sm">Share your gaming activity with friends</p>
-                          </div>
-                          <Switch
-                            checked={privacySettings.shareActivityFeed}
-                            onCheckedChange={() => handlePrivacyToggle("shareActivityFeed")}
-                            className="data-[state=checked]:bg-white"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="bg-[#0f1623] p-6 rounded-lg">
-                      <h3 className="text-xl font-bold text-white mb-4">Data Privacy</h3>
-
-                      <div className="space-y-4">
-                        <Button variant="outline" className="border-[#2a3349] text-white hover:bg-[#2a3349]">
-                          Download My Data
-                        </Button>
-
-                        <Button
-                          variant="outline"
-                          className="border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300"
-                        >
-                          Delete Account
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )} */}
-
-              {/* Notifications Tab */}
-              {activeTab === "notifications" && (
-                <div className="p-6">
-                  <h2 className="text-2xl font-bold text-white mb-6">Notification Settings</h2>
-
-                  <div className="space-y-6">
-                    <div className="bg-[#0f1623] p-6 rounded-lg">
-                      <h3 className="text-xl font-bold text-white mb-4">Notification Channels</h3>
-
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-white">Email Notifications</p>
-                            <p className="text-gray-400 text-sm">Receive notifications via email</p>
-                          </div>
-                          <Switch
-                            checked={notificationSettings.emailNotifications}
-                            onCheckedChange={() => handleNotificationToggle("emailNotifications")}
-                            className="data-[state=checked]:bg-white"
-                          />
-                        </div>
-
-
-                      </div>
-                    </div>
-
-                    <div className="bg-[#0f1623] p-6 rounded-lg">
-                      <h3 className="text-xl font-bold text-white mb-4">Notification Types</h3>
-
-                      <div className="space-y-4">
-
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-white">Special Offers</p>
-                            <p className="text-gray-400 text-sm">Discounts and special promotions</p>
-                          </div>
-                          <Switch
-                            checked={notificationSettings.specialOffers}
-                            onCheckedChange={() => handleNotificationToggle("specialOffers")}
-                            className="data-[state=checked]:bg-white"
-                          />
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-white">New Releases</p>
-                            <p className="text-gray-400 text-sm">Notifications about new game releases</p>
-                          </div>
-                          <Switch
-                            checked={notificationSettings.newReleases}
-                            onCheckedChange={() => handleNotificationToggle("newReleases")}
-                            className="data-[state=checked]:bg-white"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
+              
 
               {/* Payment Methods Tab */}
               {activeTab === "payment" && (
                 <div className="p-6">
-                  <h2 className="text-2xl font-bold text-white mb-6">Payment Methods</h2>
+                  <h2 className="text-2xl font-bold text-(--color-foreground) mb-6">Payment Methods</h2>
 
                   <div className="space-y-6">
-                    <div className="bg-[#0f1623] p-6 rounded-lg">
+                    <div className="bg-(--color-background) p-6 rounded-lg">
                       <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-xl font-bold text-white">Saved Payment Methods</h3>
+                        <h3 className="text-xl font-bold text-(--color-foreground)">Saved Payment Methods</h3>
                         <Button className="bg-white text-black hover:bg-gray-200">Add New Payment Method</Button>
                       </div>
 
                       <div className="space-y-4">
-                        <div className="p-4 bg-[#2a3349] rounded-lg">
+                        <div className="p-4 bg-(--color-background)/80 rounded-lg">
                           <div className="flex justify-between items-center">
                             <div className="flex items-center">
                               <div className="w-10 h-6 bg-blue-500 rounded mr-3 flex items-center justify-center text-white text-xs font-bold">
                                 VISA
                               </div>
                               <div>
-                                <p className="text-white">•••• •••• •••• 4242</p>
+                                <p className="text-(--color-foreground)">•••• •••• •••• 4242</p>
                                 <p className="text-gray-400 text-sm">Expires 12/25</p>
                               </div>
                             </div>
                             <div className="flex space-x-2">
-                              <Button variant="ghost" size="sm" className="text-white hover:bg-[#1a2234]">
+                              <Button variant="ghost" size="sm" className="text-(--color-foreground) hover:bg-(--color-background)/60">
                                 Edit
                               </Button>
                               <Button
@@ -724,27 +643,23 @@ export default function AccountSettingsPage() {
                       </div>
                     </div>
 
-                    <div className="bg-[#0f1623] p-6 rounded-lg">
-                      <h3 className="text-xl font-bold text-white mb-4">Billing Address</h3>
+                    <div className="bg-(--color-background)/80 p-6 rounded-lg">
+                      <h3 className="text-xl font-bold text-(--color-foreground) mb-4">Billing Address</h3>
 
-                      <div className="p-4 bg-[#2a3349] rounded-lg mb-4">
-                        <p className="text-white">John Doe</p>
+                      <div className="p-4 bg-(--color-background)/80 rounded-lg mb-4">
+                        <p className="text-(--color-foreground)">John Doe</p>
                         <p className="text-gray-400">123 Gaming Street</p>
                         <p className="text-gray-400">New York, NY 10001</p>
                         <p className="text-gray-400">United States</p>
                       </div>
 
-                      <Button variant="outline" className="border-[#2a3349] text-white hover:bg-[#2a3349]">
+                      <Button variant="outline" className="border-[#2a3349] text-(--color-foreground) hover:bg-(--color-background)/60">
                         Edit Billing Address
                       </Button>
                     </div>
-
-
                   </div>
                 </div>
               )}
-
-
             </div>
           </div>
         </div>

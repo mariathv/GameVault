@@ -11,9 +11,9 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./"),
     },
   },
-  // server: {
-  //   port: 3000, 
-  // },
+  server: {
+    port: 3000, 
+  },
 
 
 })
