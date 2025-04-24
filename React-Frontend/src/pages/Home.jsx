@@ -11,6 +11,8 @@ import CarouselSlider from "../components/CarouselSlider"
 import GameCardExtended from "../components/GameCardExtended"
 import { getGameArtworks } from "../api/game"
 import GameCarousel from "../components/GameCarousel"
+
+
 export default function HomePage() {
     const [selectedGenre, setSelectedGenre] = useState("Shooter")
     const [searchQuery, setSearchQuery] = useState("")
