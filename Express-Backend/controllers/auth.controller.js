@@ -454,11 +454,9 @@ const authController = {
         })
       }
 
-      // Hash new password
-      const hashedPassword = await bcrypt.hash(newPassword, 12)
-
-      // Update password
-      currentUser.password = hashedPassword
+      // Update password - let the pre-save middleware handle the hashing
+      currentUser.password = newPassword
+      currentUser.passwordConfirm = confirmPassword
       currentUser.passwordChangedAt = Date.now() - 1000 // Subtract 1 second to handle timing issues
       await currentUser.save()
 
