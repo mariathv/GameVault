@@ -8,6 +8,6 @@ router.post("/create", protect, restrictTo("user"), ticketController.createTicke
 router.get("/all", protect, restrictTo("admin"), ticketController.getAllTickets);
 router.get("/my", protect, restrictTo("user"), ticketController.getUserTickets);
 router.post("/:ticketId/reply", protect, ticketController.replyToTicket);
-router.patch("/:ticketId/close", protect, restrictTo("admin"), ticketController.closeTicket);
+router.patch("/:ticketId/close", protect, ticketController.closeTicket);
 
 module.exports = router;

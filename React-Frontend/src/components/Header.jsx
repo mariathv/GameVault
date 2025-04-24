@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { LogOut, Search, ShoppingCart, User, Heart, LogInIcon, ChevronDown, Menu, X } from 'lucide-react'
+import { LogOut, Search, ShoppingCart, User, Heart, LogInIcon, ChevronDown, Menu, X, HelpCircle } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Link, useNavigate, useLocation } from "react-router-dom"
 import { useCart } from "../contexts/cart-context"
@@ -249,10 +249,6 @@ export default function Header() {
                                         <span>Inventory</span>
                                     </DropdownMenuItem>
 
-                                    <DropdownMenuItem className="cursor-pointer focus:bg-(--color-foreground)/5">
-                                        <ClipboardList className="mr-2 h-4 w-4" />
-                                        <span>Order History</span>
-                                    </DropdownMenuItem>
 
                                     <DropdownMenuItem
                                         className="cursor-pointer focus:bg-(--color-foreground)/5"
@@ -262,15 +258,15 @@ export default function Header() {
                                         <span>Wishlist</span>
                                     </DropdownMenuItem>
 
-                                    <DropdownMenuItem className="cursor-pointer focus:bg-(--color-foreground)/5">
+                                    <DropdownMenuItem className="cursor-pointer focus:bg-(--color-foreground)/5" onClick={() => navigate("/support")}>
                                         <ThumbsUp className="mr-2 h-4 w-4" />
                                         <span>Customer Support</span>
                                     </DropdownMenuItem>
-
+{/* 
                                     <DropdownMenuItem className="cursor-pointer focus:bg-(--color-foreground)/5">
                                         <Bell className="mr-2 h-4 w-4" />
                                         <span>Notifications</span>
-                                    </DropdownMenuItem>
+                                    </DropdownMenuItem> */}
 
                                     <ThemeToggle />
 
@@ -449,6 +445,10 @@ export default function Header() {
                                     <Link to="/inventory" className="text-(--color-foreground)/80 hover:text-(--color-foreground) flex items-center">
                                         <Key className="mr-2 h-4 w-4" />
                                         <span>Inventory</span>
+                                    </Link>
+                                    <Link to="/support" className="text-(--color-foreground)/80 hover:text-(--color-foreground) flex items-center">
+                                        <HelpCircle className="mr-2 h-4 w-4" />
+                                        <span>Customer Support</span>
                                     </Link>
                                     <Link to="/wishlist" className="text-(--color-foreground)/80 hover:text-(--color-foreground) flex items-center">
                                         <Heart className="mr-2 h-4 w-4" />

@@ -34,6 +34,7 @@ import CheckoutPage from './pages/checkout/checkout';
 import Inventory from './pages/inventory/inventory';
 import Help from './pages/admin/Help';
 import BlockAdmin from './components/BlockAdmin';
+import CustomerSupport from './pages/customer-support/customersupport';
 
 import ScrollToTop from './utils/scrollToTop';
 import VerifyEmail from './pages/auth/verify';
@@ -100,6 +101,7 @@ const App = () => {
                     <Route path="/wishlist" element={<RequireClient><WishlistPage /></RequireClient>} />
                     <Route path="/inventory" element={<RequireClient><Inventory /></RequireClient>} />
                     <Route path="/account-settings" element={<RequireClient><AccountSettingsPage /></RequireClient>} />
+                    <Route path="/support" element={<RequireClient><CustomerSupport /></RequireClient>} />
 
 
                     {/* Admin Routes (Require Admin) */}

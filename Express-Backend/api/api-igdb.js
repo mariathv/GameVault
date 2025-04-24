@@ -3,6 +3,7 @@ const IGDB_CLIENT_ID = process.env.IGDB_CLIENT_KEY;
 const IGDB_TOKEN = process.env.IGDB_TOKEN;
 
 const fetchIGDB = async (endpoint, fetch_body) => {
+    
     let success = false;
 
     while (!success) {
