@@ -1,8 +1,20 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/src/contexts/auth-context";
-import { ChevronDown, ChevronRight, MessageSquare, Loader2, Send, Plus, Clock, CheckCircle, AlertCircle, RefreshCw, XCircle } from "lucide-react";
+import { 
+  ChevronDown, 
+  ChevronRight, 
+  MessageSquare, 
+  Loader2, 
+  Send, 
+  Filter, 
+  CheckCircle, 
+  AlertCircle, 
+  RefreshCw, 
+  Clock,
+  User
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { createTicket, fetchUserTickets, sendTicketReply, closeTicket } from "@/src/api/ticket";
+import { fetchAllTickets, sendTicketReply, closeTicket, updateTicketStatus } from "@/src/api/ticket";
 import {
   Card,
   CardContent,
@@ -18,7 +30,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -35,26 +46,25 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "sonner";
 
-export default function CustomerSupport() {
+export default function AdminCustomerSupport() {
   const { user, isAuthenticated } = useAuth();
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [newReply, setNewReply] = useState("");
   const [sendingReply, setSendingReply] = useState(false);
-  const [newTicket, setNewTicket] = useState({
-    subject: "",
-    message: ""
-  });
-  const [creatingTicket, setCreatingTicket] = useState(false);
-  const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [closingTicket, setClosingTicket] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [closingTicket, setClosingTicket] = useState(false);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [showUserInfo, setShowUserInfo] = useState(false);
 
-  // Fetch user tickets
+  // Fetch all tickets
   const handleFetchTickets = async () => {
     if (!isAuthenticated) return;
     
@@ -62,37 +72,15 @@ export default function CustomerSupport() {
       setRefreshing(true);
       setError(null);
       
-      const response = await fetchUserTickets();
+      const response = await fetchAllTickets();
       setTickets(response);
     } catch (error) {
       console.error("Failed to fetch tickets:", error);
       setError("Failed to load tickets. Please try again later.");
+      toast.error("Failed to load tickets");
     } finally {
       setLoading(false);
       setRefreshing(false);
-    }
-  };
-
-  // Create a new ticket
-  const handleCreateTicket = async (e) => {
-    e.preventDefault();
-    if (!newTicket.subject.trim() || !newTicket.message.trim()) return;
-    
-    try {
-      setCreatingTicket(true);
-      setError(null);
-      
-      const response = await createTicket(newTicket);
-      
-      // Add new ticket to state
-      setTickets(prev => [response, ...prev]);
-      setNewTicket({ subject: "", message: "" });
-      setCreateDialogOpen(false);
-    } catch (error) {
-      console.error("Failed to create ticket:", error);
-      setError("Failed to create ticket. Please try again later.");
-    } finally {
-      setCreatingTicket(false);
     }
   };
 
@@ -117,9 +105,11 @@ export default function CustomerSupport() {
       );
       
       setNewReply("");
+      toast.success("Reply sent successfully");
     } catch (error) {
       console.error("Failed to send reply:", error);
       setError("Failed to send reply. Please try again later.");
+      toast.error("Failed to send reply");
     } finally {
       setSendingReply(false);
     }
@@ -135,7 +125,30 @@ export default function CustomerSupport() {
       
       const response = await closeTicket(selectedTicket._id);
       
-      // Update the selected ticket with closed status
+      setSelectedTicket(response);
+      
+      setTickets(prev => 
+        prev.map(ticket => 
+          ticket._id === selectedTicket._id ? response : ticket
+        )
+      );
+      
+      toast.success("Ticket closed successfully");
+    } catch (error) {
+      console.error("Failed to close ticket:", error);
+      setError("Failed to close ticket. Please try again later.");
+      toast.error("Failed to close ticket");
+    } finally {
+      setClosingTicket(false);
+    }
+  };
+
+  const handleUpdateStatus = async (status) => {
+    if (!selectedTicket) return;
+    
+    try {
+      const response = await updateTicketStatus(selectedTicket._id, status);
+      
       setSelectedTicket(response);
       
       // Update tickets list
@@ -144,11 +157,11 @@ export default function CustomerSupport() {
           ticket._id === selectedTicket._id ? response : ticket
         )
       );
+      
+      toast.success(`Ticket status updated to ${status}`);
     } catch (error) {
-      console.error("Failed to close ticket:", error);
-      setError("Failed to close ticket. Please try again later.");
-    } finally {
-      setClosingTicket(false);
+      console.error("Failed to update ticket status:", error);
+      toast.error("Failed to update ticket status");
     }
   };
 
@@ -164,15 +177,24 @@ export default function CustomerSupport() {
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
-  // Filter tickets based on active tab
+  // Filter tickets based on active tab and search query
   const getFilteredTickets = () => {
     if (!Array.isArray(tickets)) return [];
     
-    if (activeTab === "all") return tickets;
-    if (activeTab === "open") return tickets.filter(ticket => ticket.status === "open");
-    if (activeTab === "in-progress") return tickets.filter(ticket => ticket.status === "in-progress");
-    if (activeTab === "closed") return tickets.filter(ticket => ticket.status === "closed");
-    return tickets;
+    // Filter by search query
+    let filtered = tickets.filter(ticket => 
+      ticket.subject.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      ticket.message.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (ticket.userId && ticket.userId.email && ticket.userId.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (ticket.userId && ticket.userId.name && ticket.userId.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
+    
+    // Filter by status
+    if (statusFilter !== "all") {
+      filtered = filtered.filter(ticket => ticket.status === statusFilter);
+    }
+    
+    return filtered;
   };
 
   const renderStatusBadge = (status) => {
@@ -188,6 +210,25 @@ export default function CustomerSupport() {
     }
   };
 
+  // Set status sorting for tickets
+  const sortedTickets = () => {
+    const filtered = getFilteredTickets();
+    
+    // Sort by status priority (open first, then in-progress, then closed)
+    // Then by date (newest first)
+    return [...filtered].sort((a, b) => {
+      const statusPriority = { 'open': 0, 'in-progress': 1, 'closed': 2 };
+      
+      // First sort by status priority
+      if (statusPriority[a.status] !== statusPriority[b.status]) {
+        return statusPriority[a.status] - statusPriority[b.status];
+      }
+      
+      // Then sort by date (newest first)
+      return new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt);
+    });
+  };
+
   useEffect(() => {
     if (isAuthenticated) {
       handleFetchTickets();
@@ -199,9 +240,9 @@ export default function CustomerSupport() {
       <div className="min-h-screen bg-(--color-background) py-12 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center">
         <Card className="w-full max-w-md bg-(--color-background) border border-[#2D3237]">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl text-(--color-foreground)">Customer Support</CardTitle>
+            <CardTitle className="text-2xl text-(--color-foreground)">Admin Customer Support</CardTitle>
             <CardDescription className="text-(--color-foreground)/70">
-              Please login to create support tickets and view your existing ones.
+              Please login with admin credentials to manage support tickets.
             </CardDescription>
           </CardHeader>
           <CardFooter className="flex justify-center">
@@ -226,9 +267,9 @@ export default function CustomerSupport() {
           </div>
         )}
         
-        <div className="flex flex-col lg:flex-row gap-6">
+        <div className="flex flex-col lg:flex-row gap-6 ">
           {/* Left Side - Tickets List */}
-          <div className="w-full lg:w-1/3">
+          <div className="w-full lg:w-1/3 ">
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-2xl font-bold text-(--color-foreground)">Support Tickets</h1>
               <div className="flex gap-2">
@@ -246,106 +287,51 @@ export default function CustomerSupport() {
                   )}
                   Refresh
                 </Button>
-                <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button className="bg-(--color-accent-primary) hover:bg-(--color-accent-primary)/80 text-white" size="sm">
-                      <Plus className="h-4 w-4 mr-2" />
-                      New Ticket
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="bg-(--color-background) border-[#2D3237] text-(--color-foreground)">
-                    <DialogHeader>
-                      <DialogTitle>Create New Support Ticket</DialogTitle>
-                      <DialogDescription className="text-(--color-foreground)/70">
-                        Fill out the form below to create a new support ticket.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <form onSubmit={handleCreateTicket}>
-                      <div className="space-y-4 py-4">
-                        <div className="space-y-2">
-                          <label htmlFor="subject" className="text-sm font-medium text-(--color-foreground)">
-                            Subject
-                          </label>
-                          <Input
-                            id="subject"
-                            placeholder="Brief description of your issue"
-                            value={newTicket.subject}
-                            onChange={(e) => setNewTicket({...newTicket, subject: e.target.value})}
-                            className="bg-(--color-background) border-[#2D3237] text-(--color-foreground)"
-                            required
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <label htmlFor="message" className="text-sm font-medium text-(--color-foreground)">
-                            Message
-                          </label>
-                          <Textarea
-                            id="message"
-                            placeholder="Describe your issue in detail"
-                            value={newTicket.message}
-                            onChange={(e) => setNewTicket({...newTicket, message: e.target.value})}
-                            className="min-h-[150px] bg-(--color-background) border-[#2D3237] text-(--color-foreground)"
-                            required
-                          />
-                        </div>
-                      </div>
-                      <DialogFooter>
-                        <Button 
-                          type="submit" 
-                          className="bg-(--color-accent-primary) hover:bg-(--color-accent-primary)/80"
-                          disabled={creatingTicket}
-                        >
-                          {creatingTicket && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                          Submit Ticket
-                        </Button>
-                      </DialogFooter>
-                    </form>
-                  </DialogContent>
-                </Dialog>
               </div>
             </div>
             
-            <Tabs defaultValue="all" className="mb-4" value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="bg-(--color-background) border border-[#2D3237] mb-4 w-full grid grid-cols-4">
-                <TabsTrigger value="all" className="data-[state=active]:bg-(--color-accent-primary) text-(--color-foreground) data-[state=active]:text-white">
-                  All
-                </TabsTrigger>
-                <TabsTrigger value="open" className="data-[state=active]:bg-(--color-accent-primary) text-(--color-foreground) data-[state=active]:text-white">
-                  Open
-                </TabsTrigger>
-                <TabsTrigger value="in-progress" className="data-[state=active]:bg-(--color-accent-primary) text-(--color-foreground) data-[state=active]:text-white">
-                  In Progress
-                </TabsTrigger>
-                <TabsTrigger value="closed" className="data-[state=active]:bg-(--color-accent-primary) text-(--color-foreground) data-[state=active]:text-white">
-                  Closed
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
+            <div className="mb-4 flex gap-4">
+              <div className="relative flex-grow">
+                <Input
+                  placeholder="Search tickets, users..."
+                  className="pl-3 bg-(--color-background) border-[#2D3237] text-(--color-foreground)"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+              <div className="w-40">
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="bg-(--color-background) border-[#2D3237] text-(--color-foreground)">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-(--color-background) border-[#2D3237] text-(--color-foreground)">
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="open">Open</SelectItem>
+                    <SelectItem value="in-progress">In Progress</SelectItem>
+                    <SelectItem value="closed">Closed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
             
             {loading ? (
               <div className="flex justify-center items-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-(--color-foreground)" />
               </div>
-            ) : getFilteredTickets().length === 0 ? (
+            ) : sortedTickets().length === 0 ? (
               <div className="text-center py-16 border border-[#2D3237] rounded-lg">
                 <MessageSquare className="h-12 w-12 mx-auto text-(--color-foreground)/40" />
                 <h3 className="mt-4 text-lg font-medium text-(--color-foreground)">No tickets found</h3>
                 <p className="mt-2 text-(--color-foreground)/70">
-                  {activeTab === "all" ? "You haven't created any support tickets yet." : `You don't have any ${activeTab} tickets.`}
+                  {searchQuery ? "Try adjusting your search query" : "There are no support tickets to display"}
                 </p>
-                <Button 
-                  className="mt-4 bg-(--color-accent-primary) hover:bg-(--color-accent-primary)/80"
-                  onClick={() => setCreateDialogOpen(true)}
-                >
-                  Create Your First Ticket
-                </Button>
               </div>
             ) : (
-              <div className="space-y-3">
-                {getFilteredTickets().map((ticket) => (
+              <div className="space-y-3 overflow-y-auto max-h-[calc(100vh-220px)]">
+                {sortedTickets().map((ticket) => (
                   <div 
                     key={ticket._id} 
-                    className={`cursor-pointer p-4 border rounded-lg transition-colors ${
+                    className={` cursor-pointer p-4 mr-4 border rounded-lg transition-colors ${
                       selectedTicket && selectedTicket._id === ticket._id 
                         ? "border-(--color-accent-primary) bg-(--color-accent-primary)/5" 
                         : "border-[#2D3237] hover:border-(--color-accent-primary)/50"
@@ -356,13 +342,22 @@ export default function CustomerSupport() {
                       <h3 className="font-medium text-(--color-foreground) truncate flex-1">{ticket.subject}</h3>
                       {renderStatusBadge(ticket.status)}
                     </div>
+                    
+                    <div className="flex items-center gap-1 mt-1 text-xs text-(--color-foreground)/70">
+                      <User className="h-3 w-3" />
+                      <span>
+                        {ticket.userId && ticket.userId.email ? ticket.userId.email : "Unknown User"}
+                      </span>
+                    </div>
+                    
                     <p className="text-sm text-(--color-foreground)/70 mt-2 line-clamp-2">
                       {ticket.message}
                     </p>
+                    
                     <div className="flex justify-between items-center mt-3 text-xs text-(--color-foreground)/60">
                       <div className="flex items-center">
                         <Clock className="h-3 w-3 mr-1" />
-                        {formatDate(ticket.createdAt)}
+                        {formatDate(ticket.updatedAt || ticket.createdAt)}
                       </div>
                       <div>
                         {ticket.replies?.length || 0} {ticket.replies?.length === 1 ? 'reply' : 'replies'}
@@ -389,51 +384,75 @@ export default function CustomerSupport() {
                     <div className="flex items-center gap-2">
                       {renderStatusBadge(selectedTicket.status)}
                       
-                      {/* Close Ticket Button - Only show for open or in-progress tickets */}
+                      {/* Status Dropdown */}
                       {selectedTicket.status !== 'closed' && (
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              className="border-red-500/20 text-red-500 hover:bg-red-500/10"
-                            >
-                              <XCircle className="h-4 w-4 mr-2" />
-                              Close Ticket
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent className="bg-(--color-background) border-[#2D3237] text-(--color-foreground)">
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Close this ticket?</AlertDialogTitle>
-                              <AlertDialogDescription className="text-(--color-foreground)/70">
-                                Are you sure you want to close this ticket? This action cannot be undone.
-                                Once closed, you won't be able to add new replies.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel className="bg-(--color-background) border-[#2D3237] text-(--color-foreground)">
-                                Cancel
-                              </AlertDialogCancel>
-                              <AlertDialogAction
-                                className="bg-red-500 hover:bg-red-600 text-white"
-                                onClick={handleCloseTicket}
-                                disabled={closingTicket}
-                              >
-                                {closingTicket && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                                Close Ticket
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                        <Select 
+                          value={selectedTicket.status} 
+                          onValueChange={(value) => handleUpdateStatus(value)}
+                          disabled={closingTicket}
+                        >
+                          <SelectTrigger className="h-8 px-3 w-40 bg-(--color-background) border-[#2D3237] text-(--color-foreground)">
+                            <SelectValue placeholder="Update Status" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-(--color-background) border-[#2D3237] text-(--color-foreground)">
+                            <SelectItem value="open">Set to Open</SelectItem>
+                            <SelectItem value="in-progress">Set to In Progress</SelectItem>
+                            <SelectItem value="closed">Close Ticket</SelectItem>
+                          </SelectContent>
+                        </Select>
                       )}
                     </div>
+                  </div>
+                  
+                  {/* User Info */}
+                  <div className="mt-4 mb-1">
+                    <Button 
+                      variant="outline" 
+                      className="text-xs h-7 border-[#2D3237] text-(--color-foreground)"
+                      onClick={() => setShowUserInfo(!showUserInfo)}
+                    >
+                      <User className="h-3 w-3 mr-1" />
+                      <span>Customer Details</span>
+                      {showUserInfo ? <ChevronDown className="h-3 w-3 ml-1" /> : <ChevronRight className="h-3 w-3 ml-1" />}
+                    </Button>
+                    
+                    {showUserInfo && (
+                      <div className="bg-(--color-foreground)/5 p-3 rounded-md mt-2 text-sm border border-[#2D3237]">
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <span className="text-(--color-foreground)/70">Name:</span>
+                            <span className="ml-1 text-(--color-foreground)">
+                              {selectedTicket.userId && selectedTicket.userId.name ? selectedTicket.userId.name : "N/A"}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-(--color-foreground)/70">Email:</span>
+                            <span className="ml-1 text-(--color-foreground)">
+                              {selectedTicket.userId && selectedTicket.userId.email ? selectedTicket.userId.email : "N/A"}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-(--color-foreground)/70">Created:</span>
+                            <span className="ml-1 text-(--color-foreground)">{formatDate(selectedTicket.createdAt)}</span>
+                          </div>
+                          <div>
+                            <span className="text-(--color-foreground)/70">Last Update:</span>
+                            <span className="ml-1 text-(--color-foreground)">
+                              {formatDate(selectedTicket.updatedAt || selectedTicket.createdAt)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {/* Initial message */}
                   <div className="p-4 rounded-lg bg-(--color-foreground)/5 border border-[#2D3237]">
                     <div className="flex justify-between items-center mb-2">
-                      <div className="font-medium text-(--color-foreground)">You</div>
+                      <div className="font-medium text-(--color-foreground)">
+                        {selectedTicket.userId && selectedTicket.userId.name ? selectedTicket.userId.name : "Customer"}
+                      </div>
                       <div className="text-xs text-(--color-foreground)/60">{formatDate(selectedTicket.createdAt)}</div>
                     </div>
                     <p className="text-(--color-foreground)/90 whitespace-pre-wrap">{selectedTicket.message}</p>
@@ -451,7 +470,7 @@ export default function CustomerSupport() {
                     >
                       <div className="flex justify-between items-center mb-2">
                         <div className="font-medium text-(--color-foreground)">
-                          {reply.sender === 'admin' ? 'Merchant' : 'You'}
+                          {reply.sender === 'admin' ? 'Merchant' : (selectedTicket.userId && selectedTicket.userId.name ? selectedTicket.userId.name : "Customer")}
                         </div>
                         <div className="text-xs text-(--color-foreground)/60">{formatDate(reply.createdAt)}</div>
                       </div>
@@ -491,27 +510,17 @@ export default function CustomerSupport() {
                     <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/20 text-center">
                       <CheckCircle className="h-6 w-6 mx-auto text-green-500 mb-2" />
                       <p className="text-(--color-foreground)">This ticket has been resolved and closed.</p>
-                      <p className="text-sm text-(--color-foreground)/70 mt-1">
-                        If you need further assistance, please create a new ticket.
-                      </p>
                     </div>
                   )}
                 </CardContent>
               </Card>
             ) : (
               <div className="flex flex-col items-center justify-center h-96 border border-[#2D3237] rounded-lg">
-                <AlertCircle className="h-16 w-16 text-(--color-foreground)/30" />
+                <MessageSquare className="h-16 w-16 text-(--color-foreground)/30" />
                 <h3 className="mt-6 text-xl font-medium text-(--color-foreground)">No ticket selected</h3>
                 <p className="mt-2 text-(--color-foreground)/70 text-center max-w-md">
-                  Select a ticket from the list to view its details or create a new ticket to get support.
+                  Select a ticket from the list to view its details and respond to the customer.
                 </p>
-                <Button 
-                  className="mt-4 bg-(--color-accent-primary) hover:bg-(--color-accent-primary)/80"
-                  onClick={() => setCreateDialogOpen(true)}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create New Ticket
-                </Button>
               </div>
             )}
           </div>

@@ -86,12 +86,12 @@ https://i.ibb.co/kgJQ2qg7/wallpaperflare-com-wallpaper-1.jpg
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between">
                                     <Label htmlFor="password">Password</Label>
-                                    <Link
+                                    {/* <Link
                                         to="/forgot-password"
                                         className="text-sm text-(--color-light-ed)/60 hover:text-(--color-light-ed) transition-colors"
                                     >
                                         Forgot password?
-                                    </Link>
+                                    </Link> */}
                                 </div>
                                 <Input
                                     id="password"

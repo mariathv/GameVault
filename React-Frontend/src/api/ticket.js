@@ -12,7 +12,6 @@ export const createTicket = async (newTicket) => {
     }
 };
 
-// Fetch all tickets for the current user
 export const fetchUserTickets = async () => {
     try {
         console.log("Fetching user tickets");
@@ -23,8 +22,18 @@ export const fetchUserTickets = async () => {
         throw error;
     }
 };
+export const fetchAllTickets = async () => {
+    try {
+        console.log("Fetching all tickets");
+        const response = await api.get('/ticket/all');
+        console.log("tickets", response.data);
+        return response.data;
+    } catch (error) {
+        console.error('Failed to fetch tickets:', error?.response?.data || error.message);
+        throw error;
+    }
+};
 
-// Send a reply to an existing ticket
 export const sendTicketReply = async (ticketId, message) => {
     try {
         console.log("Sending reply to ticket:", ticketId);
@@ -46,3 +55,14 @@ export const closeTicket = async (ticketId) => {
         throw error;
     }
 };
+
+export const updateTicketStatus = async (ticketId, status) => {
+    const response = await api.patch(`/ticket/${ticketId}/status`, { status });
+
+    if (response.status !== 200) {
+      throw new Error('Failed to update ticket status');
+    }
+    
+    return response.data;
+    
+  };

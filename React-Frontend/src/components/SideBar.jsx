@@ -15,6 +15,7 @@ import {
     Plus,
     Gift,
     Menu,
+    MessageCircle,
 } from "lucide-react"
 import { ThemeToggle } from "./theme-toggle"
 
@@ -96,15 +97,15 @@ const Sidebar = () => {
             path: "/admin/promo-codes",
             badge: null,
         },
+        {
+            title: "Customer Support",
+            icon: <MessageCircle size={20} />,
+            path: "/admin/customer-support",
+            badge: null,
+        },
     ]
 
     const bottomMenuItems = [
-        {
-            title: "Notifications",
-            icon: <Bell size={20} />,
-            path: "/admin/notifications",
-            badge: "3",
-        },
         {
             title: "Help",
             icon: <HelpCircle size={20} />,

@@ -506,9 +506,6 @@ export default function GamePage() {
                                 <TabsTrigger value="features" className="data-[state=active]:bg-(--color-light-ed)/10">
                                     Features
                                 </TabsTrigger>
-                                <TabsTrigger value="system" className="data-[state=active]:bg-(--color-light-ed)/10">
-                                    System Requirements
-                                </TabsTrigger>
 
                                 <TabsTrigger value="trailer" className="data-[state=active]:bg-(--color-light-ed)/10">
                                     Trailer
@@ -541,18 +538,7 @@ export default function GamePage() {
                             </div>
                         </TabsContent>
 
-                        <TabsContent value="system" className="pt-6">
-                            <div className="space-y-6">
-                                <div className="space-y-2">
-                                    <h3 className="font-bold text-lg text-(--color-light-ed)">Minimum Requirements</h3>
-                                    <p className="text-(--color-light-ed)/80">{game.systemRequirements?.minimum.os}</p>
-                                </div>
-                                <div className="space-y-2">
-                                    <h3 className="font-bold text-lg text-(--color-light-ed)">Recommended Requirements</h3>
-                                    <p className="text-(--color-light-ed)/80">{game.systemRequirements?.recommended.os}</p>
-                                </div>
-                            </div>
-                        </TabsContent>
+                        
                     </Tabs>
                 </div>
             </main>

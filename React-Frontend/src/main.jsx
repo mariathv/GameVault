@@ -25,8 +25,8 @@ import Dashboard from './pages/admin/dashboard';
 import { Footer } from './components/Footer';
 import Header from './components/Header';
 
-import RequireAdmin from './components/RequireAdmin';
-import RequireClient from './components/RequireClient';
+import RequireAdmin from './components/requireAdmin';
+import RequireClient from './components/requireClient';
 import Users from './pages/admin/Users';
 import Profile from './pages/profile/profile';
 import ExplorePage from './pages/explore/explore';
@@ -42,6 +42,7 @@ import VerifyEmail from './pages/auth/verify';
 import { Toaster } from "@/components/ui/sonner"
 import PromoCodes from './pages/admin/promo-codes';
 import AccountSettingsPage from "./pages/account-settings/index"
+import AdminCustomerSupport from './pages/admin/ad-customer-support';
 import TwoFactorAuthPage from './pages/auth/two-factor';
 import { CurrencyProvider } from './contexts/currency-context';
 
@@ -114,6 +115,7 @@ const App = () => {
                       <Route path="settings" element={<Settings />} />
                       <Route path="help" element={<Help />} />
                       <Route path="promo-codes" element={<PromoCodes />} />
+                      <Route path="customer-support" element={<AdminCustomerSupport />} />
                     </Route>
 
                     {/* Fallback Route */}
