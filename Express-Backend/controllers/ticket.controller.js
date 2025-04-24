@@ -73,7 +73,25 @@ const ticketController = {
         } catch (err) {
             res.status(500).json({ error: 'Failed to close ticket' });
         }
-    }
+    },
+    updateTicketStatus: async (req, res) => {
+        try {
+          const { ticketId } = req.params;
+          const { status } = req.body;
+      
+          const ticket = await Ticket.findByIdAndUpdate(
+            ticketId,
+            { status, updatedAt: new Date() },
+            { new: true }
+          );
+      
+          if (!ticket) return res.status(404).json({ error: 'Ticket not found' });
+      
+          res.status(200).json(ticket);
+        } catch (err) {
+          res.status(500).json({ error: 'Failed to update ticket status' });
+        }
+      }
 };
 
 module.exports = ticketController;
