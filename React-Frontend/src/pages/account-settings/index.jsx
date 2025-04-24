@@ -146,21 +146,7 @@ export default function AccountSettingsPage() {
     })
   }
 
-  const handlePrivacyToggle = (setting) => {
-    setPrivacySettings({
-      ...privacySettings,
-      [setting]: !privacySettings[setting],
-    })
-    showNotification("Privacy setting updated", "success")
-  }
 
-  const handleNotificationToggle = (setting) => {
-    setNotificationSettings({
-      ...notificationSettings,
-      [setting]: !notificationSettings[setting],
-    })
-    showNotification("Notification setting updated", "success")
-  }
 
   // Update the handleSaveProfile function to use apiRequest
   const handleSaveProfile = async () => {
@@ -376,17 +362,6 @@ export default function AccountSettingsPage() {
                   <span>Privacy</span>
                 </button> */}
 
-                <button
-                  onClick={() => setActiveTab("notifications")}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-md transition ${
-                    activeTab === "notifications"
-                      ? "bg-[#2a3349] text-white"
-                      : "text-gray-400 hover:bg-[#2a3349]/50 hover:text-white"
-                  }`}
-                >
-                  <Bell className="h-5 w-5" />
-                  <span>Notifications</span>
-                </button>
 
                 <button
                   onClick={() => setActiveTab("payment")}
@@ -655,62 +630,7 @@ export default function AccountSettingsPage() {
                 </div>
               )}
 
-              {/* Notifications Tab */}
-              {activeTab === "notifications" && (
-                <div className="p-6">
-                  <h2 className="text-2xl font-bold text-white mb-6">Notification Settings</h2>
-
-                  <div className="space-y-6">
-                    <div className="bg-[#0f1623] p-6 rounded-lg">
-                      <h3 className="text-xl font-bold text-white mb-4">Notification Channels</h3>
-
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-white">Email Notifications</p>
-                            <p className="text-gray-400 text-sm">Receive notifications via email</p>
-                          </div>
-                          <Switch
-                            checked={notificationSettings.emailNotifications}
-                            onCheckedChange={() => handleNotificationToggle("emailNotifications")}
-                            className="data-[state=checked]:bg-white"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="bg-[#0f1623] p-6 rounded-lg">
-                      <h3 className="text-xl font-bold text-white mb-4">Notification Types</h3>
-
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-white">Special Offers</p>
-                            <p className="text-gray-400 text-sm">Discounts and special promotions</p>
-                          </div>
-                          <Switch
-                            checked={notificationSettings.specialOffers}
-                            onCheckedChange={() => handleNotificationToggle("specialOffers")}
-                            className="data-[state=checked]:bg-white"
-                          />
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-white">New Releases</p>
-                            <p className="text-gray-400 text-sm">Notifications about new game releases</p>
-                          </div>
-                          <Switch
-                            checked={notificationSettings.newReleases}
-                            onCheckedChange={() => handleNotificationToggle("newReleases")}
-                            className="data-[state=checked]:bg-white"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
+              
 
               {/* Payment Methods Tab */}
               {activeTab === "payment" && (
