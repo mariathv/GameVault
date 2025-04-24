@@ -33,6 +33,8 @@ export default function GamePage() {
     const [gameFeatures, setFeatures] = useState(null)
     const [companies, setCompanies] = useState(null)
     const [themes, setThemes] = useState(null)
+    const [platformDetails, setPlatformDetails] = useState([])
+    const [releaseDates, setReleaseDates] = useState([])
     const [loading, setLoading] = useState(true)
     const [isInWishlist, setIsInWishlist] = useState(false)
     const [wishlistLoading, setWishlistLoading] = useState(false)
@@ -105,6 +107,8 @@ export default function GamePage() {
                 fetchGameVideos(gameData.videos),
                 fetchGameCompanies(gameData.involved_companies),
                 fetchGameThemes(gameData.themes),
+                fetchPlatforms(gameData.platforms).then(setPlatformDetails),
+                fetchReleaseDates(gameData.release_dates).then(setReleaseDates)
             ]
 
             setFeatures(extractFeaturesFromGame(gameData))
@@ -148,6 +152,24 @@ export default function GamePage() {
         const fetch = await fetchData(`games/get/themes?ids=${thms}`)
         setThemes(fetch.queryResult)
     }
+
+    const fetchPlatforms = async (platformIds) => {
+        if (!platformIds || platformIds.length === 0) return [];
+        const res = await fetchData(`games/get/platforms?ids=${platformIds}`);
+        const platforms = res.queryResult || [];
+        // If more than 2 platforms, select 2 at random
+        if (platforms.length > 2) {
+            const shuffled = [...platforms].sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, 2);
+        }
+        return platforms;
+    };
+
+    const fetchReleaseDates = async (releaseDateIds) => {
+        if (!releaseDateIds || releaseDateIds.length === 0) return [];
+        const res = await fetchData(`games/get/release-dates?ids=${releaseDateIds}`);
+        return res.queryResult || [];
+    };
 
     const handleWishlistAction = async () => {
         if (!user) {
@@ -483,12 +505,16 @@ export default function GamePage() {
                                 </span>
                             </div>
                             <div className="flex flex-col sm:flex-row sm:justify-between">
-                                <span className="font-bold">Release Date:</span>
-                                <span className="text-(--color-light-ed) mt-1 sm:mt-0">{game.release_dates}</span>
+                                <span className="font-bold">Platforms:</span>
+                                <span className="text-(--color-light-ed) mt-1 sm:mt-0">
+                                    {platformDetails.map(p => p.name).join(", ")}
+                                </span>
                             </div>
                             <div className="flex flex-col sm:flex-row sm:justify-between">
-                                <span className="font-bold">Platforms:</span>
-                                <span className="text-(--color-light-ed) mt-1 sm:mt-0">{game.platforms.join(", ")}</span>
+                                <span className="font-bold">Release Date:</span>
+                                <span className="text-(--color-light-ed) mt-1 sm:mt-0">
+                                    {releaseDates[0]?.human || "N/A"}
+                                </span>
                             </div>
                         </div>
                     </div>
