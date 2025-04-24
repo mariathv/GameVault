@@ -3,7 +3,7 @@ require("dotenv").config();
 const mongoose = require("mongoose");
 const app = require("./app");
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5173;
 
 // ---------------- connect mongo -------------------
 const DB = process.env.MONGOOSE_CON.replace("<PASSWORD>", process.env.DATABASE_PASSWORD);
