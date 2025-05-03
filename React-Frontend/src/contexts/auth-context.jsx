@@ -35,7 +35,7 @@ export function AuthProvider({ children }) {
         if (response.require2FA) {
           // Only redirect to 2FA page if not already there
           if (location.pathname !== "/two-factor-auth") {
-            navigate("/two-factor-auth");
+            // navigate("/two-factor-auth");
           }
           setLoading(false);
           return;
