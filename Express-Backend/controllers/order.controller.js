@@ -96,19 +96,39 @@ const orderController = {
             }
 
             if (date) {
-                const [month, day, year] = date.split('/');
-                const fullYear = `20${year}`;
-                const formattedDate = new Date(`${fullYear}-${month}-${day}`);
-
-                if (!isNaN(formattedDate.getTime())) {
-                    filter['createdAt'] = {
-                        $gte: formattedDate.setHours(0, 0, 0, 0),
-                        $lte: formattedDate.setHours(23, 59, 59, 999),
-                    };
+                const parsedDate = new Date(date); // expects "YYYY-MM-DD"
+              
+                if (!isNaN(parsedDate.getTime())) {
+                  const startOfDay = new Date(Date.UTC(
+                    parsedDate.getUTCFullYear(),
+                    parsedDate.getUTCMonth(),
+                    parsedDate.getUTCDate(),
+                    0, 0, 0, 0
+                  ));
+              
+                  const endOfDay = new Date(Date.UTC(
+                    parsedDate.getUTCFullYear(),
+                    parsedDate.getUTCMonth(),
+                    parsedDate.getUTCDate(),
+                    23, 59, 59, 999
+                  ));
+              
+                  filter['createdAt'] = {
+                    $gte: startOfDay,
+                    $lte: endOfDay,
+                  };
+              
+                  console.log(`Filtering between ${startOfDay.toISOString()} and ${endOfDay.toISOString()}`);
                 } else {
-                    return res.status(400).json({ message: "Invalid date format" });
+                  return res.status(400).json({ message: "Invalid date format" });
                 }
-            }
+              }
+              
+              
+
+              
+
+              
 
             console.log("Filters being applied:", filter);
 
@@ -122,6 +142,47 @@ const orderController = {
         }
 
     },
+    getOrderDetails: async (req, res) => {
+        try {
+          const { orderId } = req.params;
+      
+          if (!orderId) {
+            return res.status(400).json({ message: "Order ID is required" });
+          }
+      
+          const order = await Order.findById(orderId).populate('user', 'name email');
+          if (!order) {
+            return res.status(404).json({ message: "Order not found" });
+          }
+      
+          const formattedOrder = {
+            _id: order._id,
+            userId: order.user,
+            status: order.status,
+            totalAmount: order.totalAmount,
+            createdAt: order.createdAt,
+            updatedAt: order.updatedAt,
+            paymentInfo: order.paymentInfo,
+            items: order.games.map(game => ({
+              gameId: game.gameId, 
+              title: game.title,
+              cover_url: game.cover_url,
+              price: game.price,
+              quantity: game.quantity,
+              platform: Array.isArray(game.genre) ? game.genre.join(', ') : "PC",
+              keys: game.gameKeys.map(key => ({
+                code: key
+              }))
+            }))
+          };
+      
+          res.status(200).json(formattedOrder);
+        } catch (error) {
+          console.error("Error fetching order details:", error);
+          res.status(500).json({ message: "Error fetching order details", error: error.message });
+        }
+      },
+      
     getRecentOrders: async (req, res) => {
         try {
             const { limit } = req.query;

@@ -77,7 +77,41 @@ const mailController = {
             console.error('Failed to send 2FA email:', error?.response?.data || error.message);
             return false;
         }
+    },
+    sendRefundConfirmation: async (email, gameTitle, refundedKey, refundAmount) => {
+        try {
+            const templatePath = path.join(__dirname, '../templates/refund-confirmation.html');
+            const templateContent = await fs.readFile(templatePath, 'utf8');
+            const template = handlebars.compile(templateContent);
+    
+            const htmlContent = template({ email, gameTitle, refundedKey, refundAmount });
+    
+            await sendMail(email, 'Your Refund Has Been Processed', htmlContent, true);
+    
+            console.log('Refund confirmation email sent!');
+        } catch (error) {
+            console.error('Failed to send refund email:', error?.response?.data || error.message);
+            throw error;
+        }
+    },
+    
+    sendReplacementKey: async (email, gameTitle, oldKey, newKey) => {
+        try {
+            const templatePath = path.join(__dirname, '../templates/replacement-key.html');
+            const templateContent = await fs.readFile(templatePath, 'utf8');
+            const template = handlebars.compile(templateContent);
+    
+            const htmlContent = template({ email, gameTitle, oldKey, newKey });
+    
+            await sendMail(email, 'Your Replacement Game Key', htmlContent, true);
+    
+            console.log('Replacement key email sent!');
+        } catch (error) {
+            console.error('Failed to send replacement key email:', error?.response?.data || error.message);
+            throw error;
+        }
     }
+    
 
 
 

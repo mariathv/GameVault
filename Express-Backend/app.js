@@ -15,6 +15,7 @@ const orderRouter = require("./routes/order.router");
 const inventoryRoutes = require('./routes/inventory.router');
 const ticketRouter = require("./routes/ticket.router");
 const promoRouter = require("./routes/promo.router");
+const refundRouter = require("./routes/refund.router");
 
 const app = express();
 
@@ -56,6 +57,7 @@ app.use("/api/v1/order", orderRouter);
 app.use('/api/v1/inventory', inventoryRoutes);
 app.use("/api/v1/ticket", ticketRouter);
 app.use("/api/v1/promo", promoRouter);
+app.use("/api/v1/refund", refundRouter);
 
 app.get("/", (req, res) => {
     res.send("Server Running");

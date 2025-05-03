@@ -33,4 +33,16 @@ export const verifyEmail = async (token) => {
     }
 };
 
+export const updateUserWallet = async (userId, amount, type = "add") => {
+    try {
+      const url = `users/${userId}/wallet`;
+      const response = await api.patch(url, { amount, type });
+      return response.data;
+    } catch (error) {
+      console.error('Update wallet failed:', error?.response?.data || error.message);
+      throw error;
+    }
+  };
+  
+
 

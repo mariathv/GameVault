@@ -44,10 +44,14 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    passwordChangedAt: Date
+    passwordChangedAt: Date,
+
+    wallet: {
+        type: Number,
+        default: 0, 
+    }
 });
 
-// Hash password before saving
 userSchema.pre("save", async function (next) {
     if (!this.isModified("password")) return next();
 
@@ -56,7 +60,6 @@ userSchema.pre("save", async function (next) {
     next();
 });
 
-// Check if password changed after JWT was issued
 userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
     if (this.passwordChangedAt) {
         const changedTimestamp = parseInt(this.passwordChangedAt.getTime() / 1000, 10);
@@ -64,8 +67,19 @@ userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
     }
     return false;
 };
+userSchema.methods.updateWallet = async function (amount, type = "add") {
+    if (amount <= 0) {
+        throw new Error("Amount must be greater than zero");
+    }
+
+    if (type === "deduct" && this.wallet < amount) {
+        throw new Error("Insufficient wallet balance");
+    }
+
+    this.wallet += (type === "add" ? amount : -amount);
+    await this.save();
+};
+
 
 const user = mongoose.model("user", userSchema, "user");
 module.exports = user;
-
-

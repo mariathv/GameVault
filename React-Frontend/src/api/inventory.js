@@ -12,11 +12,12 @@ export const getUserInventory = async (userId) => {
             let response = await api.get(url);
             if (response.data) {
                 success = true;
+                console.log(response.data)
                 return response.data;
             }
         }
     } catch (error) {
-        console.error('fetch artworks failed:', error?.response?.data || error.message);
+        console.error('fetch user inventory failed:', error?.response?.data || error.message);
         throw error;
     }
 };
