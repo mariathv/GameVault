@@ -43,6 +43,17 @@ export const updateUserWallet = async (userId, amount, type = "add") => {
       throw error;
     }
   };
+
+  export const toggle2FA = async () => {
+    try {
+        const url = 'auth/toggle-2fa';
+        const response = await api.post(url);
+        return response.data;
+    } catch (error) {
+        console.error('Toggle 2FA failed:', error?.response?.data || error.message);
+        throw error;
+    }
+};
   
 
 

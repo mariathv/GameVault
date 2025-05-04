@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   CreditCard,
@@ -8,6 +8,7 @@ import {
   ArrowLeft,
   CheckCircle,
   Wallet,
+  CreditCardIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,7 +35,8 @@ import { useCart } from "@/src/contexts/cart-context";
 import { FaCreditCard } from "react-icons/fa";
 import { SiVisa, SiMastercard, SiDiscover } from "react-icons/si";
 import { placeOrder } from "@/src/api/order";
-import { updateUserWallet } from "@/src/api/users"; // Import the new API function
+import { updateUserWallet } from "@/src/api/users";
+import { createCustomer, saveCard, processPayment } from "@/src/api/payment";
 import { useAuth } from "@/src/contexts/auth-context";
 import { useCurrency } from "@/src/contexts/currency-context";
 
@@ -46,18 +48,22 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState("credit-card");
   const [processedData, setProcessedData] = useState(null);
   const [walletError, setWalletError] = useState("");
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [cardNonce, setCardNonce] = useState(null);
+  const [paymentFormErrors, setPaymentFormErrors] = useState(null);
+  const [squareScript, setSquareScript] = useState(null);
+  const cardRef = useRef(null); // Ref to store the card instance
+  const [squarePaymentLoaded, setSquarePaymentLoaded] = useState(false); // Track if the square payment form is loaded
+  const [isCardInitialized, setIsCardInitialized] = useState(false); // Prevent multiple initializations
+
   const [formState, setFormState] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
+    firstName: user?.firstName || "",
+    lastName: user?.lastName || "",
+    email: user?.email || "",
     address: "",
     city: "",
     state: "",
     zipCode: "",
-    cardNumber: "",
-    cardName: "",
-    expiryDate: "",
-    cvv: "",
   });
 
   const [errors, setErrors] = useState({
@@ -68,14 +74,82 @@ export default function CheckoutPage() {
     city: "",
     state: "",
     zipCode: "",
-    cardNumber: "",
-    cardName: "",
-    expiryDate: "",
-    cvv: "",
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
+  const [isSquareSDKReady, setIsSquareSDKReady] = useState(false);
+
+  useEffect(() => {
+    const loadSquareSDK = () => {
+      return new Promise((resolve, reject) => {
+        if (window.Square) {
+          resolve();
+          return;
+        }
+
+        const script = document.createElement("script");
+        script.src = "https://js.squareup.com/v2/paymentform";
+        script.async = true;
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error("Failed to load Square SDK"));
+
+        document.body.appendChild(script);
+      });
+    };
+
+    loadSquareSDK()
+      .then(() => {
+        console.log("Square SDK loaded successfully");
+        setIsSquareSDKReady(true); // mark SDK ready
+      })
+      .catch((error) => {
+        console.error(error.message);
+      });
+
+    return () => {
+      if (cardRef.current) {
+        cardRef.current.destroy();
+        cardRef.current = null;
+      }
+    };
+  }, []);
+
+  // Handle card init/destroy on paymentMethod change
+  useEffect(() => {
+    // Only try to init card if SDK is ready
+    if (paymentMethod === "credit-card" && isSquareSDKReady) {
+      initializeCard();
+    } else {
+      if (cardRef.current) {
+        cardRef.current.destroy();
+        cardRef.current = null;
+        console.log("Square card destroyed on payment method change");
+      }
+    }
+  }, [paymentMethod, isSquareSDKReady]);
+
+  async function initializeCard() {
+    if (!window.Square) {
+      console.error("Square SDK is still not available");
+      return;
+    }
+
+    try {
+      const payments = window.Square.payments(
+        import.meta.env.VITE_API_SQUARE_APPLICATION_ID,
+        import.meta.env.VITE_API_SQUARE_LOCATION_ID
+      );
+
+      const card = await payments.card();
+      await card.attach("#card-container");
+      cardRef.current = card;
+      setSquarePaymentLoaded(true);
+      console.log("Square card initialized");
+    } catch (error) {
+      console.error("Error initializing Square card:", error);
+    }
+  }
 
   const validateForm = () => {
     let validationErrors = {};
@@ -106,24 +180,6 @@ export default function CheckoutPage() {
       validationErrors.zipCode = "ZIP Code is required";
       formValid = false;
     }
-    if (paymentMethod === "credit-card") {
-      if (!formState.cardNumber) {
-        validationErrors.cardNumber = "Card Number is required";
-        formValid = false;
-      }
-      if (!formState.cardName) {
-        validationErrors.cardName = "Name on Card is required";
-        formValid = false;
-      }
-      if (!formState.expiryDate) {
-        validationErrors.expiryDate = "Expiry Date is required";
-        formValid = false;
-      }
-      if (!formState.cvv) {
-        validationErrors.cvv = "CVV is required";
-        formValid = false;
-      }
-    }
 
     setErrors(validationErrors);
     return formValid;
@@ -140,39 +196,42 @@ export default function CheckoutPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    setIsSubmitting(true);
-    setWalletError("");
-    console.log(user, "userid");
-
-    // Check if using wallet payment and has insufficient funds
-    if (paymentMethod === "wallet" && user.wallet < cart.total) {
-      setWalletError(
-        `Insufficient funds. Your wallet balance (${convertPrice(
-          user.wallet
-        )}) is less than the total (${convertPrice(cart.total)})`
-      );
-      setIsSubmitting(false);
+    if (!validateForm()) {
       return;
     }
 
-    const orderData = {
-      userId: user._id,
-      games: cart.items.map((item) => ({
-        gameId: item.game._id,
-        quantity: item.quantity,
-      })),
-      paymentMethod,
-    };
+    setIsSubmitting(true);
+    setWalletError("");
 
     try {
-      const response = await placeOrder(
-        orderData.userId,
-        orderData.games,
-        orderData.paymentMethod
-      );
-
-      // If payment method is wallet, update the user's wallet (deduct funds)
+      // Check if using wallet payment and has insufficient funds
       if (paymentMethod === "wallet") {
+        if (user.wallet < cart.total) {
+          setWalletError(
+            `Insufficient funds. Your wallet balance (${convertPrice(
+              user.wallet
+            )}) is less than the total (${convertPrice(cart.total)})`
+          );
+          setIsSubmitting(false);
+          return;
+        }
+
+        const orderData = {
+          userId: user._id,
+          games: cart.items.map((item) => ({
+            gameId: item.game._id,
+            quantity: item.quantity,
+          })),
+          paymentMethod: "wallet",
+        };
+
+        // Process wallet payment
+        const response = await placeOrder(
+          orderData.userId,
+          orderData.games,
+          orderData.paymentMethod
+        );
+
         // Update wallet in the database
         const walletResponse = await updateUserWallet(
           user._id,
@@ -184,22 +243,96 @@ export default function CheckoutPage() {
           ...user,
           wallet: walletResponse.data.wallet,
         });
+
+        setProcessedData(response);
+        setIsComplete(true);
+        clearCart();
+      } else if (paymentMethod === "credit-card") {
+        setIsProcessingPayment(true);
+
+        if (!cardRef.current) {
+          console.error("Card is not initialized or attached yet.");
+          setPaymentFormErrors("Payment form is not ready. Please try again.");
+          setIsProcessingPayment(false);
+          return;
+        }
+
+        const result = await cardRef.current.tokenize();
+
+        if (result.status === "OK") {
+          // Create or get customer
+          let customerId;
+          try {
+            const customerResponse = await createCustomer({
+              firstName: formState.firstName,
+              lastName: formState.lastName,
+              email: formState.email,
+              addressLine1: formState.address,
+              city: formState.city,
+              state: formState.state,
+              postalCode: formState.zipCode,
+              country: "US",
+              referenceId: user._id,
+            });
+            customerId = customerResponse.data.customer.id;
+          } catch (err) {
+            console.error("Error creating customer:", err);
+            setPaymentFormErrors("Failed to process customer information");
+            setIsSubmitting(false);
+            setIsProcessingPayment(false);
+            return;
+          }
+
+          // Process payment
+          try {
+            const paymentData = {
+              sourceId: result.token,
+              customerId,
+              amount: cart.total,
+              currency: currency.code || "USD",
+              games: cart.items.map((item) => ({
+                gameId: item.game._id,
+                quantity: item.quantity,
+              })),
+              userId: user._id,
+            };
+
+            const paymentResponse = await processPayment(paymentData);
+
+            console.log("payment response,", paymentResponse);
+
+            setProcessedData({
+              order: {
+                games: paymentResponse.data.order.games || [],
+              },
+            });
+
+            setIsComplete(true);
+            clearCart();
+          } catch (err) {
+            console.error("Payment processing error:", err);
+            setPaymentFormErrors(
+              "Failed to process payment. Please try again."
+            );
+          }
+        } else {
+          setPaymentFormErrors(
+            result.errors.map((error) => error.message).join(", ")
+          );
+        }
+
+        setIsProcessingPayment(false);
       }
-
-      console.log(response);
-      setProcessedData(response);
-
-      setIsSubmitting(false);
-      setIsComplete(true);
-      clearCart();
     } catch (error) {
       console.error("Checkout error:", error);
-      setIsSubmitting(false);
       setWalletError("An error occurred during checkout. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   if (isComplete) {
+    console.log("processed", processedData);
     return (
       <div className="min-h-screen bg-(--color-background)">
         <main className="container mx-auto px-4 py-25">
@@ -279,6 +412,63 @@ export default function CheckoutPage() {
             <form onSubmit={handleSubmit}>
               <Card className="border-(--color-light-ed)/10 bg-(--color-light-ed)/5 text-(--color-light-ed) mb-6">
                 <CardHeader>
+                  <CardTitle>Your Information</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="firstName">First Name</Label>
+                      <Input
+                        id="firstName"
+                        name="firstName"
+                        value={formState.firstName}
+                        onChange={handleInputChange}
+                        required
+                        className="bg-(--color-light-ed)/5 border-(--color-light-ed)/10 text-(--color-light-ed)"
+                      />
+                      {errors.firstName && (
+                        <p className="text-red-400 text-sm">
+                          {errors.firstName}
+                        </p>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="lastName">Last Name</Label>
+                      <Input
+                        id="lastName"
+                        name="lastName"
+                        value={formState.lastName}
+                        onChange={handleInputChange}
+                        required
+                        className="bg-(--color-light-ed)/5 border-(--color-light-ed)/10 text-(--color-light-ed)"
+                      />
+                      {errors.lastName && (
+                        <p className="text-red-400 text-sm">
+                          {errors.lastName}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      value={formState.email}
+                      onChange={handleInputChange}
+                      required
+                      className="bg-(--color-light-ed)/5 border-(--color-light-ed)/10 text-(--color-light-ed)"
+                    />
+                    {errors.email && (
+                      <p className="text-red-400 text-sm">{errors.email}</p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-(--color-light-ed)/10 bg-(--color-light-ed)/5 text-(--color-light-ed) mb-6">
+                <CardHeader>
                   <CardTitle>Shipping Address</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -292,6 +482,9 @@ export default function CheckoutPage() {
                       required
                       className="bg-(--color-light-ed)/5 border-(--color-light-ed)/10 text-(--color-light-ed)"
                     />
+                    {errors.address && (
+                      <p className="text-red-400 text-sm">{errors.address}</p>
+                    )}
                   </div>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                     <div className="space-y-2">
@@ -302,6 +495,19 @@ export default function CheckoutPage() {
                         value={formState.city}
                         onChange={handleInputChange}
                         required
+                        className="bg-(--color-light-ed)/5 border-(--color-light-ed)/10 text-(--color-light-ed)"
+                      />
+                      {errors.city && (
+                        <p className="text-red-400 text-sm">{errors.city}</p>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="state">State</Label>
+                      <Input
+                        id="state"
+                        name="state"
+                        value={formState.state}
+                        onChange={handleInputChange}
                         className="bg-(--color-light-ed)/5 border-(--color-light-ed)/10 text-(--color-light-ed)"
                       />
                     </div>
@@ -315,6 +521,9 @@ export default function CheckoutPage() {
                         required
                         className="bg-(--color-light-ed)/5 border-(--color-light-ed)/10 text-(--color-light-ed)"
                       />
+                      {errors.zipCode && (
+                        <p className="text-red-400 text-sm">{errors.zipCode}</p>
+                      )}
                     </div>
                   </div>
                 </CardContent>
@@ -390,66 +599,31 @@ export default function CheckoutPage() {
                   )}
 
                   {paymentMethod === "credit-card" && (
-                    <div className="space-y-4 mt-4 p-4 border-(--color-light-ed)/10 rounded-md">
-                      <div className="flex gap-6 p-2  text-sm ">
-                        <div className="flex flex-col items-center space-y-2 cursor-pointer hover:text-blue-600">
+                    <div className="space-y-4 mt-4 p-4 border border-(--color-light-ed)/10 rounded-md">
+                      <div className="flex gap-6 p-2 text-sm">
+                        <div className="flex flex-col items-center space-y-2">
                           <SiVisa className="h-6 w-6 text-blue-500" />
                         </div>
-                        <div className="flex flex-col items-center space-y-2 cursor-pointer hover:text-red-600">
-                          <SiMastercard className="h-6 w-6  text-red-500" />
+                        <div className="flex flex-col items-center space-y-2">
+                          <SiMastercard className="h-6 w-6 text-red-500" />
                         </div>
-                        <div className="flex flex-col items-center space-y-2 cursor-pointer hover:text-blue-600">
-                          <SiDiscover className="h-6 w-6  text-blue-600" />
+                        <div className="flex flex-col items-center space-y-2">
+                          <SiDiscover className="h-6 w-6 text-blue-600" />
                         </div>
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="cardNumber">Card Number</Label>
-                        <Input
-                          id="cardNumber"
-                          name="cardNumber"
-                          value={formState.cardNumber}
-                          onChange={handleInputChange}
-                          placeholder="1234 5678 9012 3456"
-                          required
-                          className="bg-(--color-light-ed)/5 border-(--color-light-ed)/10 text-(--color-light-ed)"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="cardName">Name on Card</Label>
-                        <Input
-                          id="cardName"
-                          name="cardName"
-                          value={formState.cardName}
-                          onChange={handleInputChange}
-                          required
-                          className="bg-(--color-light-ed)/5 border-(--color-light-ed)/10 text-(--color-light-ed)"
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="expiryDate">Expiry Date</Label>
-                          <Input
-                            id="expiryDate"
-                            name="expiryDate"
-                            value={formState.expiryDate}
-                            onChange={handleInputChange}
-                            placeholder="MM/YY"
-                            required
-                            className="bg-(--color-light-ed)/5 border-(--color-light-ed)/10 text-(--color-light-ed)"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="cvv">CVV</Label>
-                          <Input
-                            id="cvv"
-                            name="cvv"
-                            value={formState.cvv}
-                            onChange={handleInputChange}
-                            placeholder="123"
-                            required
-                            className="bg-(--color-light-ed)/5 border-(--color-light-ed)/10 text-(--color-light-ed)"
-                          />
-                        </div>
+
+                      <div className="bg-(--color-light-ed)/5 border-(--color-light-ed)/10 text-(--color-light-ed) p-4 rounded-md">
+                        <div id="card-container"></div>
+                        {paymentFormErrors && (
+                          <p className="text-red-400 text-sm mt-2">
+                            {paymentFormErrors}
+                          </p>
+                        )}
+                        {!squarePaymentLoaded && (
+                          <p className="text-amber-400 text-sm mt-2">
+                            Loading payment form...
+                          </p>
+                        )}
                       </div>
                     </div>
                   )}
@@ -519,9 +693,15 @@ export default function CheckoutPage() {
                 <Button
                   className="w-full bg-(--color-light-ed) text-(--color-alt-foreground) hover:bg-(--color-light-ed)/90"
                   onClick={handleSubmit}
-                  disabled={isSubmitting}
+                  disabled={
+                    isSubmitting ||
+                    isProcessingPayment ||
+                    (paymentMethod === "credit-card" && !squarePaymentLoaded)
+                  }
                 >
-                  {isSubmitting ? "Processing..." : "Complete Purchase"}
+                  {isSubmitting || isProcessingPayment
+                    ? "Processing..."
+                    : "Complete Purchase"}
                 </Button>
                 <div className="flex items-center justify-center text-sm text-(--color-light-ed)/60">
                   <ShieldCheck className="h-4 w-4 mr-1" />
