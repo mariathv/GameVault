@@ -44,7 +44,7 @@ const refundController = {
             gameInStore.copies += 1;
             await gameInStore.save();
     
-            await order.user.addToWallet(refundAmount); 
+            await order.user.updateWallet(refundAmount, "add");
     
             if (order.user && order.user.email) {
                 await mailController.sendRefundConfirmation(
