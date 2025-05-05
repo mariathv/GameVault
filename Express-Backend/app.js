@@ -29,10 +29,13 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(cors({
     origin: [
-      "http://localhost:5173",
-      "http://localhost:3000",
-      "http://16.170.239.27:3000" ,
-      "https://game-vault-livid.vercel.app"
+     "http://localhost:5173",
+    "http://localhost:3000",
+    "http://16.170.239.27:3000",
+    "https://game-vault-livid.vercel.app",
+    "https://vercel.com/marias-projects-46c5623d/game-vault/6SRkC3ZSgUQnZeQeLcDHrpxDLf1U",
+    "https://www.gamevvault.site",
+    "https://gamevvault.site"
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
